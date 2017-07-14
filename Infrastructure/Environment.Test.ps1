@@ -5,7 +5,7 @@ $ClassicStorageAccountName = "env$($Seed)str"
 $CloudServiceName = "env-$Seed-cs"
 $AppServicePlanName = "env-$Seed-asp"
 $AppServiceName = "env-$($Seed)-as"
-$ServiceBusNamespaceName = "esfa-$Seed-ns"
+$ServiceBusNamespaceName = "env-$Seed-ns"
 $AppInsightsName = "env-$seed-ai"
 
 .\Resources\New-ResourceGroup.ps1 -Location $Location -Name $ResourceGroupName
