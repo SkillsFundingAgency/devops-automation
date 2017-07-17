@@ -1,4 +1,4 @@
-﻿function Wait-AzureRmResource() {
+﻿function Wait-AzureRmResource {
     [CmdletBinding(DefaultParameterSetName="ResourceGroup")]
     Param (
         [Parameter(Mandatory=$true, ParameterSetName="ResourceGroup")]
