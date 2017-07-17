@@ -23,8 +23,8 @@ The name of the destination Resource Group
 Param (
     [Parameter(Mandatory = $true)]
     [String[]]$ResourceName,
-    [Parameter(Mandatory = $true)]
-    [String]$DestinationResourceGroup
+    [Parameter(Mandatory = $false)]
+    [String]$DestinationResourceGroup = $ENV:ResourceGroup
 )
 
 # --- Import Azure Helpers

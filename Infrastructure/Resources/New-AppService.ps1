@@ -48,7 +48,7 @@ Param (
     [String]$Location = $ENV:Location,
     [Parameter(Mandatory = $false)]
     [ValidateNotNullOrEmpty()]
-	[String]$ResourceGroupName = $ENV:ResourceGroupName,
+	[String]$ResourceGroupName = $ENV:ResourceGroup,
 	[Parameter(Mandatory = $false)]	
     [String]$AppServicePlanName,
 	[Parameter(Mandatory = $false)]
