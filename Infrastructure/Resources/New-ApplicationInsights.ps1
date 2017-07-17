@@ -53,5 +53,3 @@ if (!$ApplicationInsights) {
 
 Write-Host "[Service Online: $Name]" -ForegroundColor Green
 Write-Output ("##vso[task.setvariable variable=InstrumentationKey;]$($ApplicationInsights.Properties.InstrumentationKey)")
-
-
