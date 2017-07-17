@@ -41,8 +41,5 @@ if (!$ExistingResourceGroup) {
     }
 }
 
-$Env:Location = $Location
-$ENV:ResourceGroupName = $Name
-
 Write-Output ("##vso[task.setvariable variable=ResourceGroup;]$Name")
 Write-Output ("##vso[task.setvariable variable=Location;]$Location")
