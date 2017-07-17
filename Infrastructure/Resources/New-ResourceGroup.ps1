@@ -23,7 +23,7 @@ Param (
     [String]$Location,
     [Parameter(Mandatory = $true)]
     [ValidateNotNullOrEmpty()]
-	[String]$Name
+    [String]$Name
 )
 
 # --- Import Azure Helpers
@@ -36,13 +36,11 @@ if (!$ExistingResourceGroup) {
     try {
         Write-Host "Creating Resource Group"
         $null = New-AzureRmResourceGroup -Location $Location -Name $Name
-    } catch {
+    }
+    catch {
         throw "Could not create Resource Group $Name : $_"
     }
 }
-
-$Env:Location = $Location
-$ENV:ResourceGroupName = $Name
 
 Write-Output ("##vso[task.setvariable variable=ResourceGroup;]$Name")
 Write-Output ("##vso[task.setvariable variable=Location;]$Location")
