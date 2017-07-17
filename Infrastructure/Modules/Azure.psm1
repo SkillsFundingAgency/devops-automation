@@ -1,14 +1,12 @@
 ﻿function Wait-AzureRmResource {
-    [CmdletBinding(DefaultParameterSetName="ResourceGroup")]
+    [CmdletBinding(DefaultParameterSetName="Standard")]
     Param (
         [Parameter(Mandatory=$true, ParameterSetName="ResourceGroup")]
         [String]$ResourceGroupName,
-        [Parameter(Mandatory=$true, ParameterSetName="ResourceGroup")]
-        [Parameter(Mandatory=$true, ParameterSetName="Standard")]
+        [Parameter(Mandatory=$true)]
         [String]$ResourceName,
-        [Parameter(Mandatory=$false, ParameterSetName="ResourceGroup")]
-        [Parameter(Mandatory=$false, ParameterSetName="Standard")]        
-        [Int]$TimeOut = 200   
+        [Parameter(Mandatory=$false)]
+        [Int]$TimeOut = 200
     )
     
     $i = 1
@@ -24,7 +22,7 @@
             if ($PSCmdlet.ParameterSetName -eq "ResourceGroup") {
                 $resource = Get-AzureRmResource -ResourceGroupName $ResourceGroupName -ResourceName $ResourceName
             } else {
-                $resource = Find-AzureRmResource -ResourceName $ResourceName
+                $resource = Find-AzureRmResource -ResourceNameContains $ResourceName
             }
 
             if ($resource) {
