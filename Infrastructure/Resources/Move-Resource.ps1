@@ -32,6 +32,10 @@ Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
 
 foreach ($Resource in $ResourceName) {
 
+    # --- Ensure that the resource can be seen by resource manager
+    Wait-AzureRmResource -ResourceName $Resource
+
+    # --- Retrieve resource details
     $AzResource = Find-AzureRmResource -ResourceNameContains $Resource -ErrorAction SilentlyContinue
 
     # --- Double check that NewCloudService is valid
