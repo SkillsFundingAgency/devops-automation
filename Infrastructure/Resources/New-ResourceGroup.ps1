@@ -23,7 +23,7 @@ Param (
     [String]$Location,
     [Parameter(Mandatory = $true)]
     [ValidateNotNullOrEmpty()]
-	[String]$Name
+    [String]$Name
 )
 
 # --- Import Azure Helpers
@@ -36,7 +36,8 @@ if (!$ExistingResourceGroup) {
     try {
         Write-Host "Creating Resource Group"
         $null = New-AzureRmResourceGroup -Location $Location -Name $Name
-    } catch {
+    }
+    catch {
         throw "Could not create Resource Group $Name : $_"
     }
 }
