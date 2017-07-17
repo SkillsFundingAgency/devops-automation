@@ -44,13 +44,12 @@ if (!$ExistingStorageAccount) {
 	try {
 		Write-Host "Creating Storage Account $Name"
 		$null = New-AzureStorageAccount -Location $Location -StorageAccountName $Name
-		Wait-AzureRmResource -ResourceGroupName "Default-Storage-$($Location.replace(' ', ''))" -ResourceName $Name
 	} catch {
 		throw "Could not create Storage Account $Name"
 	}
 }
 
-# --- Create containers in the storage account if 
+# --- Create containers in the storage account if required
 if ($ContainerName) {
 	$Subscription = Get-AzureSubscription -Current
 	Set-AzureSubscription -CurrentStorageAccountName $Name -SubscriptionId $Subscription.SubscriptionId

@@ -39,7 +39,6 @@ foreach ($Service in $Name) {
 		try {
 			Write-Host "Creating Cloud Service $Service"
 			$null = New-AzureService -ServiceName $Service -Location $Location
-			Wait-AzureRmResource -ResourceGroupName $Service -ResourceName $Service
 		} catch {
 			throw "Could not create Cloud Service $Service : $_"
 		}
