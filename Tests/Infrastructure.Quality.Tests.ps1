@@ -5,7 +5,8 @@ Describe "Code quality tests" {
     $Rules = Get-ScriptAnalyzerRule
     $ExcludeRules = @(
         "PSAvoidUsingWriteHost",
-        "PSAvoidUsingEmptyCatchBlock"
+        "PSAvoidUsingEmptyCatchBlock",
+        "PSAvoidUsingPlainTextForPassword"
     )
  
     foreach ($Script in $Scripts) {
