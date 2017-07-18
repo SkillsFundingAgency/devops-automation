@@ -39,7 +39,7 @@ Param(
     [Parameter(Mandatory = $true)]  
     [String]$CertificatePath,
     [Parameter(Mandatory = $true)]
-    [SecureString]$CertificatePassword
+    [String]$CertificatePassword
 )
 
 # --- Import Azure Helpers
