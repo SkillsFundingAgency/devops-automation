@@ -46,7 +46,7 @@
         },
         {
             "name" : "CertificatePath",
-            "value" : "$(System.DefaultWorkingDirectory)\testcert.pfx"
+            "value" : "$(System.DefaultWorkingDirectory)\\testcert.pfx"
         },
         {
             "name" : "CertificatePassword",
