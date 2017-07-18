@@ -49,7 +49,7 @@ Param (
     [Parameter(Mandatory = $false)]
     [ValidateNotNullOrEmpty()]
 	[String]$ResourceGroupName = $ENV:ResourceGroup,
-	[Parameter(Mandatory = $false)]	
+	[Parameter(Mandatory = $true)]	
     [String]$AppServicePlanName,
 	[Parameter(Mandatory = $false)]
 	[ValidateSet("Basic", "Free", "Premium", "Shared", "Standard")]
