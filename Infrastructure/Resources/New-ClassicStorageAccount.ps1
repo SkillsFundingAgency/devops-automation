@@ -36,21 +36,25 @@ Param(
 # --- Import Azure Helpers
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
 
-Write-Host "Checking for existing Storage Account"	 
-$ExistingStorageAccount = Get-AzureStorageAccount -StorageAccountName $Name -ErrorAction SilentlyContinue
+Write-Host "Checking for existing Storage Account"
+# --- Check if storage account exists in our subscrption 
+$StorageAccount = Get-AzureStorageAccount -StorageAccountName $Name -ErrorAction SilentlyContinue
  
+# --- Check if the resource name has been taken elsewhere
+$StorageAccountNameTest = Test-AzureName -Storage $Name
+
 # --- If the Storage Account doesn't exist, create it
-if (!$ExistingStorageAccount) {
+if (!$StorageAccount -and !$StorageAccountNameTest) {
 	try {
 		Write-Host "Creating Storage Account $Name"
-		$null = New-AzureStorageAccount -Location $Location -StorageAccountName $Name
+		$StorageAccount = New-AzureStorageAccount -Location $Location -StorageAccountName $Name
 	} catch {
 		throw "Could not create Storage Account $Name"
 	}
 }
 
 # --- Create containers in the storage account if required
-if ($ContainerName) {
+if ($ContainerName -and $StorageAccount) {
 	$Subscription = Get-AzureSubscription -Current
 	Set-AzureSubscription -CurrentStorageAccountName $Name -SubscriptionId $Subscription.SubscriptionId
 	foreach ($Container in $ContainerName) {
@@ -66,8 +70,10 @@ if ($ContainerName) {
 	}
 }
 
-Write-Host "[Service Online: $Name]" -ForegroundColor Green
-
-$Key = Get-AzureStorageKey -StorageAccountName $Name
-$ConnectionString = "DefaultEndpointsProtocol=https;AccountName=$($Name);AccountKey=$($key.Primary)"
-Write-Output ("##vso[task.setvariable variable=StorageConnectionString;]$($ConnectionString)")
+# --- If the storage accout exists in this subscription get the key and set the env variable
+if ($StorageAccount){
+	Write-Host "[Service Online: $Name]" -ForegroundColor Green
+	$Key = (Get-AzureStorageKey -StorageAccountName $Name).Primary	
+	$ConnectionString = "DefaultEndpointsProtocol=https;AccountName=$($Name);AccountKey=$($Key)"
+	Write-Output ("##vso[task.setvariable variable=StorageConnectionString;]$($ConnectionString)")
+}
