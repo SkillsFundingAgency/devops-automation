@@ -54,7 +54,7 @@
         },
         {
             "name" : "SecureFileName",
-            "value" : "passwordispassword.pfx"
+            "value" : "testcert.pfx"
         }
     ]
 }
