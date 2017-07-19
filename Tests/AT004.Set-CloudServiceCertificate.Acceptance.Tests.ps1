@@ -3,9 +3,6 @@ $Config = Get-Content $PSScriptRoot\..\Tests\Acceptance.Config.json -Raw | Conve
 Push-Location -Path $PSScriptRoot\..\Infrastructure\Resources\
 
 Describe "Set-CloudServiceCertificate Tests" -Tag "Acceptance-ASM" {
-    $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
-    $cert.Import($config.certificatePath, $config.certificatePassword, [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]"DefaultKeySet")    
-    $testCertThumbprint = $cert.Thumbprint
 
     It "Should apply a Certificate to the Cloud Service and return no outputs" {        
         $Result = .\Set-CloudServiceCertificate.ps1 -ServiceName $config.cloudServiceName -CertificatePath $config.certificatePath -CertificatePassword $config.certificatePassword
@@ -13,9 +10,13 @@ Describe "Set-CloudServiceCertificate Tests" -Tag "Acceptance-ASM" {
     }
 
     It "Applied thumbprint should exist on the cloud service" {
+        $securePassword =  $config.certificatePassword | ConvertTo-SecureString -AsPlainText -Force
+        $cert = Import-PfxCertificate -FilePath $config.certificatePath -Password  $securePassword -CertStoreLocation Cert:\CurrentUser\My
+        $testCertThumbprint = $cert.Thumbprint
         $appliedCert = Get-AzureCertificate -ServiceName $config.cloudServiceName -ErrorAction SilentlyContinue        
         Write-Host $appliedCert.Thumbprint
         $appliedCert.Thumbprint | Should Be $testCertThumbprint
+        Get-ChildItem Cert:\CurrentUser\My\$testCertThumbprint | Remove-Item
     }
 }
 
