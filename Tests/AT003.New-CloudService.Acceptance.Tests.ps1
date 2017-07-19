@@ -11,7 +11,6 @@ Describe "New-CloudService Tests" -Tag "Acceptance-ASM" {
 
     It "Should create a Cloud Service with the correct name" {
         $Result = Get-AzureService -ServiceName $Config.cloudServiceName -ErrorAction SilentlyContinue
-        Write-Host $Result.ServiceName
         $Result.ServiceName | Should Be $Config.cloudServiceName
     }
 
