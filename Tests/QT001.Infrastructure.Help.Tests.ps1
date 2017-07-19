@@ -1,4 +1,4 @@
-Describe "Infrastructure help tests" {
+Describe "Infrastructure help tests" -Tag "Quality" {
 
     $Scripts = Get-ChildItem -Path $PSScriptRoot\..\Infrastructure\Resources\*.ps1 -File -Recurse
 
@@ -19,7 +19,7 @@ Describe "Infrastructure help tests" {
             It "Has an example" {
                 $Help.Examples | Should Not BeNullOrEmpty
             }
-
+            
             foreach ($Parameter in $Help.Parameters.Parameter) {
                 if ($Parameter -notmatch 'whatif|confirm') {
                     It "Has a Parameter description for $($Parameter.Name)" {

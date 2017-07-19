@@ -1,4 +1,4 @@
-Describe "Code quality tests" {
+Describe "Code quality tests" -Tag "Quality" {
 
     $Scripts = Get-ChildItem -Path $PSScriptRoot\..\Infrastructure\Resources\*.ps1 -File -Recurse
 

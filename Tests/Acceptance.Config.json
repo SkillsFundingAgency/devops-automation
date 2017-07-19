@@ -1,0 +1,15 @@
+{
+    "location": "West Europe",
+    "resourceGroupName": "devops-at-rg",
+    "classicStorageAccountName": "devopsatstr",
+    "classicStorageContainerName": "public",
+    "cloudServiceName": "devops-at-cs",
+    "appInsightsName": "devops-at-ai",
+    "appServiceName": "devops-at-as",
+    "appServicePlanName": "devops-at-asp",
+    "appServiceProperties": "@{ alwayson = true }",
+    "serviceBusNamespaceName": "devops-at-sb",
+    "serviceBusQueueName": "q1",
+    "certificatePath": "$(System.DefaultWorkingDirectory)\\testcert.pfx",
+    "certificatePassword": "password"
+}
