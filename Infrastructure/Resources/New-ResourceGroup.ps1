@@ -7,7 +7,7 @@ Create a Resource Group
 Create a Resource Groups in a geographical location
 
 .PARAMETER Location
-The location of the Resource Group
+The location of the Resource Group. This is limited to West Europe and North Europe
 
 .PARAMETER Name
 The name of the Resource Group
@@ -19,7 +19,7 @@ The name of the Resource Group
 
 Param (
     [Parameter(Mandatory = $true)]
-    [ValidateNotNullOrEmpty()]
+    [ValidateSet("West Europe", "North Europe")]
     [String]$Location,
     [Parameter(Mandatory = $true)]
     [ValidateNotNullOrEmpty()]

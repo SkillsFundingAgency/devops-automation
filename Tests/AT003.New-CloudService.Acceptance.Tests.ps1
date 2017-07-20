@@ -4,7 +4,7 @@ Push-Location -Path $PSScriptRoot\..\Infrastructure\Resources\
 
 Describe "New-CloudService Tests" -Tag "Acceptance-ASM" {
 
-    It "Should create a Cloud Service and return one output" {
+    It "Should create a Cloud Service and return no outputs" {
         $Result = .\New-CloudService.ps1 -Location $Config.location -Name $Config.cloudServiceName
         $Result.Count | Should Be 0
     }
