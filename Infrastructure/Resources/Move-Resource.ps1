@@ -36,11 +36,11 @@ foreach ($Resource in $ResourceName) {
     Wait-AzureRmResource -ResourceName $Resource
 
     # --- Retrieve resource details
-    $AzResource = Find-AzureRmResource -ResourceNameContains $Resource -ErrorAction SilentlyContinue
+    $AzResource = Find-AzureRmResource -ResourceNameEquals $Resource -ErrorAction SilentlyContinue
 
     # --- Double check that NewCloudService is valid
     if ($AzResource.Count -gt 1 -or $AzResource.Count -eq 0) {
-        throw "Find-AzureRmResource has returned $($AzResource.Count) result(s).. check the value of ResourceNameContains"
+        throw "Find-AzureRmResource has returned $($AzResource.Count) result(s).. check the value of ResourceNameEquals"
     }
 
     # --- Check if the Storage Account exists in the correct resource group, if not move it
@@ -50,7 +50,7 @@ foreach ($Resource in $ResourceName) {
             $null = Move-AzureRmResource -DestinationResourceGroupName $DestinationResourceGroup -ResourceId $AzResource.ResourceId -Force
             Wait-AzureRmResource -ResourceGroupName $DestinationResourceGroup -ResourceName $Resource
 
-            $Resources = Find-AzureRmResource -ResourceGroupNameContains $AzResource.ResourceGroupName
+            $Resources = Find-AzureRmResource -ResourceGroupNameEquals $AzResource.ResourceGroupName
             if ($Resources.Count -eq 0) {
                 Write-Host "Removing source Resource Group $($AzResource.ResourceGroupName)"
                 $null = Remove-AzureRmResourceGroup -Name $AzResource.ResourceGroupName -Force
