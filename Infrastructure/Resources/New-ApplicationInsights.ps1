@@ -7,7 +7,7 @@ Create a Service Bus Namespace and optionally create associated queues
 Create a Service Bus Namespace and optionally create associated queues
 
 .PARAMETER Location
-The location of the resource
+The location of the Resource Group. This is limited to West Europe and North Europe
 
 .PARAMETER ResourceGroupName
 The name of the destination Resource Group for the resource
@@ -21,7 +21,7 @@ The name of the Application Insights instance
 
 Param (
     [Parameter(Mandatory = $false)]
-    [ValidateNotNullOrEmpty()]
+    [ValidateSet("West Europe", "North Europe")]
     [String]$Location = $ENV:Location,
     [Parameter(Mandatory = $false)]
     [ValidateNotNullOrEmpty()]

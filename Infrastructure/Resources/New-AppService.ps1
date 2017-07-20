@@ -8,7 +8,7 @@ Create an App Service Plan and App Service and set configuration properties. The
 of the chosen name for the App Service.
 
 .PARAMETER Location
-The location of the Resource
+The location of the Resource Group. This is limited to West Europe and North Europe
 
 .PARAMETER ResourceGroupName
 The name of the destination Resource Group for the resource
@@ -44,7 +44,7 @@ $AppServiceProperties = @{
 
 Param (
     [Parameter(Mandatory = $false)]
-    [ValidateNotNullOrEmpty()]
+	[ValidateSet("West Europe", "North Europe")]
     [String]$Location = $ENV:Location,
     [Parameter(Mandatory = $false)]
     [ValidateNotNullOrEmpty()]

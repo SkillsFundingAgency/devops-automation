@@ -7,7 +7,7 @@ Create a Cloud Service
 Create a Cloud Service and wait for it to come online
 
 .PARAMETER Location
-The location of the resource
+The location of the Resource Group. This is limited to West Europe and North Europe
 
 .PARAMETER Name
 The names of one or more Cloud Services to create
@@ -19,7 +19,7 @@ The names of one or more Cloud Services to create
 
 Param(
 	[Parameter(Mandatory = $false)]
-	[ValidateNotNullOrEmpty()]
+	[ValidateSet("West Europe", "North Europe")]
     [String]$Location = $ENV:Location,	
     [Parameter(Mandatory = $true)]
     [String[]]$Name
