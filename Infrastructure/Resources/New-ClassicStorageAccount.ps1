@@ -7,7 +7,7 @@ Create a classic Storage Account.
 Create a classic Storage Account. Optionally this script supports adding containers to the account
 
 .PARAMETER Location
-The location of the classic Storage Account
+The location of the Resource Group. This is limited to West Europe and North Europe
 
 .PARAMETER Name
 The name of the Storage Account
@@ -25,7 +25,7 @@ The names of one or more Containers to create in the Storage Account
 
 Param(
 	[Parameter(Mandatory = $false)]
-	[ValidateNotNullOrEmpty()]
+	[ValidateSet("West Europe", "North Europe")]
     [String]$Location = $ENV:Location,
     [Parameter(Mandatory = $true)]
     [String]$Name,

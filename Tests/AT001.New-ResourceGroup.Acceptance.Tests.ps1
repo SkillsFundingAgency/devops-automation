@@ -1,11 +1,10 @@
-
 $Config = Get-Content $PSScriptRoot\..\Tests\Acceptance.Config.json -Raw | ConvertFrom-Json
 Push-Location -Path $PSScriptRoot\..\Infrastructure\Resources\
 
 Describe "New-ResourceGroup Tests" -Tag "Acceptance-ARM" {
 
     It "Should create a Resouce Group and return two outputs" {
-        $Result = .\New-ResourceGroup.ps1 -Location "$Config.location" -Name $Config.resourceGroupName
+        $Result = .\New-ResourceGroup.ps1 -Location "$($Config.location)" -Name $Config.resourceGroupName
         $Result.Count | Should Be 2
     }
 
