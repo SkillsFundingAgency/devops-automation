@@ -4,9 +4,9 @@ Push-Location -Path $PSScriptRoot\..\Infrastructure\Resources\
 Describe "New-AppService Tests" -Tag "Acceptance-ARM" {
 
     It "Should create an App service and return no outputs" {
-        $params = @{
+        $Params = @{
             Location = $Config.location
-            ResourceGroupName =  $Config.resourceGroupName
+            ResourceGroupName = $Config.resourceGroupName
             AppServicePlanName = $Config.appServicePlanName
             AppServiceName = $Config.appServiceName
         }
@@ -33,7 +33,6 @@ Describe "New-AppService Tests" -Tag "Acceptance-ARM" {
         $Result = Get-AzureRmAppServicePlan -ResourceGroupName $Config.resourceGroupName -Name $Config.appServicePlanName
         $Result.Name | Should Be $Config.appServicePlanName
     }
-
 
 }
 
