@@ -3,9 +3,14 @@ Push-Location -Path $PSScriptRoot\..\Infrastructure\Resources\
 
 Describe "New-AppService Tests" -Tag "Acceptance-ARM" {
 
-    It "Should create an App service and return no inputs" {
-        $Result = .\New-AppService.ps1 -Location $Config.location -ResourceGroupName $Config.resourceGroupName -AppServicePlanName $Config.appServicePlanName `
-            -AppServiceName $Config.appServiceName
+    It "Should create an App service and return no outputs" {
+        $params = @{
+            Location = $Config.location
+            ResourceGroupName =  $Config.resourceGroupName
+            AppServicePlanName = $Config.appServicePlanName
+            AppServiceName = $Config.appServiceName
+        }
+        $Result = .\New-AppService.ps1 @params
         $Result.Count | Should Be 0
     }
 
