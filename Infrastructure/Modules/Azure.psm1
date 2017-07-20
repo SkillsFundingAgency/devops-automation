@@ -22,7 +22,7 @@
             if ($PSCmdlet.ParameterSetName -eq "ResourceGroup") {
                 $resource = Get-AzureRmResource -ResourceGroupName $ResourceGroupName -ResourceName $ResourceName
             } else {
-                $resource = Find-AzureRmResource -ResourceNameContains $ResourceName
+                $resource = Find-AzureRmResource -ResourceNameEquals $ResourceName
             }
 
             if ($resource) {

@@ -12,12 +12,12 @@ Describe "Move-Resource Tests" -Tag "Acceptance-ARM" {
         $null = .\Move-Resource.ps1 -ResourceName $Resources -DestinationResourceGroup $Config.resourceGroupName
 
         $ResourcesFound = 0
-        $CloudServiceResourceGroup = (Find-AzureRmResource -ResourceNameContains $Config.cloudServiceName).ResourceGroupName
+        $CloudServiceResourceGroup = (Find-AzureRmResource -ResourceNameEquals $Config.cloudServiceName).ResourceGroupName
         if ($CloudServiceResourceGroup -eq $Config.resourceGroupName) {
             $ResourcesFound = $ResourcesFound+1
         }
 
-        $StorageAccountResourceGroup = (Find-AzureRmResource -ResourceNameContains $Config.classicStorageAccountName).ResourceGroupName
+        $StorageAccountResourceGroup = (Find-AzureRmResource -ResourceNameEquals $Config.classicStorageAccountName).ResourceGroupName
         if ($StorageAccountResourceGroup -eq $Config.resourceGroupName){
             $ResourcesFound = $ResourcesFound+1
         }
