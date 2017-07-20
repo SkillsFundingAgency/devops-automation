@@ -1,4 +1,3 @@
-
 $Config = Get-Content $PSScriptRoot\..\Tests\Acceptance.Config.json -Raw | ConvertFrom-Json
 Push-Location -Path $PSScriptRoot\..\Infrastructure\Resources\
 
