@@ -16,7 +16,7 @@ The path to the pfx file
 The password for the pfx
 
 .EXAMPLE
-$CertificatePasswordd = "P@ssw0rd1!" | ConvertTo-SecureString -AsPlainText -Force
+$CertificatePassword = "P@ssw0rd1!" | ConvertTo-SecureString -AsPlainText -Force
 .\Set-CloudServiceCertificate.ps1 -ServiceName cloud-service-01 -CertificatePath c:\certificates\cs01.pfx -CertificatePassword $CertificatePassword
 
 .EXAMPLE
