@@ -10,5 +10,6 @@
     "serviceBusNamespaceName": "devops-at-sb",
     "serviceBusQueueName": ["q1"],
     "certificatePath": "$(System.DefaultWorkingDirectory)\\testcert.pfx",
-    "certificatePassword": "password"
+    "certificatePassword": "password",
+    "suffix":  "812d5be5"
 }

@@ -6,22 +6,22 @@ Describe "New-AppService Tests" -Tag "Acceptance-ARM" {
     It "Should create an App service and return no outputs" {
         $Params = @{
             Location = $Config.location
-            ResourceGroupName = $Config.resourceGroupName
-            AppServicePlanName = $Config.appServicePlanName
-            AppServiceName = $Config.appServiceName
+            ResourceGroupName = $Config.resourceGroupName+$Config.suffix
+            AppServicePlanName = $Config.appServicePlanName+$Config.suffix
+            AppServiceName = $Config.appServiceName+$Config.suffix
         }
         $Result = .\New-AppService.ps1 @params
         $Result.Count | Should Be 0
     }
 
     It "Should create an App service in the correct location" {
-        $Result = Get-AzureRmWebApp -ResourceGroupName $Config.resourceGroupName -Name $Config.appServiceName
+        $Result = Get-AzureRmWebApp -ResourceGroupName $Config.resourceGroupName+$Config.suffix -Name $Config.appServiceName+$Config.suffix
         $Result.Location | Should Be $Config.location
     }
 
     It "Should create an App service with the correct name" {
-        $Result = Get-AzureRmWebApp -ResourceGroupName $Config.resourceGroupName -Name $Config.appServiceName
-        $Result.Name | Should Be $Config.appServiceName
+        $Result = Get-AzureRmWebApp -ResourceGroupName $Config.resourceGroupName+$Config.suffix -Name $Config.appServiceName+$Config.suffix
+        $Result.Name | Should Be $Config.appServiceName+$Config.suffix
     }
 
     It "Should create an App service plan with the correct location" {
