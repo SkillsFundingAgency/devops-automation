@@ -6,8 +6,8 @@ Describe "New-ServiceBus Tests" -Tag "Acceptance-ARM" {
     It "Should create a Service Bus and return one output" {
         $Params = @{
             Location = $Config.location
-            ResourceGroupName = $Config.resourceGroupName+$Config.suffix
-            NamespaceName = $Config.serviceBusNamespaceName+$Config.suffix
+            ResourceGroupName = $($Config.resourceGroupName+$Config.suffix)
+            NamespaceName = $($Config.serviceBusNamespaceName+$Config.suffix)
             QueueName = $Config.serviceBusQueueName
         }
         $Result = .\New-ServiceBus.ps1 @params
@@ -15,7 +15,7 @@ Describe "New-ServiceBus Tests" -Tag "Acceptance-ARM" {
     }
 
     It "Should create a Service Bus in the correct location" {
-        $Result = Get-AzureRmServiceBusNamespace -Name $Config.serviceBusNamespaceName+$Config.suffix -ResourceGroup $Config.resourceGroupName+$Config.suffix
+        $Result = Get-AzureRmServiceBusNamespace -Name $($Config.serviceBusNamespaceName+$Config.suffix) -ResourceGroup $($Config.resourceGroupName+$Config.suffix)
         $Result.Location | Should Be $Config.location
     }
 

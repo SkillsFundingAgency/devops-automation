@@ -8,12 +8,12 @@ $Cert = Import-PfxCertificate -FilePath $Config.certificatePath -Password $Secur
 Describe "Set-CloudServiceCertificate Tests" -Tag "Acceptance-ASM" {
 
     It "Should apply a Certificate to the Cloud Service and return no outputs" {        
-        $Result = .\Set-CloudServiceCertificate.ps1 -ServiceName $Config.cloudServiceName+$Config.suffix -CertificatePath $Config.certificatePath -CertificatePassword $Config.certificatePassword
+        $Result = .\Set-CloudServiceCertificate.ps1 -ServiceName $($Config.cloudServiceName+$Config.suffix) -CertificatePath $Config.certificatePath -CertificatePassword $Config.certificatePassword
         $Result.Count | Should Be 0
     }
 
     It "Applied thumbprint should exist on the cloud service" {
-        $AppliedCert = Get-AzureCertificate -ServiceName $Config.cloudServiceName+$Config.suffix -ErrorAction SilentlyContinue        
+        $AppliedCert = Get-AzureCertificate -ServiceName $($Config.cloudServiceName+$Config.suffix) -ErrorAction SilentlyContinue        
         $AppliedCert.Thumbprint | Should Be $Cert.Thumbprint
     }
 }
