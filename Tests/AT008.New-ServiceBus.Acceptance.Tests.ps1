@@ -22,7 +22,7 @@ Describe "New-ServiceBus Tests" -Tag "Acceptance-ARM" {
     It "Should create specified Service Bus queues" {
         foreach($Queue in $Config.serviceBusQueueName){
             $Queue.Trim()
-            $ExistingQueue = Get-AzureRmServiceBusQueue -ResourceGroup $Config.resourceGroupName -NamespaceName $Config.serviceBusNamespaceName -QueueName $Queue
+            $ExistingQueue = Get-AzureRmServiceBusQueue -ResourceGroup $($Config.resourceGroupName+$Config.suffix) -NamespaceName $($Config.serviceBusNamespaceName+$Config.suffix) -QueueName $Queue
             $ExistingQueue.Name | Should Be $Queue
         }
     }
