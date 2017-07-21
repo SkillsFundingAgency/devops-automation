@@ -51,3 +51,72 @@ function Resolve-AzureRmResource {
 	}
     $ResourceExists
 }
+
+Function Set-SQLServerFirewallRule {
+    <#
+
+    .SYNOPSIS
+    Create or update a firewall rule on an Azure SQL Server instance
+
+    .DESCRIPTION
+    Create or update a firewall rule on an Azure SQL Server instance
+
+    .PARAMETER ResourceGroupName
+    The name of the SQL Servers resource group
+
+    .PARAMETER ServerName
+    The name of the Azure SQL Server
+
+    .PARAMETER FirewallRuleName
+    The name of the firewall rule
+
+    .PARAMETER StartIpAddress
+    The start ip address in the allowed range
+
+    .PARAMETER EndIpAddress
+    The end ip address in the allowed range
+
+    .EXAMPLE
+    Set-AzureSqlServerFirewallRule -FirewallRuleName "SFA Purple" -StartIpAddress "62.253.71.89" -EndIpAddress "62.253.71.89" -ServerName $ServerName -ResourceGroupName $ResourceGroupName
+
+    #>    
+    Param (
+        [Parameter(Mandatory=$true)]
+        [String]$ResourceGroupName, 
+        [Parameter(Mandatory=$true)]
+        [String]$ServerName,                   
+        [Parameter(Mandatory=$true)]
+        [String]$FirewallRuleName,
+        [Parameter(Mandatory=$true)]
+        [String]$StartIpAddress,      
+        [Parameter(Mandatory=$true)]
+        [String]$EndIpAddress
+    )
+
+    try {
+
+        # --- Does the firewall rule exist on the server?
+        $FirewallRule = Get-AzureRmSqlServerFirewallRule -FirewallRuleName $FirewallRuleName -ServerName $ServerName -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue
+
+        # --- If the firewall doesn't exist, create it. If it does, update it
+        $FirewallRuleParameters = @{
+            ResourceGroupName = $ResourceGroupName
+            ServerName = $ServerName
+            FirewallRuleName = $FirewallRuleName
+            StartIpAddress = $StartIpAddress
+            EndIpAddress = $EndIpAddress
+        }
+
+        if (!$FirewallRule) {
+            Write-Verbose -Message "Creating firewall rule $FireWallRuleName"
+            Write-Host "Creating rule $FirewallRuleName"
+            $null = New-AzureRmSqlServerFirewallRule @FirewallRuleParameters -ErrorAction Stop
+        } else {
+            Write-Verbose -Message "Updating firewall rule $FirewallRuleName"
+            Write-Host "Updating rule $FirewallRuleName"
+            $null = Set-AzureRmSqlServerFirewallRule @FirewallRuleParameters -ErrorAction Stop
+        }
+    }catch {
+        throw "Could not set SQL server firewall rule $FirewallRuleName on $($ServerName): $_"
+    }
+}
