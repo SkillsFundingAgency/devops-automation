@@ -109,11 +109,9 @@ Function Set-SQLServerFirewallRule {
 
         if (!$FirewallRule) {
             Write-Verbose -Message "Creating firewall rule $FireWallRuleName"
-            Write-Host "Creating rule $FirewallRuleName"
             $null = New-AzureRmSqlServerFirewallRule @FirewallRuleParameters -ErrorAction Stop
         } else {
             Write-Verbose -Message "Updating firewall rule $FirewallRuleName"
-            Write-Host "Updating rule $FirewallRuleName"
             $null = Set-AzureRmSqlServerFirewallRule @FirewallRuleParameters -ErrorAction Stop
         }
     }catch {
