@@ -1,11 +1,10 @@
 $Config = Get-Content $PSScriptRoot\..\Tests\Acceptance.Config.json -Raw | ConvertFrom-Json
 Push-Location -Path $PSScriptRoot\..\Infrastructure\Resources\
 
-# --- Set up test certificate
-$SecurePassword = $Config.certificatePassword | ConvertTo-SecureString -AsPlainText -Force
-$Cert = Import-PfxCertificate -FilePath $Config.certificatePath -Password $SecurePassword -CertStoreLocation Cert:\CurrentUser\My
-
 Describe "Set-CloudServiceCertificate Tests" -Tag "Acceptance-ASM" {
+    # --- Set up test certificate
+    $SecurePassword = $Config.certificatePassword | ConvertTo-SecureString -AsPlainText -Force
+    $Cert = Import-PfxCertificate -FilePath $Config.certificatePath -Password $SecurePassword -CertStoreLocation Cert:\CurrentUser\My
 
     It "Should apply a Certificate to the Cloud Service and return no outputs" {        
         $Result = .\Set-CloudServiceCertificate.ps1 -ServiceName $($Config.cloudServiceName+$Config.suffix) -CertificatePath $Config.certificatePath -CertificatePassword $Config.certificatePassword
@@ -16,9 +15,11 @@ Describe "Set-CloudServiceCertificate Tests" -Tag "Acceptance-ASM" {
         $AppliedCert = Get-AzureCertificate -ServiceName $($Config.cloudServiceName+$Config.suffix) -ErrorAction SilentlyContinue        
         $AppliedCert.Thumbprint | Should Be $Cert.Thumbprint
     }
+    
+    Get-ChildItem Cert:\CurrentUser\My\$Cert.Thumbprint | Remove-Item -Confirm:$false
 }
 
 # --- Remove test certificate from local store
-Get-ChildItem Cert:\CurrentUser\My\$Cert.Thumbprint | Remove-Item -Confirm:$false
+
 
 Pop-Location
