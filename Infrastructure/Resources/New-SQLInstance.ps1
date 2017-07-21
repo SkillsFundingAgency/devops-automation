@@ -1,10 +1,10 @@
 <#
 
 .SYNOPSIS
-Create an Azure SQL Server and datbase
+Create an Azure SQL Server and database
 
 .DESCRIPTION
-Create an Azure SQL Server and datbase
+Create an Azure SQL Server and database
 
 .PARAMETER Location
 The location of the Resource Group. This is limited to West Europe and North Europe
@@ -21,7 +21,7 @@ The username of the SA account for the SQL Server
 .PARAMETER DatabaseName
 One or more database names to create on the given server
 
-.PARAMETER DatbaseEdition
+.PARAMETER DatabaseEdition
 Specifies the edition to assign to the database. The acceptable values for this parameter are:
 
 - Default
@@ -119,7 +119,7 @@ if ($SQLServer) {
     Set-SqlServerFirewallRule -FirewallRuleName "SFA Purple" -StartIpAddress "62.253.71.89" -EndIpAddress "62.253.71.89" -ServerName $ServerName -ResourceGroupName $ResourceGroupName
 }
 
-# --- If the SQL Server exists in the subscription create databasses
+# --- If the SQL Server exists in the subscription create databases
 if ($Server -and !$GloballyResolvable) {
     foreach ($Database in $DatabaseName) {
         Write-Verbose -Message "Checking for Database $DatabaseName on SQL Server $ServerName"
