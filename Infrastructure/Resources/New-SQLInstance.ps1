@@ -67,7 +67,7 @@ Param (
 
 # --- Import helper modules
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
-Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path -Force
+Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
 # --- Check for an existing sql server in the subscription
 Write-Verbose -Message "Checking for exiting SQL Server $ServerName"
@@ -93,7 +93,6 @@ if (!$SQLServer){
         }
 
         # --- Set up SQL Server parameters and create a new instance
-
         Write-Verbose -Message "Attempting to create SQL Server $ServerName"
         $ServerAdminCredentials = [PSCredential]::new($ServerAdminUsername,$ServerAdminPassword)
 
