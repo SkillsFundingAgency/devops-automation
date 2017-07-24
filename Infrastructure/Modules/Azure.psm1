@@ -77,18 +77,18 @@ Function Set-SQLServerFirewallRule {
     The end ip address in the allowed range
 
     .EXAMPLE
-    Set-AzureSqlServerFirewallRule -FirewallRuleName "SFA Purple" -StartIpAddress "62.253.71.89" -EndIpAddress "62.253.71.89" -ServerName $ServerName -ResourceGroupName $ResourceGroupName
+    Set-AzureSqlServerFirewallRule -FirewallRuleName "Rule1" -StartIpAddress "xxx.xxx.xxx.xxx" -EndIpAddress "xxx.xxx.xxx.xxx" -ServerName $ServerName -ResourceGroupName $ResourceGroupName
 
-    #>    
+    #>
     Param (
         [Parameter(Mandatory=$true)]
         [String]$ResourceGroupName, 
         [Parameter(Mandatory=$true)]
-        [String]$ServerName,                   
+        [String]$ServerName,
         [Parameter(Mandatory=$true)]
         [String]$FirewallRuleName,
         [Parameter(Mandatory=$true)]
-        [String]$StartIpAddress,      
+        [String]$StartIpAddress,
         [Parameter(Mandatory=$true)]
         [String]$EndIpAddress
     )
