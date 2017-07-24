@@ -18,7 +18,7 @@ Describe "Set-CloudServiceCertificate Tests" -Tag "Acceptance-ASM" {
     }
 
     It "Should not throw on subsequent runs" {        
-        .\Set-CloudServiceCertificate.ps1 -ServiceName $CloudServiceName -CertificatePath $CertPath -CertificatePassword $Config.certificatePassword | Should not throw        
+        {.\Set-CloudServiceCertificate.ps1 -ServiceName $CloudServiceName -CertificatePath $CertPath -CertificatePassword $Config.certificatePassword} | Should not throw        
     }
 
     It "Applied thumbprint should exist on the cloud service" {

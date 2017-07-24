@@ -11,7 +11,7 @@ Describe "New-CloudService Tests" -Tag "Acceptance-ASM" {
     }
 
     It "Should not throw on subsequent runs" {
-        .\New-CloudService.ps1 -Location $Config.location -Name $CloudServiceName | Should not throw
+        {.\New-CloudService.ps1 -Location $Config.location -Name $CloudServiceName} | Should not throw
     }
 
     It "Should create a Cloud Service with the correct name" {

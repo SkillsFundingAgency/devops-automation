@@ -43,7 +43,7 @@ Describe "Move-Resource Tests" -Tag "Acceptance-ARM" {
             "$($Config.cloudServiceName)$($Config.suffix)"
         )
 
-        .\Move-Resource.ps1 -ResourceName $Resources -DestinationResourceGroup $DestinationResourceGroup | Should not throw
+        {.\Move-Resource.ps1 -ResourceName $Resources -DestinationResourceGroup $DestinationResourceGroup} | Should not throw
     }
 }
 

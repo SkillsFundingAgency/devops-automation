@@ -25,7 +25,7 @@ Describe "New-AppService Tests" -Tag "Acceptance-ARM" {
             AppServicePlanName = $AppServicePlanName
             AppServiceName     = $AppServiceName
         }
-        .\New-AppService.ps1 @params | Should not throw
+        {.\New-AppService.ps1 @params} | Should not throw
     }
 
     It "Should create an App service in the correct location" {
