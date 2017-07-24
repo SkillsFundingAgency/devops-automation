@@ -11,14 +11,14 @@ The resources folder contains scripts that carry out Azure infrastructure operat
 When writing a script or a helper function keep in mind that it:
 
 * Should have an acceptance test
-* Should work locally and in Visual Studio Team Services
+* Should work locally and on build agents
 * Should contain appropriate documentation
 * Should use **Write-Verbose** for logging
 * Should use the PascalCasing convention for variables
-* Should not mix Service Manager and Resource Manager operations
-* Should follow contain functions that follow the Verb-Noun and PascalCasing conventions (For a list of acceptable verbs use **Get-Verb**)
-* Should contain inline descriptive inline comments
-* Should avoid using aliases for built in functions
+* Should not mix Service Manager(ASM) and Resource Manager(ARM) operations
+* Should contain functions that follow the Verb-Noun and PascalCasing conventions (For a list of acceptable verbs use **Get-Verb**)
+* Should contain descriptive inline comments
+* Should avoid using aliases for built-in functions
 * Should not generate any errors from PSScriptAnalyzers
 
 ## Script documentation
