@@ -16,10 +16,8 @@ Describe "Set-CloudServiceCertificate Tests" -Tag "Acceptance-ASM" {
         $AppliedCert.Thumbprint | Should Be $Cert.Thumbprint
     }
     
+    # --- Remove test certificate from local store    
     Get-ChildItem Cert:\CurrentUser\My\$Cert.Thumbprint | Remove-Item -Confirm:$false
 }
-
-# --- Remove test certificate from local store
-
 
 Pop-Location
