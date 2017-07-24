@@ -18,6 +18,16 @@ Describe "New-AppService Tests" -Tag "Acceptance-ARM" {
         $Result.Count | Should Be 0
     }
 
+    It "Should not throw on subsequent runs" {
+        $Params = @{
+            Location           = $Config.location
+            ResourceGroupName  = $ResourceGroupName
+            AppServicePlanName = $AppServicePlanName
+            AppServiceName     = $AppServiceName
+        }
+        .\New-AppService.ps1 @params | Should not throw
+    }
+
     It "Should create an App service in the correct location" {
         $Result = Get-AzureRmWebApp -ResourceGroupName $ResourceGroupName -Name $AppServiceName
         $Result.Location | Should Be $Config.location

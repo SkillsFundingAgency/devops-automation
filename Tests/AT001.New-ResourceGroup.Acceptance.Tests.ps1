@@ -10,6 +10,11 @@ Describe "New-ResourceGroup Tests" -Tag "Acceptance-ARM" {
         $Result.Count | Should Be 2
     }
 
+    It "Should return two outputs on subsequent runs" {
+        $Result = .\New-ResourceGroup.ps1 -Location "$($Config.location)" -Name $ResourceGroupName
+        $Result.Count | Should Be 2
+    }
+
     It "Should create a Resource Group with the correct name" {
         $Result = Get-AzureRMResourceGroup -Name $ResourceGroupName -ErrorAction SilentlyContinue
         $Result.ResourceGroupName | Should Be $ResourceGroupName

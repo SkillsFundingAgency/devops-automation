@@ -15,6 +15,16 @@ Describe "New-ClassicStorageAccount Tests" -Tag "Acceptance-ASM" {
         $Result.Count | Should Be 1
     }
 
+    It "Should return one output on subsequent runs" {
+        $Params = @{
+            Location = $Config.location
+            Name = $StorageAccountName
+            ContainerName = $Config.classicStorageContainerName
+        }
+        $Result = .\New-ClassicStorageAccount.ps1 @Params
+        $Result.Count | Should Be 1
+    }
+
     It "Should create a Storage Account with the correct name" {
         $Result = Get-AzureStorageAccount -StorageAccountName $StorageAccountName
         $Result.StorageAccountName | Should Be $StorageAccountName

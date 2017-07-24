@@ -10,6 +10,10 @@ Describe "New-CloudService Tests" -Tag "Acceptance-ASM" {
         $Result.Count | Should Be 0
     }
 
+    It "Should not throw on subsequent runs" {
+        .\New-CloudService.ps1 -Location $Config.location -Name $CloudServiceName | Should not throw
+    }
+
     It "Should create a Cloud Service with the correct name" {
         $Result = Get-AzureService -ServiceName $CloudServiceName -ErrorAction SilentlyContinue
         $Result.ServiceName | Should Be $CloudServiceName

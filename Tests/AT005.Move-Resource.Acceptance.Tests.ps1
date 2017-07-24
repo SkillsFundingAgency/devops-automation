@@ -37,6 +37,14 @@ Describe "Move-Resource Tests" -Tag "Acceptance-ARM" {
         {Get-AzureRmResourceGroup -Name $ResourceGroupName -ErrorAction Stop} | Should Throw
     }
 
+    It "Should not throw on subsequent runs" {
+        $Resources = @(
+            "$($Config.classicStorageAccountName)$($Config.suffix)",
+            "$($Config.cloudServiceName)$($Config.suffix)"
+        )
+
+        .\Move-Resource.ps1 -ResourceName $Resources -DestinationResourceGroup $DestinationResourceGroup | Should not throw
+    }
 }
 
 Pop-Location

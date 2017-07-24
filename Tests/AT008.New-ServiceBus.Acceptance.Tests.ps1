@@ -17,6 +17,17 @@ Describe "New-ServiceBus Tests" -Tag "Acceptance-ARM" {
         $Result.Count | Should Be 1
     }
 
+    It "Should return one output on subsequent runs" {
+        $Params = @{
+            Location          = $Config.location
+            ResourceGroupName = $ResourceGroupName
+            NamespaceName     = $ServiceBusName
+            QueueName         = $Config.serviceBusQueueName
+        }
+        $Result = .\New-ServiceBus.ps1 @params
+        $Result.Count | Should Be 1
+    }    
+
     It "Should create a Service Bus in the correct location" {
         $Result = Get-AzureRmServiceBusNamespace -Name $ServiceBusName -ResourceGroup $ResourceGroupName
         $Result.Location | Should Be $Config.location

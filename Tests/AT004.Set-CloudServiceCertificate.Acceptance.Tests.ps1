@@ -17,6 +17,10 @@ Describe "Set-CloudServiceCertificate Tests" -Tag "Acceptance-ASM" {
         $Result.Count | Should Be 0
     }
 
+    It "Should not throw on subsequent runs" {        
+        .\Set-CloudServiceCertificate.ps1 -ServiceName $CloudServiceName -CertificatePath $CertPath -CertificatePassword $Config.certificatePassword | Should not throw        
+    }
+
     It "Applied thumbprint should exist on the cloud service" {
         $AppliedCert = Get-AzureCertificate -ServiceName $CloudServiceName -ErrorAction SilentlyContinue        
         $AppliedCert.Thumbprint | Should Be $Cert.Thumbprint
