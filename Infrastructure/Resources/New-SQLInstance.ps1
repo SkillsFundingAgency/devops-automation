@@ -60,7 +60,17 @@ Specifies the name of the service objective to assign to the database. The defau
 
 .EXAMPLE
 
-.EXAMPLE
+$SQLInstanceParameters = @ {
+    Location = "West Europe"
+    ResourceGroupName = "RG01"
+    KeyVaultName = "kv-01"
+    KeyVaultSecretName = "secret01"
+    ServerName = "sql-svr-01"
+    ServerAdminUserName = "sql-sa"
+    FirewallRuleConfiguration = ".\sql.firewall.rules.json"
+    Database = "db01"
+}
+.\New-SQLInstance.ps1 @SQLInstanceParameters
 
 #>
 
@@ -179,4 +189,3 @@ if ($Server -and !$GloballyResolvable) {
         # --- Configure additional settings on the database
     }
 }
-
