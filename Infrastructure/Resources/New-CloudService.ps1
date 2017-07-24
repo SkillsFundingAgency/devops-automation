@@ -31,7 +31,7 @@ Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
 # --- Create Cloud Service
 foreach ($Service in $Name) {
 
-	Write-Host "Checking for Cloud Service $Service"
+	Write-Verbose -Message "Checking for Cloud Service $Service"
 	# --- Check if storage account exists in our subscrption 		 
 	$CloudService = Get-AzureService -ServiceName $Service -ErrorAction SilentlyContinue
 
@@ -41,7 +41,7 @@ foreach ($Service in $Name) {
 	# --- If the Cloud Service doesn't exist, create it
 	if(!$CloudService -and !$CloudServiceAccountNameTest){		
 		try {
-			Write-Host "Creating Cloud Service $Service"
+			Write-Verbose -Message "Creating Cloud Service $Service"
 			$CloudService = New-AzureService -ServiceName $Service -Location $Location
 		} catch {
 			throw "Could not create Cloud Service $Service : $_"
@@ -49,6 +49,6 @@ foreach ($Service in $Name) {
 	}
 
 	if ($CloudService){
-		Write-Host "[Service Online: $Service]" -ForegroundColor Green
+		Write-Verbose -Message "[Service Online: $Service]" -ForegroundColor Green
 	}
 }

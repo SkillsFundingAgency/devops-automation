@@ -48,7 +48,7 @@ Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
 foreach ($Service in $ServiceName) {
 
     $CloudService = Get-AzureService -ServiceName $Service -ErrorAction SilentlyContinue
-    Write-Host "Found Cloud Service: $($CloudService.Label)"
+    Write-Verbose -Message "Found Cloud Service: $($CloudService.Label)"
 
     If ($CloudService) {    
         
@@ -58,14 +58,14 @@ foreach ($Service in $ServiceName) {
         $OldCert = Get-AzureCertificate -ServiceName $Service -Thumbprint $Certificate.Thumbprint -ThumbprintAlgorithm sha1 -ErrorAction SilentlyContinue
 
         if ($OldCert) {
-            Write-Host "Certificate already exists"
+            Write-Verbose -Message "Certificate already exists"
         }
         else {
-            Write-Host "Installing certificate"
+            Write-Verbose -Message "Installing certificate"
             $null = Add-AzureCertificate -ServiceName $Service -CertToDeploy $CertificatePath -Password $CertificatePassword
         }
     }
     else {
-        Write-Host "Cloud Service $Service not found"
+        Write-Verbose -Message "Cloud Service $Service not found"
     }
 }

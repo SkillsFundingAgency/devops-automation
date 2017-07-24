@@ -64,12 +64,12 @@ Param (
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
 
 # --- Check for an existing App Service Plan, create on if it doesn't exist
-Write-Host "Checking for existing App Service Plan: $AppServicePlanName"
+Write-Verbose -Message "Checking for existing App Service Plan: $AppServicePlanName"
 $ExistingAppServicePlan = Get-AzureRmAppServicePlan -ResourceGroupName $ResourceGroupName -Name $AppServicePlanName -ErrorAction SilentlyContinue
 
 If (!$ExistingAppServicePlan) {
 	try {
-		Write-Host "Creating $AppServicePlanName in $ResourceGroupName"
+		Write-Verbose -Message "Creating $AppServicePlanName in $ResourceGroupName"
 		$null = New-AzureRmAppServicePlan -Location $Location -Tier $AppServicePlanTier -Name $AppServicePlanName -ResourceGroupName $ResourceGroupName
 	} catch {
 		throw "Could not create app service plan $AppServicePlanName : $_"
@@ -77,7 +77,7 @@ If (!$ExistingAppServicePlan) {
 }
 
 # --- Check for an existing App Service, create on if it doesn't exist
-Write-Host "Checking for existing App Service: $AppServiceName"
+Write-Verbose -Message "Checking for existing App Service: $AppServiceName"
 $AppService = Get-AzureRmWebApp -ResourceGroupName $ResourceGroupName -Name $AppServiceName -ErrorAction SilentlyContinue
 
 # --- Check whether the dns name is globally resolvable, if it is then it probably exists in another tenant/subscription
@@ -90,7 +90,7 @@ If (!$AppService) {
 	}
 
 	try {
-		Write-Host "Creating App Service $AppServiceName in App Service Plan $AppServiceName"
+		Write-Verbose -Message "Creating App Service $AppServiceName in App Service Plan $AppServiceName"
 		$AppService = New-AzureRmWebApp -ResourceGroupName $ResourceGroupName -Name $AppServiceName -Location $Location -AppServicePlan $AppServicePlanName
 	} catch {
 		throw "Could not create App Service $AppService : $_"
@@ -105,7 +105,7 @@ if  ($AppService -and $AppServicePlanTier -ne "Free") {
 			$AppServiceProperties = @{alwaysOn = $true }
 		}
 
-		Write-Host "Setting properties on App Service $($AppServiceName):`n$($AppServiceProperties | ConvertTo-Json)"
+		Write-Verbose -Message "Setting properties on App Service $($AppServiceName):`n$($AppServiceProperties | ConvertTo-Json)"
 		$SetAzureResourceParameters = @{
 			ResourceGroup = $ResourceGroupName
 			PropertyObject = $AppServiceProperties
@@ -114,11 +114,9 @@ if  ($AppService -and $AppServicePlanTier -ne "Free") {
 			APIVersion = "2015-08-01"
 		}
 		$null = Set-AzureRmResource @SetAzureResourceParameters -Force -ErrorAction Stop
-		Write-Host "Restarting App Service $AppServiceName"
+		Write-Verbose -Message "Restarting App Service $AppServiceName"
 		$null = Restart-AzureRmWebApp -ResourceGroupName $ResourceGroupName -Name $AppServiceName
 	} catch {
 		throw "Could not set properties on $($AppServiceName): $($_.Exception.Message)"
 	}
 }
-
-Write-Host "[Service Online: $AppServiceName]" -ForegroundColor Green

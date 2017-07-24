@@ -30,7 +30,6 @@ Describe "Move-Resource Tests" -Tag "Acceptance-ARM" {
 
     It "Should remove the source Storage Account Resource group created" {
         $ResourceGroupName = "Default-Storage-$($Config.location.replace(' ',''))"
-        Write-Host $ResourceGroupName
         {Get-AzureRmResourceGroup -Name $ResourceGroupName -ErrorAction Stop} | Should Throw
     }
 
