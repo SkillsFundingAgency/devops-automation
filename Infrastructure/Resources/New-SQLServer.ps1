@@ -1,10 +1,10 @@
 <#
 
 .SYNOPSIS
-Create an Azure SQL Server and database
+Create an Azure SQL Server
 
 .DESCRIPTION
-Create an Azure SQL Server and database
+Create an Azure SQL Server
 
 .PARAMETER Location
 The location of the Resource Group. This is limited to West Europe and North Europe
@@ -69,7 +69,7 @@ Param (
     [Parameter(Mandatory = $false)]
     [ValidateNotNullOrEmpty()]
     [String]$ResourceGroupName = $ENV:ResourceGroup,
-    [Parameter(Mandatory = $false)]
+    [Parameter(Mandatory = $true)]
     [String]$KeyVaultName,
     [Parameter(Mandatory = $true)]
     [String]$KeyVaultSecretName,
@@ -77,7 +77,7 @@ Param (
     [String]$ServerName,
     [Parameter(Mandatory = $true)]
     [String]$ServerAdminUsername,
-    [Parameter(Mandatory = $false)]
+    [Parameter(Mandatory = $true)]
     [String]$FirewallRuleConfiguration,
     [Parameter(Mandatory = $true)]
     [String]$AuditingStorageAccountName,
@@ -90,7 +90,7 @@ Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
 # --- Check for an existing sql server in the subscription
-Write-Verbose -Message "Checking for exiting SQL Server $ServerName"
+Write-Verbose -Message "Checking for existing SQL Server $ServerName"
 $SQLServer = Find-AzureRmResource -ResourceNameEquals $ServerName
 
 # --- Check for an existing key vault
