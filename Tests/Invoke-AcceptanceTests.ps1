@@ -26,7 +26,7 @@ Param (
 $TestParameters = @{
     Tag          = "Acceptance-$Type"
     OutputFormat = 'NUnitXml'
-    OutputFile   = "TEST-Acceptance.xml"
+    OutputFile   = "TEST-Acceptance-$Type.xml"
     Script       = "$PSScriptRoot"
 }
 
