@@ -27,6 +27,7 @@ $TestParameters = @{
     Tag = "Acceptance-$Type"
     OutputFormat = 'NUnitXml'
     OutputFile = "TEST-Acceptance.xml"
+    Script = "$PSScriptRoot"
 }
 
 Invoke-Pester @TestParameters

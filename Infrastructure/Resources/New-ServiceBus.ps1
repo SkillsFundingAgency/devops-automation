@@ -25,7 +25,7 @@ One or more queues to create in the Service Bus Namespace
 .\New-ServiceBus.ps1 -Location "West Europe" -ResourceGroupName arm-rg-01 -ServiceBusNamespaceName svcbusns01
 
 .EXAMPLE
-.\New-ServiceBus.ps1 -Location "West Europe" -ResourceGroupName arm-rg-01 -ServiceBusNamespaceName svcbusns01 -QueueName q1,q2,q3
+.\New-ServiceBus.ps1 -Location "West Europe" -ResourceGroupName arm-rg-01 -NamespaceName svcbusns01 -QueueName q1,q2,q3
 
 #>
 
@@ -60,7 +60,7 @@ if (!$ServiceBus) {
 			throw "The Service Bus Namespace $NamespaceName is globaly resolvable. It's possible that this name has already been taken."
 		}		
 		Write-Host "Creating Service Bus Namespace: $NamespaceName"
-		$null = New-AzureRmServiceBusNamespace -name $NamespaceName -Location $Location -ResourceGroupName $ResourceGroupName -SkuName $Sku -ErrorAction Stop
+		$ServiceBus = New-AzureRmServiceBusNamespace -name $NamespaceName -Location $Location -ResourceGroupName $ResourceGroupName -SkuName $Sku -ErrorAction Stop
 	} catch {
 		throw "Could not create Service Bus $($NamespaceName): $_"
 	}
