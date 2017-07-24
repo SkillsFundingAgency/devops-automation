@@ -19,7 +19,27 @@ The name of the Azure SQL Server
 The username of the SA account for the SQL Server
 
 .PARAMETER FirewallRuleConfiguration
-THe path to the firewall rule config
+THe path to the firewall rule JSON configuration document
+
+Configuration is an array of objects and should be represented as follows:
+
+[
+    {
+        "Name": "AllowAllWindowsAzureIps",
+        "StartIPAddress": "0.0.0.0",
+        "EndIpAddress": "0.0.0.0"
+    },
+    {
+        "Name": "Rule1",
+        "StartIPAddress": "xxx.xxx.xxx.xxx",
+        "EndIpAddress": "xxx.xxx.xxx.xxx"
+    },
+    {
+        "Name": "Rule2",
+        "StartIPAddress": "xxx.xxx.xxx.xxx",
+        "EndIpAddress": "xxx.xxx.xxx.xxx"
+    }
+]
 
 .PARAMETER DatabaseName
 One or more database names to create on the given server
