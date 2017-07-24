@@ -18,6 +18,9 @@ The name of the Azure SQL Server
 .PARAMETER ServerAdminUsername
 The username of the SA account for the SQL Server
 
+.PARAMETER FirewallRuleConfiguration
+THe path to the firewall rule config
+
 .PARAMETER DatabaseName
 One or more database names to create on the given server
 
@@ -55,14 +58,16 @@ Param (
     [Parameter(Mandatory = $true)]    
     [String]$ServerName,
     [Parameter(Mandatory = $true)]
-    [String]$ServerAdminUsername,    
+    [String]$ServerAdminUsername,
+    [Parameter(Mandatory = $false)]
+    [String]$FirewallRuleConfiguration,   
     [Parameter(Mandatory = $true)]
     [String[]]$DatabaseName,
     [Parameter(Mandatory = $false)]
     [ValidateSet("Default","None","Premium","Basic","Standard","DataWarehouse","Free")]
     [String]$DatabaseEdition = "Standard",
     [Parameter(Mandatory = $false)]
-    [String]$DatabaseServiceObjective = "S0"  
+    [String]$DatabaseServiceObjective = "S0"
 )
 
 # --- Import helper modules
@@ -113,10 +118,18 @@ if (!$SQLServer){
 
 # --- Create or update firewall rules on the SQL Server instance
 if ($SQLServer) {
-    Write-Verbose -Message "Creating firewall rules"
-    Set-SqlServerFirewallRule -FirewallRuleName "AllowAllWindowsAzureIps" -StartIpAddress "0.0.0.0" -EndIpAddress "0.0.0.0" -ServerName $ServerName -ResourceGroupName $ResourceGroupName
-    Set-SqlServerFirewallRule -FirewallRuleName "SFA WAN" -StartIpAddress "193.240.137.228" -EndIpAddress "193.240.137.228" -ServerName $ServerName -ResourceGroupName $ResourceGroupName
-    Set-SqlServerFirewallRule -FirewallRuleName "SFA Purple" -StartIpAddress "62.253.71.89" -EndIpAddress "62.253.71.89" -ServerName $ServerName -ResourceGroupName $ResourceGroupName
+    $Config = Get-Content -Path (Resolve-Path -Path $FirewallRuleConfiguration).Path -Raw | ConvertFrom-Json
+    foreach ($Rule in $Config) {
+
+        $FirewallRuleParameters = @{
+            ResourceGroupName = $ResourceGroupName
+            ServerName = $ServerName
+            FirewallRuleName = $Rule.Name
+            StartIpAddress = $Rule.StartIpAddress
+            EndIPAddress = $Rule.EndIPAddress
+        }
+        Set-SqlServerFirewallRule @FirewallRuleParameters -Verbose:$VerbosePreference
+    }
 }
 
 # --- If the SQL Server exists in the subscription create databases
@@ -127,7 +140,7 @@ if ($Server -and !$GloballyResolvable) {
 
         # --- If the database doesn't exist, create one
         if (!$SQLDatabase) {
-            Write-Verbose -Message "Attempting to create Database $DatabaseName"
+            Write-Verbose -Message "Attempting to create Database $Database"
             try {
                 $SQLDatabaseParameters = @{
                     ResourceGroupName = $ResourceGroupName
