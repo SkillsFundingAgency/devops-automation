@@ -8,7 +8,10 @@
     "appServiceName": "devops-at-as",
     "appServicePlanName": "devops-at-asp",
     "serviceBusNamespaceName": "devops-at-sb",
-    "serviceBusQueueName": ["q1"],
-    "certificatePath": "$(System.DefaultWorkingDirectory)\\testcert.pfx",
-    "certificatePassword": "password"
+    "serviceBusQueueName": [
+        "q1"
+    ],
+    "certificateName": "testcert.pfx",
+    "certificatePassword": "password",
+    "suffix": "812d5be5"
 }

@@ -3,35 +3,43 @@ Push-Location -Path $PSScriptRoot\..\Infrastructure\Resources\
 
 Describe "New-AppService Tests" -Tag "Acceptance-ARM" {
 
+    $ResourceGroupName = "$($Config.resourceGroupName)$($Config.suffix)"
+    $AppServicePlanName = "$($Config.appServicePlanName)$($Config.suffix)"
+    $AppServiceName = "$($Config.appServiceName)$($Config.suffix)"
+
     It "Should create an App service and return no outputs" {
         $Params = @{
-            Location = $Config.location
-            ResourceGroupName = $Config.resourceGroupName
-            AppServicePlanName = $Config.appServicePlanName
-            AppServiceName = $Config.appServiceName
+            Location           = $Config.location
+            ResourceGroupName  = $ResourceGroupName
+            AppServicePlanName = $AppServicePlanName
+            AppServiceName     = $AppServiceName
         }
         $Result = .\New-AppService.ps1 @params
         $Result.Count | Should Be 0
     }
 
     It "Should create an App service in the correct location" {
-        $Result = Get-AzureRmWebApp -ResourceGroupName $Config.resourceGroupName -Name $Config.appServiceName
+        $Result = Get-AzureRmWebApp -ResourceGroupName $ResourceGroupName -Name $AppServiceName
         $Result.Location | Should Be $Config.location
     }
 
     It "Should create an App service with the correct name" {
-        $Result = Get-AzureRmWebApp -ResourceGroupName $Config.resourceGroupName -Name $Config.appServiceName
-        $Result.Name | Should Be $Config.appServiceName
+        $Result = Get-AzureRmWebApp -ResourceGroupName $ResourceGroupName -Name $AppServiceName
+        $Result.Name | Should Be $AppServiceName
     }
 
+    # It "Should create an App service with the correct properties" {
+        
+    # }
+
     It "Should create an App service plan with the correct location" {
-        $Result = Get-AzureRmAppServicePlan -ResourceGroupName $Config.resourceGroupName -Name $Config.appServicePlanName
+        $Result = Get-AzureRmAppServicePlan -ResourceGroupName $ResourceGroupName -Name $AppServicePlanName
         $Result.Location | Should Be $Config.location
     }
 
     It "Should create an App service plan with the correct name" {
-        $Result = Get-AzureRmAppServicePlan -ResourceGroupName $Config.resourceGroupName -Name $Config.appServicePlanName
-        $Result.Name | Should Be $Config.appServicePlanName
+        $Result = Get-AzureRmAppServicePlan -ResourceGroupName $ResourceGroupName -Name $AppServicePlanName
+        $Result.Name | Should Be $AppServicePlanName
     }
 
 }
