@@ -8,10 +8,10 @@ Describe "New-ServiceBus Tests" -Tag "Acceptance-ARM" {
 
     It "Should create a Service Bus and return one output" {
         $Params = @{
-            Location = $Config.location
+            Location          = $Config.location
             ResourceGroupName = $ResourceGroupName
-            NamespaceName = $ServiceBusName
-            QueueName = $Config.serviceBusQueueName
+            NamespaceName     = $ServiceBusName
+            QueueName         = $Config.serviceBusQueueName
         }
         $Result = .\New-ServiceBus.ps1 @params
         $Result.Count | Should Be 1
@@ -23,7 +23,7 @@ Describe "New-ServiceBus Tests" -Tag "Acceptance-ARM" {
     }
 
     It "Should create specified Service Bus queues" {
-        foreach($Queue in $Config.serviceBusQueueName){
+        foreach ($Queue in $Config.serviceBusQueueName) {
             $Queue.Trim()
             $ExistingQueue = Get-AzureRmServiceBusQueue -ResourceGroup $ResourceGroupName -NamespaceName $ServiceBusName -QueueName $Queue
             $ExistingQueue.Name | Should Be $Queue

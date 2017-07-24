@@ -12,7 +12,7 @@ Describe "New-ApplicationInsights Tests" -Tag "Acceptance-ARM" {
         $Result.Contains("InstrumentationKey") | Should Be $true
         $Result = $Result.Replace("##vso[task.setvariable variable=InstrumentationKey;]", "")
         $ValidGuid = [System.Guid]::NewGuid()
-        $Success = [System.Guid]::TryParse($Result,[ref]$ValidGuid);
+        $Success = [System.Guid]::TryParse($Result, [ref]$ValidGuid);
         $Success | Should Be $true
     }
 }

@@ -18,12 +18,12 @@ Describe "Move-Resource Tests" -Tag "Acceptance-ARM" {
         $ResourcesFound = 0
         $CloudServiceResourceGroup = (Find-AzureRmResource -ResourceNameEquals $CloudServiceName).ResourceGroupName
         if ($CloudServiceResourceGroup -eq $DestinationResourceGroup) {
-            $ResourcesFound = $ResourcesFound+1
+            $ResourcesFound = $ResourcesFound + 1
         }
 
         $StorageAccountResourceGroup = (Find-AzureRmResource -ResourceNameEquals $StorageAccountName).ResourceGroupName
-        if ($StorageAccountResourceGroup -eq $DestinationResourceGroup){
-            $ResourcesFound = $ResourcesFound+1
+        if ($StorageAccountResourceGroup -eq $DestinationResourceGroup) {
+            $ResourcesFound = $ResourcesFound + 1
         }
         $ResourcesFound | Should Be 2
     }
