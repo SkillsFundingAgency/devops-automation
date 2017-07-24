@@ -20,9 +20,9 @@ The names of one or more Cloud Services to create
 Param(
 	[Parameter(Mandatory = $false)]
 	[ValidateSet("West Europe", "North Europe")]
-    [String]$Location = $ENV:Location,	
-    [Parameter(Mandatory = $true)]
-    [String[]]$Name
+	[String]$Location = $ENV:Location,
+	[Parameter(Mandatory = $true)]
+	[String[]]$Name
 )
 
 # --- Import Azure Helpers
@@ -32,23 +32,19 @@ Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
 foreach ($Service in $Name) {
 
 	Write-Verbose -Message "Checking for Cloud Service $Service"
-	# --- Check if storage account exists in our subscrption 		 
+	# --- Check if storage account exists in our subscription
 	$CloudService = Get-AzureService -ServiceName $Service -ErrorAction SilentlyContinue
 
 	# --- Check if the resource name has been taken elsewhere
 	$CloudServiceAccountNameTest = Test-AzureName -Service $Service	
 
 	# --- If the Cloud Service doesn't exist, create it
-	if(!$CloudService -and !$CloudServiceAccountNameTest){		
+	if(!$CloudService -and !$CloudServiceAccountNameTest){
 		try {
 			Write-Verbose -Message "Creating Cloud Service $Service"
 			$CloudService = New-AzureService -ServiceName $Service -Location $Location
 		} catch {
 			throw "Could not create Cloud Service $Service : $_"
 		}
-	}
-
-	if ($CloudService){
-		Write-Verbose -Message "[Service Online: $Service]" -ForegroundColor Green
 	}
 }
