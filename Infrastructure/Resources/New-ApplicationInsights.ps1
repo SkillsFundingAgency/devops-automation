@@ -34,13 +34,13 @@ Param (
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
 
 try {
-	Write-Host "Checking for existing Application Insights: $Name"         
+	Write-Verbose -Message "Checking for existing Application Insights: $Name"         
     $ApplicationInsights = Get-AzureRmResource -ResourceGroupName $ResourceGroupName -ResourceName $Name -ResourceType "Microsoft.Insights/components"
 } 
 catch {}
 
 if (!$ApplicationInsights) {
-    Write-Host "Creating Application Insights $Name"
+    Write-Verbose -Message "Creating Application Insights $Name"
 	$ApplicationInsightsParameters = @{
 		Location = $Location
 		ResourceGroupName = $ResourceGroupName
@@ -51,5 +51,4 @@ if (!$ApplicationInsights) {
     $ApplicationInsights = New-AzureRmResource @ApplicationInsightsParameters -Force
 }
 
-Write-Host "[Service Online: $Name]" -ForegroundColor Green
 Write-Output ("##vso[task.setvariable variable=InstrumentationKey;]$($ApplicationInsights.Properties.InstrumentationKey)")

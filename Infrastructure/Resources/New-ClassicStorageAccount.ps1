@@ -36,7 +36,7 @@ Param(
 # --- Import Azure Helpers
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
 
-Write-Host "Checking for existing Storage Account"
+Write-Verbose -Message "Checking for existing Storage Account"
 # --- Check if storage account exists in our subscrption 
 $StorageAccount = Get-AzureStorageAccount -StorageAccountName $Name -ErrorAction SilentlyContinue
  
@@ -46,7 +46,7 @@ $StorageAccountNameTest = Test-AzureName -Storage $Name
 # --- If the Storage Account doesn't exist, create it
 if (!$StorageAccount -and !$StorageAccountNameTest) {
 	try {
-		Write-Host "Creating Storage Account $Name"
+		Write-Verbose -Message "Creating Storage Account $Name"
 		$StorageAccount = New-AzureStorageAccount -Location $Location -StorageAccountName $Name
 	} catch {
 		throw "Could not create Storage Account $Name"
@@ -61,7 +61,7 @@ if ($ContainerName -and $StorageAccount) {
 		$ContainerExists = Get-AzureStorageContainer -Name $Container -ErrorAction SilentlyContinue
 		if (!$ContainerExists) {
 			try {
-				Write-Host "Creating container $Container"
+				Write-Verbose -Message "Creating container $Container"
 				$null = New-AzureStorageContainer -Name $Container -Permission Off 
 			} catch {
 				throw "Could not create container $Container : $_"
@@ -70,9 +70,8 @@ if ($ContainerName -and $StorageAccount) {
 	}
 }
 
-# --- If the storage accout exists in this subscription get the key and set the env variable
+# --- If the storage account exists in this subscription get the key and set the env variable
 if ($StorageAccount){
-	Write-Host "[Service Online: $Name]" -ForegroundColor Green
 	$Key = (Get-AzureStorageKey -StorageAccountName $Name).Primary	
 	$ConnectionString = "DefaultEndpointsProtocol=https;AccountName=$($Name);AccountKey=$($Key)"
 	Write-Output ("##vso[task.setvariable variable=StorageConnectionString;]$($ConnectionString)")

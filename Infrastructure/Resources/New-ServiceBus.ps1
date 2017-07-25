@@ -25,7 +25,7 @@ One or more queues to create in the Service Bus Namespace
 .\New-ServiceBus.ps1 -Location "West Europe" -ResourceGroupName arm-rg-01 -ServiceBusNamespaceName svcbusns01
 
 .EXAMPLE
-.\New-ServiceBus.ps1 -Location "West Europe" -ResourceGroupName arm-rg-01 -ServiceBusNamespaceName svcbusns01 -QueueName q1,q2,q3
+.\New-ServiceBus.ps1 -Location "West Europe" -ResourceGroupName arm-rg-01 -NamespaceName svcbusns01 -QueueName q1,q2,q3
 
 #>
 
@@ -48,7 +48,7 @@ Param (
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
 
 # --- Check for existing namespace, if it doesn't exist create it
-Write-Host "Checking for existing Service Bus Namespace: $NamespaceName"			 
+Write-Verbose -Message "Checking for existing Service Bus Namespace: $NamespaceName"			 
 $ServiceBus = Get-AzureRmServiceBusNamespace  -Name $NamespaceName -ResourceGroup $ResourceGroupName -ErrorAction SilentlyContinue
 
 $GloballyResolvable = Resolve-AzureRMResource -PublicResourceFqdn "$($NamespaceName.ToLower()).servicebus.windows.net"
@@ -57,10 +57,10 @@ if (!$ServiceBus) {
 	try {
 		# --- If the Service Bus Namespace doesn't exist in the Resource Group but is globally resolvable, throw an error
 		if ($GloballyResolvable){
-			throw "The Service Bus Namespace $NamespaceName is globaly resolvable. It's possible that this name has already been taken."
+			throw "The Service Bus Namespace $NamespaceName is globally resolvable. It's possible that this name has already been taken."
 		}		
-		Write-Host "Creating Service Bus Namespace: $NamespaceName"
-		$null = New-AzureRmServiceBusNamespace -name $NamespaceName -Location $Location -ResourceGroupName $ResourceGroupName -SkuName $Sku -ErrorAction Stop
+		Write-Verbose -Message "Creating Service Bus Namespace: $NamespaceName"
+		$ServiceBus = New-AzureRmServiceBusNamespace -name $NamespaceName -Location $Location -ResourceGroupName $ResourceGroupName -SkuName $Sku -ErrorAction Stop
 	} catch {
 		throw "Could not create Service Bus $($NamespaceName): $_"
 	}
@@ -72,7 +72,7 @@ if ($PSBoundParameters.ContainsKey("QueueName") -and $ServiceBus) {
 		$ExistingQueue = Get-AzureRmServiceBusQueue -ResourceGroup $ResourceGroupName -NamespaceName $NamespaceName -QueueName $Queue -ErrorAction SilentlyContinue
 		if (!$ExistingQueue) {
 			try{
-				Write-Host "Creating Queue: $Queue"
+				Write-Verbose -Message "Creating Queue: $Queue"
             	$null = New-AzureRmServiceBusQueue -ResourceGroup $ResourceGroupName -NamespaceName $NamespaceName -QueueName $Queue -EnablePartitioning $true
 			}catch{
 				throw "Could not create Service Bus Queue $($Queue): $_"
@@ -80,8 +80,6 @@ if ($PSBoundParameters.ContainsKey("QueueName") -and $ServiceBus) {
 		}
 	}
 }
-
-Write-Host "[Service Online: $NamespaceName]" -ForegroundColor Green
 
 $Keys = Get-AzureRmServiceBusNamespaceKey -Name $NamespaceName -ResourceGroup $ResourceGroupName -AuthorizationRuleName RootManageSharedAccessKey
 Write-Output ("##vso[task.setvariable variable=ServiceBusEndpoint;]$($Keys.PrimaryConnectionString)")

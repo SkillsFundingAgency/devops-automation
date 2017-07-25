@@ -18,15 +18,16 @@ Invoke-AcceptanceTests.ps1 -Type ARM
 #>
 [CmdletBinding()]
 Param (
-    [Parameter(Mandatory=$true)]
-    [ValidateSet("ARM","ASM")]
+    [Parameter(Mandatory = $true)]
+    [ValidateSet("ARM", "ASM")]
     [String]$Type
 )
 
 $TestParameters = @{
-    Tag = "Acceptance-$Type"
+    Tag          = "Acceptance-$Type"
     OutputFormat = 'NUnitXml'
-    OutputFile = "TEST-Acceptance.xml"
+    OutputFile   = "$PSScriptRoot\TEST-Acceptance-$Type.xml"
+    Script       = "$PSScriptRoot"
 }
 
 Invoke-Pester @TestParameters
