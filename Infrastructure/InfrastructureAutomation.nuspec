@@ -3,7 +3,7 @@
     <metadata>
         <id>ESFA.InfrastructureAutomation</id>
         <version>$version$</version>
-        <description>Catalogue of Powershell scripts to automate the deployment of cloud infrastructure</description>
+        <description>Catalogue of PowerShell scripts to automate the deployment of cloud infrastructure</description>
         <authors>ESFADevops</authors>
         <projectUrl>https://github.com/SkillsFundingAgency/devops-automation</projectUrl>
     </metadata>
