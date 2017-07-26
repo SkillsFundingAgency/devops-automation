@@ -19,10 +19,19 @@ When writing a script or a helper function keep in mind that it:
 * Should contain functions that follow the Verb-Noun and PascalCasing conventions (For a list of acceptable verbs use **Get-Verb**)
 * Should contain descriptive inline comments
 * Should avoid using aliases for built-in functions
-* Should not generate any errors from PSScriptAnalyzers
+* Should not generate any errors from PSScriptAnalyzers **
 
-## Script documentation
-Scripts should contain comment based help that is compatible with **Get-Help**.
+** In the case that exceptions must be made, you should use the SuppressMessageAttribute() decorator and add a .NOTES section to the help with justification.
+
+Example
+```
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "")]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+```
+For more information, see the [PSScriptAnalyzer readme](https://github.com/PowerShell/PSScriptAnalyzer#suppressing-rules).
+
+## Documentation
+Scripts and functions should contain comment based help that is compatible with **Get-Help**.
 
 The help should consist of the following elements:
 * Synopsis
