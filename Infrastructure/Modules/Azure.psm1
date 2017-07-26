@@ -130,21 +130,24 @@ Function Set-SQLServerFirewallRule {
         # --- Does the firewall rule exist on the server?
         $FirewallRule = Get-AzureRmSqlServerFirewallRule -FirewallRuleName $FirewallRuleName -ServerName $ServerName -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue
 
-        # --- If the firewall doesn't exist, create it. If it does, update it
-        $FirewallRuleParameters = @{
-            ResourceGroupName = $ResourceGroupName
-            ServerName = $ServerName
-            FirewallRuleName = $FirewallRuleName
-            StartIpAddress = $StartIpAddress
-            EndIpAddress = $EndIpAddress
-        }
+        if ($PSCmdlet.ShouldProcess($FirewallRuleName)) {
 
-        if (!$FirewallRule) {
-            Write-Verbose -Message "Creating firewall rule $FireWallRuleName"
-            $null = New-AzureRmSqlServerFirewallRule @FirewallRuleParameters -ErrorAction Stop
-        } else {
-            Write-Verbose -Message "Updating firewall rule $FirewallRuleName"
-            $null = Set-AzureRmSqlServerFirewallRule @FirewallRuleParameters -ErrorAction Stop
+            # --- If the firewall doesn't exist, create it. If it does, update it
+            $FirewallRuleParameters = @{
+                ResourceGroupName = $ResourceGroupName
+                ServerName = $ServerName
+                FirewallRuleName = $FirewallRuleName
+                StartIpAddress = $StartIpAddress
+                EndIpAddress = $EndIpAddress
+            }
+
+            if (!$FirewallRule) {
+                Write-Verbose -Message "Creating firewall rule $FireWallRuleName"
+                $null = New-AzureRmSqlServerFirewallRule @FirewallRuleParameters -ErrorAction Stop
+            } else {
+                Write-Verbose -Message "Updating firewall rule $FirewallRuleName"
+                $null = Set-AzureRmSqlServerFirewallRule @FirewallRuleParameters -ErrorAction Stop
+            }
         }
     }catch {
         throw "Could not set SQL server firewall rule $FirewallRuleName on $($ServerName): $_"
