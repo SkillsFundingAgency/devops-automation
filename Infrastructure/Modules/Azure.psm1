@@ -1,4 +1,25 @@
 ﻿function Wait-AzureRmResource {
+    <#
+
+        .SYNOPSIS
+        Wait for an azure resource to appear in a resource group or become visible to resource manager
+
+        .DESCRIPTION
+        Wait for an azure resource to appear in a resource group or become visible to resource manager
+
+        .PARAMETER ResourceGroupName
+        The name of the resource group
+
+        .PARAMETER ResourceName
+        The name of the resource
+
+        .PARAMETER TimeOut
+        NOT IMPLEMENTED
+
+        .EXAMPLE
+        Resolve-AzureRMResource -PublicResourceFQDN resource1.azurewebsites.net
+
+    #>    
     [CmdletBinding(DefaultParameterSetName="Standard")]
     Param (
         [Parameter(Mandatory=$true, ParameterSetName="ResourceGroup")]
@@ -36,8 +57,18 @@
 
 function Resolve-AzureRmResource {
     <#
+
+        .SYNOPSIS
+        Use Resolve-DnsName to determine whether a resource name has been taken by another tenant/subscription
+
         .DESCRIPTION
         Use Resolve-DnsName to determine whether a resource name has been taken by another tenant/subscription
+
+        .PARAMETER PublicResourceFqdn
+        The fqdn of the resource to resolve
+
+        .EXAMPLE
+        Resolve-AzureRMResource -PublicResourceFQDN resource1.azurewebsites.net
 
     #>
     Param (
@@ -80,6 +111,7 @@ Function Set-SQLServerFirewallRule {
     Set-AzureSqlServerFirewallRule -FirewallRuleName "Rule1" -StartIpAddress "xxx.xxx.xxx.xxx" -EndIpAddress "xxx.xxx.xxx.xxx" -ServerName $ServerName -ResourceGroupName $ResourceGroupName
 
     #>
+    [CmdletBinding(SupportsShouldProcess,ConfirmImpact="High")]
     Param (
         [Parameter(Mandatory=$true)]
         [String]$ResourceGroupName, 
@@ -98,21 +130,24 @@ Function Set-SQLServerFirewallRule {
         # --- Does the firewall rule exist on the server?
         $FirewallRule = Get-AzureRmSqlServerFirewallRule -FirewallRuleName $FirewallRuleName -ServerName $ServerName -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue
 
-        # --- If the firewall doesn't exist, create it. If it does, update it
-        $FirewallRuleParameters = @{
-            ResourceGroupName = $ResourceGroupName
-            ServerName = $ServerName
-            FirewallRuleName = $FirewallRuleName
-            StartIpAddress = $StartIpAddress
-            EndIpAddress = $EndIpAddress
-        }
+        if ($PSCmdlet.ShouldProcess($FirewallRuleName)) {
 
-        if (!$FirewallRule) {
-            Write-Verbose -Message "Creating firewall rule $FireWallRuleName"
-            $null = New-AzureRmSqlServerFirewallRule @FirewallRuleParameters -ErrorAction Stop
-        } else {
-            Write-Verbose -Message "Updating firewall rule $FirewallRuleName"
-            $null = Set-AzureRmSqlServerFirewallRule @FirewallRuleParameters -ErrorAction Stop
+            # --- If the firewall doesn't exist, create it. If it does, update it
+            $FirewallRuleParameters = @{
+                ResourceGroupName = $ResourceGroupName
+                ServerName = $ServerName
+                FirewallRuleName = $FirewallRuleName
+                StartIpAddress = $StartIpAddress
+                EndIpAddress = $EndIpAddress
+            }
+
+            if (!$FirewallRule) {
+                Write-Verbose -Message "Creating firewall rule $FireWallRuleName"
+                $null = New-AzureRmSqlServerFirewallRule @FirewallRuleParameters -ErrorAction Stop
+            } else {
+                Write-Verbose -Message "Updating firewall rule $FirewallRuleName"
+                $null = Set-AzureRmSqlServerFirewallRule @FirewallRuleParameters -ErrorAction Stop
+            }
         }
     }catch {
         throw "Could not set SQL server firewall rule $FirewallRuleName on $($ServerName): $_"
