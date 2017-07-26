@@ -19,7 +19,15 @@ function New-Password {
     .EXAMPLE
     New-Password -Length 20 -NumberOfNonAlphaNumericCharacters 2
 
+    .NOTES
+
+    Suppressed Script Analyzer rules:
+        - PSAvoidUsingConvertToSecureStringWithPlainText - This method is used as the property is passed as a parameter to another function
+        - PSUseShouldProcessForStateChangingFunctions - The function does not alter the state of an object
+
     #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]  
     Param(
         [Parameter(Mandatory=$false)]
         [Int]$Length = 15,
