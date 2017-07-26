@@ -12,6 +12,12 @@ The location of the Resource Group. This is limited to West Europe and North Eur
 .PARAMETER ResourceGroupName
 The name of the destination Resource Group for the resource
 
+.PARAMETER KeyVaultName
+The name of the key vault where credentials are stored
+
+.PARAMETER KeyVaultSecretName
+The name of the key vault secret to retrieve or create
+
 .PARAMETER ServerName
 The name of the Azure SQL Server
 
@@ -182,5 +188,5 @@ if ($SQLServer) {
 
 # --- Retrieve password from vault and set outputs
 $SQLServerAdminPasswordAsText = (Get-AzureKeyVaultSecret -VaultName $KeyVaultName -Name $KeyVaultSecretName).SecretValueText
-Write-Output ("##vso[task.setvariable variable=SQLServerFQDN; ]$($Name).database.windows.net")
+Write-Output ("##vso[task.setvariable variable=SQLServerFQDN;]$($Name).database.windows.net")
 Write-Output ("##vso[task.setvariable variable=SQLServerAdminPassword; issecret=true;]$SQLServerAdminPasswordAsText")
