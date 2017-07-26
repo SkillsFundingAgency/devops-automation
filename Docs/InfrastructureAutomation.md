@@ -30,8 +30,8 @@ Example
 ```
 For more information, see the [PSScriptAnalyzer readme](https://github.com/PowerShell/PSScriptAnalyzer#suppressing-rules).
 
-## Script documentation
-Scripts should contain comment based help that is compatible with **Get-Help**.
+## Documentation
+Scripts and functions should contain comment based help that is compatible with **Get-Help**.
 
 The help should consist of the following elements:
 * Synopsis
