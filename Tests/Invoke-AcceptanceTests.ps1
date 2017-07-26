@@ -28,6 +28,11 @@ $TestParameters = @{
     OutputFormat = 'NUnitXml'
     OutputFile   = "$PSScriptRoot\TEST-Acceptance-$Type.xml"
     Script       = "$PSScriptRoot"
+    PassThru     = $True
 }
 
-Invoke-Pester @TestParameters
+$result = Invoke-Pester @TestParameters
+
+if ($result.failedCount -ne 0) { 
+    Write-Error "Pester returned errors"
+}
