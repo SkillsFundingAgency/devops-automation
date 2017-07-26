@@ -1,4 +1,25 @@
 ﻿function Wait-AzureRmResource {
+    <#
+
+        .SYNOPSIS
+        Wait for an azure resource to appear in a resource group or become visible to resource manager
+
+        .DESCRIPTION
+        Wait for an azure resource to appear in a resource group or become visible to resource manager
+
+        .PARAMETER ResourceGroupName
+        The name of the resource group
+
+        .PARAMETER ResourceName
+        The name of the resource
+
+        .PARAMETER TimeOut
+        NOT IMPLEMENTED
+
+        .EXAMPLE
+        Resolve-AzureRMResource -PublicResourceFQDN resource1.azurewebsites.net
+
+    #>    
     [CmdletBinding(DefaultParameterSetName="Standard")]
     Param (
         [Parameter(Mandatory=$true, ParameterSetName="ResourceGroup")]
@@ -36,8 +57,18 @@
 
 function Resolve-AzureRmResource {
     <#
+
+        .SYNOPSIS
+        Use Resolve-DnsName to determine whether a resource name has been taken by another tenant/subscription
+
         .DESCRIPTION
         Use Resolve-DnsName to determine whether a resource name has been taken by another tenant/subscription
+
+        .PARAMETER PublicResourceFqdn
+        The fqdn of the resource to resolve
+
+        .EXAMPLE
+        Resolve-AzureRMResource -PublicResourceFQDN resource1.azurewebsites.net
 
     #>
     Param (
@@ -80,6 +111,7 @@ Function Set-SQLServerFirewallRule {
     Set-AzureSqlServerFirewallRule -FirewallRuleName "Rule1" -StartIpAddress "xxx.xxx.xxx.xxx" -EndIpAddress "xxx.xxx.xxx.xxx" -ServerName $ServerName -ResourceGroupName $ResourceGroupName
 
     #>
+    [CmdletBinding(SupportsShouldProcess,ConfirmImpact="High")]
     Param (
         [Parameter(Mandatory=$true)]
         [String]$ResourceGroupName, 
