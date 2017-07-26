@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>ESFA.InfrastructureAutomation</id>
+        <version>$version$</version>
+        <description>Catalogue of Powershell scripts to automate the deployment of cloud infrastructure</description>
+        <authors>ESFADevops</authors>
+        <projectUrl>https://github.com/SkillsFundingAgency/devops-automation</projectUrl>
+    </metadata>
+    <files>
+        <file src="..\Infrastructure\Modules\*" target="Infrastructure\Modules" />
+        <file src="..\Infrastructure\Resources\*" target="Infrastructure\Resources" />
+    </files>
+</package>
