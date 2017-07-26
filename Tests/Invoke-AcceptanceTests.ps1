@@ -31,8 +31,8 @@ $TestParameters = @{
     PassThru     = $True
 }
 
-$result = Invoke-Pester @TestParameters
+$Result = Invoke-Pester @TestParameters
 
-if ($result.failedCount -ne 0) { 
-    Write-Error "Pester returned errors"
+if ($Result.FailedCount -ne 0) { 
+    Write-Error "Pester returned $($result.FailedCount) errors"
 }
