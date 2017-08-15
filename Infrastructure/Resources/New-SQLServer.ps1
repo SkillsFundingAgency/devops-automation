@@ -188,5 +188,5 @@ if ($SQLServer) {
 
 # --- Retrieve password from vault and set outputs
 $SQLServerAdminPasswordAsText = (Get-AzureKeyVaultSecret -VaultName $KeyVaultName -Name $KeyVaultSecretName).SecretValueText
-Write-Output ("##vso[task.setvariable variable=SQLServerFQDN;]$($Name).database.windows.net")
+Write-Output ("##vso[task.setvariable variable=SQLServerFQDN;]$($ServerName).database.windows.net")
 Write-Output ("##vso[task.setvariable variable=SQLServerAdminPassword; issecret=true;]$SQLServerAdminPasswordAsText")
