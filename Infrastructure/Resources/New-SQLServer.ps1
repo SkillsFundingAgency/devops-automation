@@ -149,7 +149,7 @@ if ($SQLServer) {
             StartIpAddress = $Rule.StartIpAddress
             EndIPAddress = $Rule.EndIPAddress
         }
-        Set-SqlServerFirewallRule @FirewallRuleParameters -Verbose:$VerbosePreference
+        Set-SqlServerFirewallRule @FirewallRuleParameters -Verbose:$VerbosePreference -Force
     }
 
     # --- If the rule exists in Azure but not in the config it should be removed
