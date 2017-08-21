@@ -99,6 +99,9 @@ Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 Write-Verbose -Message "Checking for existing SQL Server $ServerName"
 $SQLServer = Find-AzureRmResource -ResourceNameEquals $ServerName
 
+# --- Ensure KeyVaultSecretName is lower case
+$KeyVaultSecretName = $KeyVaultSecretName.ToLower()
+
 # --- Check for an existing key vault
 Write-Verbose -Message "Checking for existing entry for $KeyVaultSecretName in Key Vault $KetVaultName"
 $ServerAdminPassword = (Get-AzureKeyVaultSecret -VaultName $KeyVaultName -Name $KeyVaultSecretName).SecretValue
@@ -137,6 +140,11 @@ if (!$SQLServer){
 }
 
 if ($SQLServer) {
+
+    # --- If the server exists and there is no associated secret, throw an error
+    if (!$ServerAdminPassword) {
+        throw "A secret entry for $KeyVaultSecretName does not exist in the Key Vault"
+    }
 
     # --- Create or update firewall rules on the SQL Server instance
     $Config = Get-Content -Path (Resolve-Path -Path $FirewallRuleConfiguration).Path -Raw | ConvertFrom-Json
