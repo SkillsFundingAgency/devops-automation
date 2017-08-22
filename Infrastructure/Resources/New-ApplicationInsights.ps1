@@ -27,28 +27,30 @@ Param (
     [ValidateNotNullOrEmpty()]
     [String]$ResourceGroupName = $ENV:ResourceGroup,	
     [Parameter(Mandatory = $true)]
-    [String]$Name
+    [String[]]$Name
 )
 
 # --- Import Azure Helpers
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
 
-try {
-	Write-Verbose -Message "Checking for existing Application Insights: $Name"         
-    $ApplicationInsights = Get-AzureRmResource -ResourceGroupName $ResourceGroupName -ResourceName $Name -ResourceType "Microsoft.Insights/components"
-} 
-catch {}
+foreach ($Service in $Name) {
+    try {
+        Write-Verbose -Message "Checking for existing Application Insights: $Service"         
+        $ApplicationInsights = Get-AzureRmResource -ResourceGroupName $ResourceGroupName -ResourceName $Service -ResourceType "Microsoft.Insights/components"
+    } 
+    catch {}
 
-if (!$ApplicationInsights) {
-    Write-Verbose -Message "Creating Application Insights $Name"
-	$ApplicationInsightsParameters = @{
-		Location = $Location
-		ResourceGroupName = $ResourceGroupName
-		ResourceName = $Name
-		ResourceType = "Microsoft.Insights/components"
-		PropertyObject = @{"Application_Type" = "web"}
-	}
-    $ApplicationInsights = New-AzureRmResource @ApplicationInsightsParameters -Force
+    if (!$ApplicationInsights) {
+        Write-Verbose -Message "Creating Application Insights $Service"
+        $ApplicationInsightsParameters = @{
+            Location = $Location
+            ResourceGroupName = $ResourceGroupName
+            ResourceName = $Service
+            ResourceType = "Microsoft.Insights/components"
+            PropertyObject = @{"Application_Type" = "web"}
+        }
+        $ApplicationInsights = New-AzureRmResource @ApplicationInsightsParameters -Force
+    }
+
+    Write-Output ("##vso[task.setvariable variable=InstrumentationKey-$($Service);]$($ApplicationInsights.Properties.InstrumentationKey)")
 }
-
-Write-Output ("##vso[task.setvariable variable=InstrumentationKey;]$($ApplicationInsights.Properties.InstrumentationKey)")
