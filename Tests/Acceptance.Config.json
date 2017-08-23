@@ -13,5 +13,21 @@
     ],
     "certificateName": "testcert.pfx",
     "certificatePassword": "password",
+    "sqlServerAdminUsername": "sqladmin",
+    "sqlServerKeyVaultName": "devops-at-kv",
+    "sqlServerName": "devops-at-sql",
+    "sqlServerFirewallRules": [
+        {
+            "Name": "AllowAllWindowsAzureIps",
+            "StartIPAddress": "0.0.0.0",
+            "EndIpAddress": "0.0.0.0"
+        },
+        {
+            "Name": "Rule1",
+            "StartIPAddress": "8.8.8.8",
+            "EndIpAddress": "8.8.8.8"
+        }
+    ],
+    "sqlServerNotificationRecipient": "noreply@devops.com",
     "suffix": "812d5be5"
 }
