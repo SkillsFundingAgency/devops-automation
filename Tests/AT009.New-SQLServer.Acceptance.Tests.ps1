@@ -124,7 +124,6 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
             $MockSetKeyVaultSecretParameters = @{
                 CommandName = "Set-AzureKeyVaultSecret"
                 MockWith = {return $null}
-
             }
             Mock @MockSetKeyVaultSecretParameters
 
