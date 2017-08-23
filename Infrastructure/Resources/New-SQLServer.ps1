@@ -103,7 +103,7 @@ $SQLServer = Find-AzureRmResource -ResourceNameEquals $ServerName
 $KeyVaultSecretName = $KeyVaultSecretName.ToLower()
 
 # --- Check for an existing key vault
-Write-Verbose -Message "Checking for existing entry for $KeyVaultSecretName in Key Vault $KetVaultName"
+Write-Verbose -Message "Checking for existing entry for $KeyVaultSecretName in Key Vault $KeyVaultName"
 $ServerAdminPassword = (Get-AzureKeyVaultSecret -VaultName $KeyVaultName -Name $KeyVaultSecretName).SecretValue
 
 # --- Check for to see whether the SQLServer has been deployed in another subscription
