@@ -106,6 +106,9 @@ $KeyVaultSecretName = $KeyVaultSecretName.ToLower()
 Write-Verbose -Message "Checking for existing entry for $KeyVaultSecretName in Key Vault $KetVaultName"
 $ServerAdminPassword = (Get-AzureKeyVaultSecret -VaultName $KeyVaultName -Name $KeyVaultSecretName).SecretValue
 
+# --- Check for to see whether the SQLServer has been deployed in another subscription
+$GloballyResolvable = Resolve-AzureRMResource -PublicResourceFqdn "$($ServerName).database.windows.net"
+
 if (!$SQLServer){
     Write-Verbose -Message "Attempting to resolve SQL Server name $ServerName globally"
     if ($GloballyResolvable) {
