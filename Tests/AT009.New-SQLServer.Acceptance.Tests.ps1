@@ -3,6 +3,9 @@ Push-Location -Path $PSScriptRoot\..\Infrastructure\Resources\
 
 Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
 
+    # --- Append a suffix to the resource name
+    $SQLServerName = "$($Config.SQLServerName)$($Config.Suffix)"
+
     # --- Define global properties for this test block
     $FirewallRuleConfigurationPath = "TestDrive:\sql.firewall.rules.json"
     $null = $Config.SQLServerFirewallRules | ConvertTo-Json | Set-Content -Path $FirewallRuleConfigurationPath
@@ -11,8 +14,8 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
         Location = $Config.Location
         ResourceGroupName = $Config.ResourceGroupName
         KeyVaultName = $Config.SQLServerKeyVaultName
-        KeyVaultSecretName = $Config.SQLServerName
-        ServerName = $Config.SQLServerName
+        KeyVaultSecretName = $SQLServerName
+        ServerName = $SQLServerName
         ServerAdminUsername = $Config.SQLServerAdminUsername
         FirewallRuleConfiguration = $FirewallRuleConfigurationPath
         AuditingStorageAccountName = $Config.ClassicStorageAccountName
@@ -53,7 +56,59 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
             }
             Mock @MockFindAzureRmResourceParameters
 
-            {.\New-SQLServer.ps1 @NewSQLServerParameters} | Should Throw "The SQL Server name $($Config.SQLServerName) is globally resolvable. It's possible that this name has already been taken."
+            {.\New-SQLServer.ps1 @NewSQLServerParameters} | Should Throw "The SQL Server name $SQLServerName is globally resolvable. It's possible that this name has already been taken."
+        }
+    }
+
+    Context "New Unique SQL Server" {
+
+        It "Should create a SQL Server and return two outputs" {
+            $Result = .\New-SQLServer.ps1 @NewSQLServerParameters
+            $Result.Count | Should Be 2
+        }
+
+        It "Should create a SQL Server in the correct location" {
+            $Result = Get-AzureRmSqlServer -ResourceGroupName $Config.ResourceGroupName -ServerName $SQLServerName
+            $Result.Location | Should Be $Config.Location.Replace(" ","").ToLower()
+        }
+
+        It "Should create a SQL Server with the correct firewall rules" {
+
+            foreach ($Rule in $Config.SQLServerFirewallRules) {
+                {
+                    $GetFirewallRuleParametres = @{
+                        ResourceGroupName = $Config.ResourceGroupName
+                        ServerName = $SQLServerName
+                        FirewallRuleName = $Rule.FirewallRuleName
+                    }
+                    Get-AzureRmSqlServerFirewallRule @GetFirewallRuleParametres  | Should Throw
+                }
+            }
+        }
+
+        It "Should remove a firewall rule that is no longer present in the config" {
+
+            $FirewallConfig = $Config.sqlServerFirewallRules | Where-Object {$_.Name -ne $Config.SQLServerFirewallRuleToRemote}
+            $FirewallConfig | ConvertTo-Json | Set-Content -Path $FirewallRuleConfigurationPath
+
+            $null = .\New-SQLServer.ps1 @NewSQLServerParameters
+            
+            $GetFirewallRuleParametres = @{
+                ResourceGroupName = $Config.ResourceGroupName
+                ServerName = $SQLServerName
+                FirewallRuleName = $Config.SQLServerFirewallRuleToRemote
+            }
+            {Get-AzureRmSqlServerFirewallRule @GetFirewallRuleParametres -ErrorAction Stop} | Should Throw
+        }
+
+        It "Should create a SQL Server and enable auditing" {
+            $AuditingPolicy = Get-AzureRmSqlServerAuditingPolicy -ResourceGroupName $Config.ResourceGroupName -ServerName $SQLServerName
+            $AuditingPolicy.AuditState | Should Be "Enabled"
+        }
+
+        It "Should create a SQL Server and enable threat detection" {
+            $ThreatDetectionPolicy = Get-AzureRmSqlServerThreatDetectionPolicy -ResourceGroupName $Config.ResourceGroupName -ServerName $SQLServerName
+            $ThreatDetectionPolicy.ThreatDetectionState | Should be "Enabled"
         }
     }
 
@@ -73,59 +128,7 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
             }
             Mock @MockSetKeyVaultSecretParameters
 
-            {.\New-SQLServer.ps1 @NewSQLServerParameters} | Should Throw "A secret entry for $($Config.SQLServerName) does not exist in the Key Vault"
-        }
-    }
-
-    Context "New Unique SQL Server" {
-
-        It "Should create a SQL Server and return two outputs" {
-            $Result = .\New-SQLServer.ps1 @NewSQLServerParameters
-            $Result.Count | Should Be 2
-        }
-
-        It "Should create a SQL Server in the correct location" {
-            $Result = Get-AzureRmSqlServer -ResourceGroupName $Config.ResourceGroupName -ServerName $Config.SQLServerName
-            $Result.Location | Should Be $Config.Location.Replace(" ","").ToLower()
-        }
-
-        It "Should create a SQL Server with the correct firewall rules" {
-
-            foreach ($Rule in $Config.SQLServerFirewallRules) {
-                {
-                    $GetFirewallRuleParametres = @{
-                        ResourceGroupName = $Config.ResourceGroupName
-                        ServerName = $Config.SQLServerName
-                        FirewallRuleName = $Rule.FirewallRuleName
-                    }
-                    Get-AzureRmSqlServerFirewallRule @GetFirewallRuleParametres  | Should Throw
-                }
-            }
-        }
-
-        It "Should remove a firewall rule that is no longer present in the config" {
-
-            $FirewallConfig = $Config.sqlServerFirewallRules | Where-Object {$_.Name -ne $Config.SQLServerFirewallRuleToRemote}
-            $FirewallConfig | ConvertTo-Json | Set-Content -Path $FirewallRuleConfigurationPath
-
-            $null = .\New-SQLServer.ps1 @NewSQLServerParameters
-            
-            $GetFirewallRuleParametres = @{
-                ResourceGroupName = $Config.ResourceGroupName
-                ServerName = $Config.SQLServerName
-                FirewallRuleName = $Config.SQLServerFirewallRuleToRemote
-            }
-            {Get-AzureRmSqlServerFirewallRule @GetFirewallRuleParametres -ErrorAction Stop} | Should Throw
-        }
-
-        It "Should create a SQL Server and enable auditing" {
-            $AuditingPolicy = Get-AzureRmSqlServerAuditingPolicy -ResourceGroupName $Config.ResourceGroupName -ServerName $Config.SQLServerName
-            $AuditingPolicy.AuditState | Should Be "Enabled"
-        }
-
-        It "Should create a SQL Server and enable threat detection" {
-            $ThreatDetectionPolicy = Get-AzureRmSqlServerThreatDetectionPolicy -ResourceGroupName $Config.ResourceGroupName -ServerName $Config.SQLServerName
-            $ThreatDetectionPolicy.ThreatDetectionState | Should be "Enabled"
+            {.\New-SQLServer.ps1 @NewSQLServerParameters} | Should Throw "A secret entry for $SQLServerName does not exist in the Key Vault"
         }
     }
 }
