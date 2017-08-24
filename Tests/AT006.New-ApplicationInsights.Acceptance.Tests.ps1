@@ -10,7 +10,7 @@ Describe "New-ApplicationInsights Tests" -Tag "Acceptance-ARM" {
         $Result = .\New-ApplicationInsights.ps1 -Location $Config.location -Name $AppInsightsName -ResourceGroupName $ResourceGroupName
         $Result.Count | Should Be 1
         $Result.Contains("InstrumentationKey") | Should Be $true
-        $Result = $Result.Replace("##vso[task.setvariable variable=InstrumentationKey;]", "")
+        $Result = $Result.Split("]")[1]
         $ValidGuid = [System.Guid]::NewGuid()
         $Success = [System.Guid]::TryParse($Result, [ref]$ValidGuid);
         $Success | Should Be $true
