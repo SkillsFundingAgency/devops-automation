@@ -6,6 +6,7 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
     # --- Append a suffix to the resource name
     $SQLServerName = "$($Config.SQLServerName)$($Config.Suffix)"
     $ResourceGroupName = "$($Config.ResourceGroupName)$($Config.Suffix)"
+    $StorageAccountName = "$($Config.ClassicStorageAccountName)$($Config.Suffix)"
 
     # --- Define global properties for this test block
     $FirewallRuleConfigurationPath = "TestDrive:\sql.firewall.rules.json"
@@ -19,7 +20,7 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
         ServerName = $SQLServerName
         ServerAdminUsername = $Config.SQLServerAdminUsername
         FirewallRuleConfiguration = $FirewallRuleConfigurationPath
-        AuditingStorageAccountName = $Config.ClassicStorageAccountName
+        AuditingStorageAccountName = $StorageAccountName
         ThreatDetectionNotificationRecipient = $Config.SQLServerNotificationRecipient
     }
 
@@ -70,7 +71,7 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
 
         It "Should create a SQL Server in the correct location" {
             $Result = Get-AzureRmSqlServer -ResourceGroupName $ResourceGroupName -ServerName $SQLServerName
-            $Result.Location | Should Be $Config.Location.Replace(" ","").ToLower()
+            $Result.Location.Replace(" ","").ToLower() | Should Be $Config.Location.Replace(" ","").ToLower()
         }
 
         It "Should create a SQL Server with the correct firewall rules" {
