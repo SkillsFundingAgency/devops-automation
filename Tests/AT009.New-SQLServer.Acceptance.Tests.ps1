@@ -5,6 +5,8 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
 
     # --- Append a suffix to the resource name
     $SQLServerName = "$($Config.SQLServerName)$($Config.Suffix)"
+    $ResourceGroupName = "$($Config.ResourceGroupName)$($Config.Suffix)"
+    $StorageAccountName = "$($Config.ClassicStorageAccountName)$($Config.Suffix)"
 
     # --- Define global properties for this test block
     $FirewallRuleConfigurationPath = "TestDrive:\sql.firewall.rules.json"
@@ -12,13 +14,13 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
 
     $NewSQLServerParameters = @{
         Location = $Config.Location
-        ResourceGroupName = $Config.ResourceGroupName
+        ResourceGroupName = $ResourceGroupName
         KeyVaultName = $Config.SQLServerKeyVaultName
         KeyVaultSecretName = $SQLServerName
         ServerName = $SQLServerName
         ServerAdminUsername = $Config.SQLServerAdminUsername
         FirewallRuleConfiguration = $FirewallRuleConfigurationPath
-        AuditingStorageAccountName = $Config.ClassicStorageAccountName
+        AuditingStorageAccountName = $StorageAccountName
         ThreatDetectionNotificationRecipient = $Config.SQLServerNotificationRecipient
     }
 
@@ -68,8 +70,8 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
         }
 
         It "Should create a SQL Server in the correct location" {
-            $Result = Get-AzureRmSqlServer -ResourceGroupName $Config.ResourceGroupName -ServerName $SQLServerName
-            $Result.Location | Should Be $Config.Location.Replace(" ","").ToLower()
+            $Result = Get-AzureRmSqlServer -ResourceGroupName $ResourceGroupName -ServerName $SQLServerName
+            $Result.Location.Replace(" ","").ToLower() | Should Be $Config.Location.Replace(" ","").ToLower()
         }
 
         It "Should create a SQL Server with the correct firewall rules" {
@@ -77,7 +79,7 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
             foreach ($Rule in $Config.SQLServerFirewallRules) {
                 {
                     $GetFirewallRuleParametres = @{
-                        ResourceGroupName = $Config.ResourceGroupName
+                        ResourceGroupName = $ResourceGroupName
                         ServerName = $SQLServerName
                         FirewallRuleName = $Rule.FirewallRuleName
                     }
@@ -94,7 +96,7 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
             $null = .\New-SQLServer.ps1 @NewSQLServerParameters
             
             $GetFirewallRuleParametres = @{
-                ResourceGroupName = $Config.ResourceGroupName
+                ResourceGroupName = $ResourceGroupName
                 ServerName = $SQLServerName
                 FirewallRuleName = $Config.SQLServerFirewallRuleToRemote
             }
@@ -102,12 +104,12 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
         }
 
         It "Should create a SQL Server and enable auditing" {
-            $AuditingPolicy = Get-AzureRmSqlServerAuditingPolicy -ResourceGroupName $Config.ResourceGroupName -ServerName $SQLServerName
+            $AuditingPolicy = Get-AzureRmSqlServerAuditingPolicy -ResourceGroupName $ResourceGroupName -ServerName $SQLServerName
             $AuditingPolicy.AuditState | Should Be "Enabled"
         }
 
         It "Should create a SQL Server and enable threat detection" {
-            $ThreatDetectionPolicy = Get-AzureRmSqlServerThreatDetectionPolicy -ResourceGroupName $Config.ResourceGroupName -ServerName $SQLServerName
+            $ThreatDetectionPolicy = Get-AzureRmSqlServerThreatDetectionPolicy -ResourceGroupName $ResourceGroupName -ServerName $SQLServerName
             $ThreatDetectionPolicy.ThreatDetectionState | Should be "Enabled"
         }
     }
