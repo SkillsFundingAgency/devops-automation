@@ -53,4 +53,5 @@ foreach ($Service in $Name) {
     }
 
     Write-Output ("##vso[task.setvariable variable=InstrumentationKey-$($Service);]$($ApplicationInsights.Properties.InstrumentationKey)")
+    $ApplicationInsights = $null
 }
