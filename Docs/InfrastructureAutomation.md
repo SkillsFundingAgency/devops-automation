@@ -13,7 +13,7 @@ When writing a script or a helper function keep in mind that it:
 * Should have an acceptance test
 * Should work locally and on build agents
 * Should contain appropriate documentation
-* Should use **Write-Verbose** for logging
+* Should use **Write-Log** for logging (See the logging section for more information)
 * Should use the PascalCasing convention for variables
 * Should not mix Service Manager(ASM) and Resource Manager(ARM) operations
 * Should contain functions that follow the Verb-Noun and PascalCasing conventions (For a list of acceptable verbs use **Get-Verb**)
