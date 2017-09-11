@@ -29,6 +29,7 @@ Param (
 
 # --- Import Azure Helpers
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
+Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
 foreach ($Resource in $ResourceName) {
 
@@ -46,13 +47,13 @@ foreach ($Resource in $ResourceName) {
     # --- Check if the Storage Account exists in the correct resource group, if not move it
     if ($AzResource.ResourceGroupName.ToLower() -ne $DestinationResourceGroup.ToLower()) {
         try {
-            Write-Verbose -Message "Moving Resource $Resource to Resource Group $DestinationResourceGroup"
+            Write-Log -LogLevel Information -Message "Moving Resource $Resource to Resource Group $DestinationResourceGroup"
             $null = Move-AzureRmResource -DestinationResourceGroupName $DestinationResourceGroup -ResourceId $AzResource.ResourceId -Force
             Wait-AzureRmResource -ResourceGroupName $DestinationResourceGroup -ResourceName $Resource
 
             $Resources = Find-AzureRmResource -ResourceGroupNameEquals $AzResource.ResourceGroupName
             if ($Resources.Count -eq 0) {
-                Write-Verbose -Message "Removing source Resource Group $($AzResource.ResourceGroupName)"
+                Write-Log -LogLevel Information -Message "Removing source Resource Group $($AzResource.ResourceGroupName)"
                 $null = Remove-AzureRmResourceGroup -Name $AzResource.ResourceGroupName -Force
             }
         }

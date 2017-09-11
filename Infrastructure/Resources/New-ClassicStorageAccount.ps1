@@ -35,8 +35,9 @@ Param(
 
 # --- Import Azure Helpers
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
+Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
-Write-Verbose -Message "Checking for existing Storage Account"
+Write-Log -LogLevel Information -Message "Checking for existing Storage Account"
 # --- Check if storage account exists in our subscrption 
 $StorageAccount = Get-AzureStorageAccount -StorageAccountName $Name -ErrorAction SilentlyContinue
  
@@ -46,7 +47,7 @@ $StorageAccountNameTest = Test-AzureName -Storage $Name
 # --- If the Storage Account doesn't exist, create it
 if (!$StorageAccount -and !$StorageAccountNameTest) {
     try {
-        Write-Verbose -Message "Creating Storage Account $Name"
+        Write-Log -LogLevel Information -Message "Creating Storage Account $Name"
         $StorageAccount = New-AzureStorageAccount -Location $Location -StorageAccountName $Name
     }
     catch {
@@ -62,7 +63,7 @@ if ($ContainerName -and $StorageAccount) {
         $ContainerExists = Get-AzureStorageContainer -Name $Container -ErrorAction SilentlyContinue
         if (!$ContainerExists) {
             try {
-                Write-Verbose -Message "Creating container $Container"
+                Write-Log -LogLevel Information -Message "Creating container $Container"
                 $null = New-AzureStorageContainer -Name $Container -Permission Off 
             }
             catch {

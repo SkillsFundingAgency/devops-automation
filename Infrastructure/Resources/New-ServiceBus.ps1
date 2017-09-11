@@ -46,9 +46,10 @@ Param (
 
 # --- Import Azure Helpers
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
+Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
 # --- Check for existing namespace, if it doesn't exist create it
-Write-Verbose -Message "Checking for existing Service Bus Namespace: $NamespaceName"			 
+Write-Log -LogLevel Information -Message "Checking for existing Service Bus Namespace: $NamespaceName"			 
 $ServiceBus = Get-AzureRmServiceBusNamespace  -Name $NamespaceName -ResourceGroup $ResourceGroupName -ErrorAction SilentlyContinue
 
 $GloballyResolvable = Resolve-AzureRMResource -PublicResourceFqdn "$($NamespaceName.ToLower()).servicebus.windows.net"
@@ -59,7 +60,7 @@ if (!$ServiceBus) {
         if ($GloballyResolvable) {
             throw "The Service Bus Namespace $NamespaceName is globally resolvable. It's possible that this name has already been taken."
         }
-        Write-Verbose -Message "Creating Service Bus Namespace: $NamespaceName"
+        Write-Log -LogLevel Information -Message "Creating Service Bus Namespace: $NamespaceName"
         $ServiceBus = New-AzureRmServiceBusNamespace -name $NamespaceName -Location $Location -ResourceGroupName $ResourceGroupName -SkuName $Sku -ErrorAction Stop
     }
     catch {
@@ -73,7 +74,7 @@ if ($PSBoundParameters.ContainsKey("QueueName") -and $ServiceBus) {
         $ExistingQueue = Get-AzureRmServiceBusQueue -ResourceGroup $ResourceGroupName -NamespaceName $NamespaceName -QueueName $Queue -ErrorAction SilentlyContinue
         if (!$ExistingQueue) {
             try {
-                Write-Verbose -Message "Creating Queue: $Queue"
+                Write-Log -LogLevel Information -Message "Creating Queue: $Queue"
                 $null = New-AzureRmServiceBusQueue -ResourceGroup $ResourceGroupName -NamespaceName $NamespaceName -QueueName $Queue -EnablePartitioning $true
             }
             catch {

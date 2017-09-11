@@ -62,14 +62,15 @@ Param (
 
 # --- Import Azure Helpers
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
+Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
 # --- Check for an existing App Service Plan, create on if it doesn't exist
-Write-Verbose -Message "Checking for existing App Service Plan: $AppServicePlanName"
+Write-Log -LogLevel Information -Message "Checking for existing App Service Plan: $AppServicePlanName"
 $ExistingAppServicePlan = Get-AzureRmAppServicePlan -ResourceGroupName $ResourceGroupName -Name $AppServicePlanName -ErrorAction SilentlyContinue
 
 If (!$ExistingAppServicePlan) {
     try {
-        Write-Verbose -Message "Creating $AppServicePlanName in $ResourceGroupName"
+        Write-Log -LogLevel Information -Message "Creating $AppServicePlanName in $ResourceGroupName"
         $null = New-AzureRmAppServicePlan -Location $Location -Tier $AppServicePlanTier -Name $AppServicePlanName -ResourceGroupName $ResourceGroupName
     }
     catch {
@@ -78,7 +79,7 @@ If (!$ExistingAppServicePlan) {
 }
 
 # --- Check for an existing App Service, create on if it doesn't exist
-Write-Verbose -Message "Checking for existing App Service: $AppServiceName"
+Write-Log -LogLevel Information -Message "Checking for existing App Service: $AppServiceName"
 $AppService = Get-AzureRmWebApp -ResourceGroupName $ResourceGroupName -Name $AppServiceName -ErrorAction SilentlyContinue
 
 # --- Check whether the dns name is globally resolvable, if it is then it probably exists in another tenant/subscription
@@ -87,11 +88,11 @@ $GloballyResolvable = Resolve-AzureRMResource -PublicResourceFqdn "$($AppService
 If (!$AppService) {
     # --- If the App Service doesn't exist in the Resource Group but is globally resolvable, throw an error
     if ($GloballyResolvable) {
-        throw "The App Service name $AppServiceName is globaly resolvable. It's possible that this name has already been taken."
+        throw "The App Service name $AppServiceName is globally resolvable. It's possible that this name has already been taken."
     }
 
     try {
-        Write-Verbose -Message "Creating App Service $AppServiceName in App Service Plan $AppServiceName"
+        Write-Log -LogLevel Information -Message "Creating App Service $AppServiceName in App Service Plan $AppServiceName"
         $AppService = New-AzureRmWebApp -ResourceGroupName $ResourceGroupName -Name $AppServiceName -Location $Location -AppServicePlan $AppServicePlanName
     }
     catch {
@@ -107,7 +108,7 @@ if ($AppService -and $AppServicePlanTier -ne "Free") {
             $AppServiceProperties = @{alwaysOn = $true }
         }
 
-        Write-Verbose -Message "Setting properties on App Service $($AppServiceName):`n$($AppServiceProperties | ConvertTo-Json)"
+        Write-Log -LogLevel Information -Message "Setting properties on App Service $($AppServiceName):`n$($AppServiceProperties | ConvertTo-Json)"
         $SetAzureResourceParameters = @{
             ResourceGroup  = $ResourceGroupName
             PropertyObject = $AppServiceProperties
@@ -116,7 +117,7 @@ if ($AppService -and $AppServicePlanTier -ne "Free") {
             APIVersion     = "2015-08-01"
         }
         $null = Set-AzureRmResource @SetAzureResourceParameters -Force -ErrorAction Stop
-        Write-Verbose -Message "Restarting App Service $AppServiceName"
+        Write-Log -LogLevel Information -Message "Restarting App Service $AppServiceName"
         $null = Restart-AzureRmWebApp -ResourceGroupName $ResourceGroupName -Name $AppServiceName
     }
     catch {
