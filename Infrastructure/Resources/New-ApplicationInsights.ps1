@@ -35,11 +35,9 @@ Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
 foreach ($Service in $Name) {
-    try {
-        Write-Log -LogLevel Information -Message "Checking for existing Application Insights: $Service"         
-        $ApplicationInsights = Get-AzureRmResource -ResourceGroupName $ResourceGroupName -ResourceName $Service -ResourceType "Microsoft.Insights/components"
-    } 
-    catch {}
+
+    Write-Verbose -Message "Checking for existing Application Insights: $Service"
+    $ApplicationInsights = Find-AzureRmResource -ResourceNameEquals $Service -ErrorAction SilentlyContinue
 
     if (!$ApplicationInsights) {
         Write-Log -LogLevel Information -Message "Creating Application Insights $Service"
