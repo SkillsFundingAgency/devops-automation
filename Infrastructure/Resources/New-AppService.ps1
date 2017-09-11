@@ -44,19 +44,19 @@ $AppServiceProperties = @{
 
 Param (
     [Parameter(Mandatory = $false)]
-	[ValidateSet("West Europe", "North Europe")]
+    [ValidateSet("West Europe", "North Europe")]
     [String]$Location = $ENV:Location,
     [Parameter(Mandatory = $false)]
     [ValidateNotNullOrEmpty()]
-	[String]$ResourceGroupName = $ENV:ResourceGroup,
-	[Parameter(Mandatory = $true)]	
+    [String]$ResourceGroupName = $ENV:ResourceGroup,
+    [Parameter(Mandatory = $true)]	
     [String]$AppServicePlanName,
-	[Parameter(Mandatory = $false)]
-	[ValidateSet("Basic", "Free", "Premium", "Shared", "Standard")]
+    [Parameter(Mandatory = $false)]
+    [ValidateSet("Basic", "Free", "Premium", "Shared", "Standard")]
     [String]$AppServicePlanTier = "Basic",
     [Parameter(Mandatory = $true)]
     [String]$AppServiceName,
-	[Parameter(Mandatory = $false)]
+    [Parameter(Mandatory = $false)]
     [Hashtable]$AppServiceProperties
 )
 
@@ -68,12 +68,13 @@ Write-Verbose -Message "Checking for existing App Service Plan: $AppServicePlanN
 $ExistingAppServicePlan = Get-AzureRmAppServicePlan -ResourceGroupName $ResourceGroupName -Name $AppServicePlanName -ErrorAction SilentlyContinue
 
 If (!$ExistingAppServicePlan) {
-	try {
-		Write-Verbose -Message "Creating $AppServicePlanName in $ResourceGroupName"
-		$null = New-AzureRmAppServicePlan -Location $Location -Tier $AppServicePlanTier -Name $AppServicePlanName -ResourceGroupName $ResourceGroupName
-	} catch {
-		throw "Could not create app service plan $AppServicePlanName : $_"
-	}
+    try {
+        Write-Verbose -Message "Creating $AppServicePlanName in $ResourceGroupName"
+        $null = New-AzureRmAppServicePlan -Location $Location -Tier $AppServicePlanTier -Name $AppServicePlanName -ResourceGroupName $ResourceGroupName
+    }
+    catch {
+        throw "Could not create app service plan $AppServicePlanName : $_"
+    }
 }
 
 # --- Check for an existing App Service, create on if it doesn't exist
@@ -84,39 +85,41 @@ $AppService = Get-AzureRmWebApp -ResourceGroupName $ResourceGroupName -Name $App
 $GloballyResolvable = Resolve-AzureRMResource -PublicResourceFqdn "$($AppServiceName.ToLower()).azurewebsites.net"
 
 If (!$AppService) {
-	# --- If the App Service doesn't exist in the Resource Group but is globally resolvable, throw an error
-	if ($GloballyResolvable){
-		throw "The App Service name $AppServiceName is globaly resolvable. It's possible that this name has already been taken."
-	}
+    # --- If the App Service doesn't exist in the Resource Group but is globally resolvable, throw an error
+    if ($GloballyResolvable) {
+        throw "The App Service name $AppServiceName is globaly resolvable. It's possible that this name has already been taken."
+    }
 
-	try {
-		Write-Verbose -Message "Creating App Service $AppServiceName in App Service Plan $AppServiceName"
-		$AppService = New-AzureRmWebApp -ResourceGroupName $ResourceGroupName -Name $AppServiceName -Location $Location -AppServicePlan $AppServicePlanName
-	} catch {
-		throw "Could not create App Service $AppService : $_"
-	}
+    try {
+        Write-Verbose -Message "Creating App Service $AppServiceName in App Service Plan $AppServiceName"
+        $AppService = New-AzureRmWebApp -ResourceGroupName $ResourceGroupName -Name $AppServiceName -Location $Location -AppServicePlan $AppServicePlanName
+    }
+    catch {
+        throw "Could not create App Service $AppService : $_"
+    }
 }
 
 # --- Set alwaysOn to true if the app service is not in the free tier
-if  ($AppService -and $AppServicePlanTier -ne "Free") {
-	try {
+if ($AppService -and $AppServicePlanTier -ne "Free") {
+    try {
 
-		if (!$PSBoundParameters.ContainsKey("AppServiceProperties")) {
-			$AppServiceProperties = @{alwaysOn = $true }
-		}
+        if (!$PSBoundParameters.ContainsKey("AppServiceProperties")) {
+            $AppServiceProperties = @{alwaysOn = $true }
+        }
 
-		Write-Verbose -Message "Setting properties on App Service $($AppServiceName):`n$($AppServiceProperties | ConvertTo-Json)"
-		$SetAzureResourceParameters = @{
-			ResourceGroup = $ResourceGroupName
-			PropertyObject = $AppServiceProperties
-			ResourceType = "Microsoft.Web/sites/config"
-			ResourceName = "$AppServiceName/web"
-			APIVersion = "2015-08-01"
-		}
-		$null = Set-AzureRmResource @SetAzureResourceParameters -Force -ErrorAction Stop
-		Write-Verbose -Message "Restarting App Service $AppServiceName"
-		$null = Restart-AzureRmWebApp -ResourceGroupName $ResourceGroupName -Name $AppServiceName
-	} catch {
-		throw "Could not set properties on $($AppServiceName): $($_.Exception.Message)"
-	}
+        Write-Verbose -Message "Setting properties on App Service $($AppServiceName):`n$($AppServiceProperties | ConvertTo-Json)"
+        $SetAzureResourceParameters = @{
+            ResourceGroup  = $ResourceGroupName
+            PropertyObject = $AppServiceProperties
+            ResourceType   = "Microsoft.Web/sites/config"
+            ResourceName   = "$AppServiceName/web"
+            APIVersion     = "2015-08-01"
+        }
+        $null = Set-AzureRmResource @SetAzureResourceParameters -Force -ErrorAction Stop
+        Write-Verbose -Message "Restarting App Service $AppServiceName"
+        $null = Restart-AzureRmWebApp -ResourceGroupName $ResourceGroupName -Name $AppServiceName
+    }
+    catch {
+        throw "Could not set properties on $($AppServiceName): $($_.Exception.Message)"
+    }
 }

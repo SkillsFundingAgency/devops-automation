@@ -43,11 +43,11 @@ foreach ($Service in $Name) {
     if (!$ApplicationInsights) {
         Write-Verbose -Message "Creating Application Insights $Service"
         $ApplicationInsightsParameters = @{
-            Location = $Location
+            Location          = $Location
             ResourceGroupName = $ResourceGroupName
-            ResourceName = $Service
-            ResourceType = "Microsoft.Insights/components"
-            PropertyObject = @{"Application_Type" = "web"}
+            ResourceName      = $Service
+            ResourceType      = "Microsoft.Insights/components"
+            PropertyObject    = @{"Application_Type" = "web"}
         }
         $ApplicationInsights = New-AzureRmResource @ApplicationInsightsParameters -Force
     }
