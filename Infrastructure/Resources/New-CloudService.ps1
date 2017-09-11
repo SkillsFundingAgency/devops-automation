@@ -27,11 +27,12 @@ Param(
 
 # --- Import Azure Helpers
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
+Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
 # --- Create Cloud Service
 foreach ($Service in $Name) {
 
-    Write-Verbose -Message "Checking for Cloud Service $Service"
+    Write-Log -LogLevel Information -Message "Checking for Cloud Service $Service"
     # --- Check if storage account exists in our subscription
     $CloudService = Get-AzureService -ServiceName $Service -ErrorAction SilentlyContinue
 
@@ -41,7 +42,7 @@ foreach ($Service in $Name) {
     # --- If the Cloud Service doesn't exist, create it
     if (!$CloudService -and !$CloudServiceAccountNameTest) {
         try {
-            Write-Verbose -Message "Creating Cloud Service $Service"
+            Write-Log -LogLevel Information -Message "Creating Cloud Service $Service"
             $CloudService = New-AzureService -ServiceName $Service -Location $Location
         }
         catch {

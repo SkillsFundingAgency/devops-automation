@@ -28,13 +28,14 @@ Param (
 
 # --- Import Azure Helpers
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
+Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
-Write-Verbose -Message "Checking for existing Resource Group $Name"			 
+Write-Log -LogLevel Information -Message "Checking for existing Resource Group $Name"			 
 $ExistingResourceGroup = Get-AzureRmResourceGroup -Name $Name -ErrorAction SilentlyContinue
 
 if (!$ExistingResourceGroup) {
     try {
-        Write-Verbose -Message "Creating Resource Group"
+        Write-Log -LogLevel Information -Message "Creating Resource Group"
         $null = New-AzureRmResourceGroup -Location $Location -Name $Name
     }
     catch {

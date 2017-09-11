@@ -32,6 +32,7 @@ Param (
 
 # --- Import Azure Helpers
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
+Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
 foreach ($Service in $Name) {
 
@@ -39,7 +40,7 @@ foreach ($Service in $Name) {
     $ApplicationInsights = Find-AzureRmResource -ResourceNameEquals $Service -ErrorAction SilentlyContinue
 
     if (!$ApplicationInsights) {
-        Write-Verbose -Message "Creating Application Insights $Service"
+        Write-Log -LogLevel Information -Message "Creating Application Insights $Service"
         $ApplicationInsightsParameters = @{
             Location          = $Location
             ResourceGroupName = $ResourceGroupName

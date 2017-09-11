@@ -96,21 +96,21 @@ Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
 # --- Check for an existing sql server in the subscription
-Write-Verbose -Message "Checking for existing SQL Server $ServerName"
+Write-Log -LogLevel Information -Message "Checking for existing SQL Server $ServerName"
 $SQLServer = Find-AzureRmResource -ResourceNameEquals $ServerName
 
 # --- Ensure KeyVaultSecretName is lower case
 $KeyVaultSecretName = $KeyVaultSecretName.ToLower()
 
 # --- Check for an existing key vault
-Write-Verbose -Message "Checking for existing entry for $KeyVaultSecretName in Key Vault $KeyVaultName"
+Write-Log -LogLevel Information -Message "Checking for existing entry for $KeyVaultSecretName in Key Vault $KeyVaultName"
 $ServerAdminPassword = (Get-AzureKeyVaultSecret -VaultName $KeyVaultName -Name $KeyVaultSecretName).SecretValue
 
 # --- Check for to see whether the SQLServer has been deployed in another subscription
 $GloballyResolvable = Resolve-AzureRMResource -PublicResourceFqdn "$($ServerName).database.windows.net"
 
 if (!$SQLServer) {
-    Write-Verbose -Message "Attempting to resolve SQL Server name $ServerName globally"
+    Write-Log -LogLevel Information -Message "Attempting to resolve SQL Server name $ServerName globally"
     if ($GloballyResolvable) {
         throw "The SQL Server name $ServerName is globally resolvable. It's possible that this name has already been taken."
     }
@@ -119,13 +119,13 @@ if (!$SQLServer) {
 
         # --- If a secret doesn't exist create a new password and save it to the vault
         if (!$ServerAdminPassword) {
-            Write-Verbose -Message "Creating new entry for $KeyVaultSecretName in Key Vault $KetVaultName"
+            Write-Log -LogLevel Information -Message "Creating new entry for $KeyVaultSecretName in Key Vault $KetVaultName"
             $ServerAdminPassword = (New-Password).PasswordAsSecureString
             $null = Set-AzureKeyVaultSecret -VaultName $KeyVaultName -Name $KeyVaultSecretName -SecretValue $ServerAdminPassword
         }
 
         # --- Set up SQL Server parameters and create a new instance
-        Write-Verbose -Message "Attempting to create SQL Server $ServerName"
+        Write-Log -LogLevel Information -Message "Attempting to create SQL Server $ServerName"
         $ServerAdminCredentials = [PSCredential]::new($ServerAdminUsername, $ServerAdminPassword)
 
         $ServerParameters = @{
@@ -169,13 +169,13 @@ if ($SQLServer) {
     $ConfigRuleNames = $Config | Select-Object -ExpandProperty Name
     foreach ($ExistingRule in $ExistingRuleNames) {
         if (!$ConfigRuleNames.Contains($ExistingRule)) {
-            Write-Verbose -Message "Removing Firewall Rule $ExistingRule"
+            Write-Log -LogLevel Warning -Message "Removing Firewall Rule $ExistingRule"
             $null = Remove-AzureRmSqlServerFirewallRule -ResourceGroupName $ResourceGroupName -ServerName $ServerName -FirewallRuleName $ExistingRule -Force
         }
     }
 
     # --- Configure Auditing and Threat Detection
-    Write-Verbose -Message "Configuring auditing policy"
+    Write-Log -LogLevel Information -Message "Configuring auditing policy"
     $AuditingPolicyParameters = @{
         ResourceGroupName  = $ResourceGroupName
         ServerName         = $ServerName
@@ -186,7 +186,7 @@ if ($SQLServer) {
     }
     Set-AzureRmSqlServerAuditingPolicy @AuditingPolicyParameters
 
-    Write-Verbose -Message "Configuring threat detection policy"
+    Write-Log -LogLevel Information -Message "Configuring threat detection policy"
     $ThreatDetectionPolicyParameters = @{
         ResourceGroupName            = $ResourceGroupName
         ServerName                   = $ServerName
