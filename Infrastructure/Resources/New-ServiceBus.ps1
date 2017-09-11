@@ -31,14 +31,14 @@ One or more queues to create in the Service Bus Namespace
 
 Param (
     [Parameter(Mandatory = $false)]
-	[ValidateSet("West Europe", "North Europe")]
+    [ValidateSet("West Europe", "North Europe")]
     [String]$Location = $ENV:Location,
     [Parameter(Mandatory = $false)]
     [ValidateNotNullOrEmpty()]
-	[String]$ResourceGroupName = $ENV:ResourceGroup,
+    [String]$ResourceGroupName = $ENV:ResourceGroup,
     [Parameter(Mandatory = $true)]
     [String]$NamespaceName,
-	[Parameter(Mandatory = $false)]
+    [Parameter(Mandatory = $false)]
     [String]$Sku = "Standard",
     [Parameter(Mandatory = $true)]
     [String[]]$QueueName
@@ -54,31 +54,33 @@ $ServiceBus = Get-AzureRmServiceBusNamespace  -Name $NamespaceName -ResourceGrou
 $GloballyResolvable = Resolve-AzureRMResource -PublicResourceFqdn "$($NamespaceName.ToLower()).servicebus.windows.net"
 
 if (!$ServiceBus) {
-	try {
-		# --- If the Service Bus Namespace doesn't exist in the Resource Group but is globally resolvable, throw an error
-		if ($GloballyResolvable){
-			throw "The Service Bus Namespace $NamespaceName is globally resolvable. It's possible that this name has already been taken."
-		}		
-		Write-Verbose -Message "Creating Service Bus Namespace: $NamespaceName"
-		$ServiceBus = New-AzureRmServiceBusNamespace -name $NamespaceName -Location $Location -ResourceGroupName $ResourceGroupName -SkuName $Sku -ErrorAction Stop
-	} catch {
-		throw "Could not create Service Bus $($NamespaceName): $_"
-	}
+    try {
+        # --- If the Service Bus Namespace doesn't exist in the Resource Group but is globally resolvable, throw an error
+        if ($GloballyResolvable) {
+            throw "The Service Bus Namespace $NamespaceName is globally resolvable. It's possible that this name has already been taken."
+        }
+        Write-Verbose -Message "Creating Service Bus Namespace: $NamespaceName"
+        $ServiceBus = New-AzureRmServiceBusNamespace -name $NamespaceName -Location $Location -ResourceGroupName $ResourceGroupName -SkuName $Sku -ErrorAction Stop
+    }
+    catch {
+        throw "Could not create Service Bus $($NamespaceName): $_"
+    }
 }
 
 # --- If required, create queues
 if ($PSBoundParameters.ContainsKey("QueueName") -and $ServiceBus) {
-	foreach ($Queue in $QueueName) {
-		$ExistingQueue = Get-AzureRmServiceBusQueue -ResourceGroup $ResourceGroupName -NamespaceName $NamespaceName -QueueName $Queue -ErrorAction SilentlyContinue
-		if (!$ExistingQueue) {
-			try{
-				Write-Verbose -Message "Creating Queue: $Queue"
-            	$null = New-AzureRmServiceBusQueue -ResourceGroup $ResourceGroupName -NamespaceName $NamespaceName -QueueName $Queue -EnablePartitioning $true
-			}catch{
-				throw "Could not create Service Bus Queue $($Queue): $_"
-			}
-		}
-	}
+    foreach ($Queue in $QueueName) {
+        $ExistingQueue = Get-AzureRmServiceBusQueue -ResourceGroup $ResourceGroupName -NamespaceName $NamespaceName -QueueName $Queue -ErrorAction SilentlyContinue
+        if (!$ExistingQueue) {
+            try {
+                Write-Verbose -Message "Creating Queue: $Queue"
+                $null = New-AzureRmServiceBusQueue -ResourceGroup $ResourceGroupName -NamespaceName $NamespaceName -QueueName $Queue -EnablePartitioning $true
+            }
+            catch {
+                throw "Could not create Service Bus Queue $($Queue): $_"
+            }
+        }
+    }
 }
 
 $Keys = Get-AzureRmServiceBusNamespaceKey -Name $NamespaceName -ResourceGroup $ResourceGroupName -AuthorizationRuleName RootManageSharedAccessKey

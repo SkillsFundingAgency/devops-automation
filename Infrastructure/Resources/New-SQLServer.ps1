@@ -109,7 +109,7 @@ $ServerAdminPassword = (Get-AzureKeyVaultSecret -VaultName $KeyVaultName -Name $
 # --- Check for to see whether the SQLServer has been deployed in another subscription
 $GloballyResolvable = Resolve-AzureRMResource -PublicResourceFqdn "$($ServerName).database.windows.net"
 
-if (!$SQLServer){
+if (!$SQLServer) {
     Write-Verbose -Message "Attempting to resolve SQL Server name $ServerName globally"
     if ($GloballyResolvable) {
         throw "The SQL Server name $ServerName is globally resolvable. It's possible that this name has already been taken."
@@ -126,18 +126,19 @@ if (!$SQLServer){
 
         # --- Set up SQL Server parameters and create a new instance
         Write-Verbose -Message "Attempting to create SQL Server $ServerName"
-        $ServerAdminCredentials = [PSCredential]::new($ServerAdminUsername,$ServerAdminPassword)
+        $ServerAdminCredentials = [PSCredential]::new($ServerAdminUsername, $ServerAdminPassword)
 
         $ServerParameters = @{
-            Location = $Location
-            ResourceGroupName = $ResourceGroupName
-            ServerName = $ServerName
+            Location                    = $Location
+            ResourceGroupName           = $ResourceGroupName
+            ServerName                  = $ServerName
             SqlAdministratorCredentials = $ServerAdminCredentials
-            ServerVersion = "12.0"
+            ServerVersion               = "12.0"
         }
 
         $SQLServer = New-AzureRmSqlServer @ServerParameters
-    } catch {
+    }
+    catch {
         throw "Could not create SQL Server $($ServerName): $_"
     }
 }
@@ -155,10 +156,10 @@ if ($SQLServer) {
 
         $FirewallRuleParameters = @{
             ResourceGroupName = $ResourceGroupName
-            ServerName = $ServerName
-            FirewallRuleName = $Rule.Name
-            StartIpAddress = $Rule.StartIpAddress
-            EndIPAddress = $Rule.EndIPAddress
+            ServerName        = $ServerName
+            FirewallRuleName  = $Rule.Name
+            StartIpAddress    = $Rule.StartIpAddress
+            EndIPAddress      = $Rule.EndIPAddress
         }
         Set-SqlServerFirewallRule @FirewallRuleParameters -Verbose:$VerbosePreference -Confirm:$false
     }
@@ -167,7 +168,7 @@ if ($SQLServer) {
     $ExistingRuleNames = Get-AzureRmSqlServerFirewallRule -ResourceGroupName $ResourceGroupName -ServerName $ServerName | Select-Object -ExpandProperty FirewallRuleName
     $ConfigRuleNames = $Config | Select-Object -ExpandProperty Name
     foreach ($ExistingRule in $ExistingRuleNames) {
-        if (!$ConfigRuleNames.Contains($ExistingRule)){
+        if (!$ConfigRuleNames.Contains($ExistingRule)) {
             Write-Verbose -Message "Removing Firewall Rule $ExistingRule"
             $null = Remove-AzureRmSqlServerFirewallRule -ResourceGroupName $ResourceGroupName -ServerName $ServerName -FirewallRuleName $ExistingRule -Force
         }
@@ -176,23 +177,23 @@ if ($SQLServer) {
     # --- Configure Auditing and Threat Detection
     Write-Verbose -Message "Configuring auditing policy"
     $AuditingPolicyParameters = @{
-        ResourceGroupName = $ResourceGroupName
-        ServerName = $ServerName
+        ResourceGroupName  = $ResourceGroupName
+        ServerName         = $ServerName
         StorageAccountName = $AuditingStorageAccountName
-        AuditType = "Blob"
-        EventType = "All"
-        RetentionInDays = 90
+        AuditType          = "Blob"
+        EventType          = "All"
+        RetentionInDays    = 90
     }
     Set-AzureRmSqlServerAuditingPolicy @AuditingPolicyParameters
 
     Write-Verbose -Message "Configuring threat detection policy"
     $ThreatDetectionPolicyParameters = @{
-        ResourceGroupName = $ResourceGroupName
-        ServerName = $ServerName
+        ResourceGroupName            = $ResourceGroupName
+        ServerName                   = $ServerName
         NotificationRecipientsEmails = $ThreatDetectionNotificationRecipient -join ";"
-        StorageAccountName = $AuditingStorageAccountName
-        RetentionInDays = 90
-        ExcludedDetectionType = "None"
+        StorageAccountName           = $AuditingStorageAccountName
+        RetentionInDays              = 90
+        ExcludedDetectionType        = "None"
     }
     Set-AzureRmSqlServerThreatDetectionPolicy @ThreatDetectionPolicyParameters
 }
