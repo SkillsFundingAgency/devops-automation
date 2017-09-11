@@ -94,6 +94,21 @@ Param(
 )
 ```
 
+## Logging
+When logging in a script you should use **Write-Log** from the helper functions module (Modules\Helpers.ps1).
+
+There are four log levels that you can use; Information, Warning, Verbose and Error. For example:
+
+```PowerShell
+Write-Log -LogLevel Information -Message "An informational message"
+
+Write-Log -LogLevel Warning -Message "A warning message"
+
+Write-Log -LogLevel Verbose -Message "A verbose message"
+
+Write-Log -LogLevel Error -Message "An error message"
+```
+
 ## Running scripts in VSTS build and release definitions
 When running scripts in VSTS you should use the built in Azure PowerShell task. This task allows you to make use of pre configured Service Endpoints and therefore keep scripts clear of any hard coded authentication variables.
 

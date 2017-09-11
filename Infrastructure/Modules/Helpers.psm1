@@ -49,3 +49,72 @@ function New-Password {
         throw "Failed to generate a password: $_"
     }
 }
+
+function Write-Log {
+    <#
+    .SYNOPSIS
+    Generic logging wrapper to be used with scripts
+
+    .DESCRIPTION
+    Generic logging wrapper to be used with scripts
+
+    .PARAMETER LogLevel
+    The severity of the log message. Valid options are Information, Warning, Verbose and Error
+
+    .PARAMETER Message
+    The message to log
+
+    .EXAMPLE
+    Write-Log -LogLevel Information -Message "An informational message"
+
+    .EXAMPLE
+    Write-Log -LogLevel Warning -Message "A warning message"
+
+    .EXAMPLE
+    Write-Log -LogLevel Verbose -Message "A verbose message"
+
+    .EXAMPLE
+    Write-Log -LogLevel Error -Message "An error message"
+
+    #>
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory = $true, Position = 0)]
+        [ValidateSet("Information", "Warning", "Verbose", "Error")]
+        [String]$LogLevel,
+        [Parameter(Mandatory = $true, Position = 1)]
+        [ValidateNotNullOrEmpty()]
+        [String]$Message
+    )
+
+    # --- Add a timestamp for local execution
+    if (!$ENV:TF_BUILD) {
+        $TimeStamp = "[{0:MM/dd/yy} {0:HH:mm:ss}]" -f (Get-Date)
+        $Message = "$Timestamp $Message"
+    }
+
+    Switch ($LogLevel) {
+        "Information" {
+            Write-Host "$($Message)"
+            break
+        }
+        "Warning" {
+            if ($ENV:TF_BUILD) {
+                # --- If we are in vsts use task.logissue
+                Write-Host "##vso[task.logissue type=warning;] $($Message)"
+            }
+            else {
+                Write-Warning -Message "$($Message)"
+            }
+            break
+        }
+        "Verbose" {
+            Write-Verbose -Message "$($Message)"
+            break
+        }
+        "Error" {
+            Write-Error -Message "$($Message)"
+            break
+        }
+    }
+}
