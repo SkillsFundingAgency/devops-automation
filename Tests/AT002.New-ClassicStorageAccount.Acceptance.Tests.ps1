@@ -1,6 +1,5 @@
 $Config = Get-Content $PSScriptRoot\..\Tests\Acceptance.Config.json -Raw | ConvertFrom-Json
 Push-Location -Path $PSScriptRoot\..\Infrastructure\Resources\
-
 Describe "New-ClassicStorageAccount Tests" -Tag "Acceptance-ASM" {
 
     $StorageAccountName = "$($Config.classicStorageAccountName)$($Config.suffix)"
@@ -10,6 +9,8 @@ Describe "New-ClassicStorageAccount Tests" -Tag "Acceptance-ASM" {
             Location = $Config.location
             Name = $StorageAccountName
             ContainerName = $Config.classicStorageContainerName
+            TableName = $Config.classicStorageTableName
+            QueueName = $Config.classicStorageQueueName
         }
         $Result = .\New-ClassicStorageAccount.ps1 @Params
         $Result.Count | Should Be 1
@@ -43,8 +44,24 @@ Describe "New-ClassicStorageAccount Tests" -Tag "Acceptance-ASM" {
     }
 
     It "Should create a Storage Container with the correct name" {
+        $Subscription = Get-AzureSubscription -Current
+        Set-AzureSubscription -CurrentStorageAccountName $StorageAccountName -SubscriptionId $Subscription.SubscriptionId
         $Container = (Get-AzureStorageContainer)[0]
         $Container.Name | Should Be $Config.classicStorageContainerName
+    }
+
+    It "Should create a Storage Table with the correct name" {
+        $Subscription = Get-AzureSubscription -Current
+        Set-AzureSubscription -CurrentStorageAccountName $StorageAccountName -SubscriptionId $Subscription.SubscriptionId
+        $Table = (Get-AzureStorageTable)[0]
+        $Table.Name | Should Be $Config.classicStorageTableName
+    }
+
+    It "Should create a Storage Queue with the correct name" {
+        $Subscription = Get-AzureSubscription -Current
+        Set-AzureSubscription -CurrentStorageAccountName $StorageAccountName -SubscriptionId $Subscription.SubscriptionId
+        $Queue = (Get-AzureStorageQueue)[0]
+        $Queue.Name | Should Be $Config.classicStorageQueueName
     }
 }
 

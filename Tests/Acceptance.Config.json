@@ -3,6 +3,8 @@
     "resourceGroupName": "devops-at-rg",
     "classicStorageAccountName": "devopsatstr",
     "classicStorageContainerName": "public",
+    "classicStorageTableName": "table1",
+    "classicStorageQueueName": "queue1",
     "cloudServiceName": "devops-at-cs",
     "appInsightsName": "devops-at-ai",
     "appServiceName": "devops-at-as",
@@ -29,5 +31,5 @@
         }
     ],
     "sqlServerNotificationRecipient": "noreply@devops.com",
-    "suffix": "812d5be5"
+    "suffix": "812d5bex"
 }

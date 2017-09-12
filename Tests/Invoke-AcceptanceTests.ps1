@@ -31,6 +31,10 @@ $TestParameters = @{
     PassThru     = $True
 }
 
+# --- Supress logging
+$null = New-Item -Name SUPPRESSLOGGING -value $true -ItemType Variable -Path Env: -Force
+
+# --- Invoke tests
 $Result = Invoke-Pester @TestParameters
 
 if ($Result.FailedCount -ne 0) { 
