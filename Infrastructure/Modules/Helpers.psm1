@@ -87,34 +87,36 @@ function Write-Log {
         [String]$Message
     )
 
-    # --- Add a timestamp for local execution
-    if (!$ENV:TF_BUILD) {
-        $TimeStamp = "[{0:MM/dd/yy} {0:HH:mm:ss}]" -f (Get-Date)
-        $Message = "$Timestamp $Message"
-    }
+    if (!$ENV:SUPRESSLOGGING) {
+        # --- Add a timestamp for local execution
+        if (!$ENV:TF_BUILD) {
+            $TimeStamp = "[{0:MM/dd/yy} {0:HH:mm:ss}]" -f (Get-Date)
+            $Message = "$Timestamp $Message"
+        }
 
-    Switch ($LogLevel) {
-        "Information" {
-            Write-Host "$($Message)"
-            break
-        }
-        "Warning" {
-            if ($ENV:TF_BUILD) {
-                # --- If we are in vsts use task.logissue
-                Write-Host "##vso[task.logissue type=warning;] $($Message)"
+        Switch ($LogLevel) {
+            "Information" {
+                Write-Host "$($Message)"
+                break
             }
-            else {
-                Write-Warning -Message "$($Message)"
+            "Warning" {
+                if ($ENV:TF_BUILD) {
+                    # --- If we are in vsts use task.logissue
+                    Write-Host "##vso[task.logissue type=warning;] $($Message)"
+                }
+                else {
+                    Write-Warning -Message "$($Message)"
+                }
+                break
             }
-            break
-        }
-        "Verbose" {
-            Write-Verbose -Message "$($Message)"
-            break
-        }
-        "Error" {
-            Write-Error -Message "$($Message)"
-            break
+            "Verbose" {
+                Write-Verbose -Message "$($Message)"
+                break
+            }
+            "Error" {
+                Write-Error -Message "$($Message)"
+                break
+            }
         }
     }
 }
