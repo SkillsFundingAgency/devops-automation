@@ -87,7 +87,7 @@ function Write-Log {
         [String]$Message
     )
 
-    if (!$ENV:SUPRESSLOGGING) {
+    if (!$ENV:SUPPRESSLOGGING) {
         # --- Add a timestamp for local execution
         if (!$ENV:TF_BUILD) {
             $TimeStamp = "[{0:MM/dd/yy} {0:HH:mm:ss}]" -f (Get-Date)

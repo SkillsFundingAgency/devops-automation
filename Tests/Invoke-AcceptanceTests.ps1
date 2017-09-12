@@ -32,7 +32,7 @@ $TestParameters = @{
 }
 
 # --- Supress logging
-$null = New-Item -Name SUPRESSLOGGING -value $true -ItemType Variable -Path Env: -Force
+$null = New-Item -Name SUPPRESSLOGGING -value $true -ItemType Variable -Path Env: -Force
 
 # --- Invoke tests
 $Result = Invoke-Pester @TestParameters
