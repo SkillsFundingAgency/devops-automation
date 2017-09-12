@@ -15,11 +15,20 @@ The name of the Storage Account
 .PARAMETER ContainerName
 The names of one or more Containers to create in the Storage Account
 
+.PARAMETER TableName
+The names of one or more Tables to create in the Storage Account
+
+.PARAMETER QueueName
+The names of one or more Queues to create in the Storage Account
+
 .EXAMPLE
 .\New-ClassicStorageAccount.ps1 -Location "West Europe" -Name stracc
 
 .EXAMPLE
 .\New-ClassicStorageAccount.ps1 -Location "West Europe" -Name stracc -ContainerName public,private,images
+
+.EXAMPLE
+.\New-ClassicStorageAccount.ps1 -Location "West Europe" -Name stracc -ContainerName public,private,images -TableName strtbl -QueueName q1,q2
 
 #>
 
@@ -30,7 +39,11 @@ Param(
     [Parameter(Mandatory = $true)]
     [String]$Name,
     [Parameter(Mandatory = $false)]
-    [String[]]$ContainerName
+    [String[]]$ContainerName,
+    [Parameter(Mandatory = $false)]
+    [String[]]$TableName,
+    [Parameter(Mandatory = $false)]
+    [String[]]$QueueName
 )
 
 # --- Import Azure Helpers
@@ -38,7 +51,7 @@ Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
 Write-Log -LogLevel Information -Message "Checking for existing Storage Account"
-# --- Check if storage account exists in our subscrption 
+# --- Check if storage account exists in our subscription 
 $StorageAccount = Get-AzureStorageAccount -StorageAccountName $Name -ErrorAction SilentlyContinue
  
 # --- Check if the resource name has been taken elsewhere
@@ -68,6 +81,40 @@ if ($ContainerName -and $StorageAccount) {
             }
             catch {
                 throw "Could not create container $Container : $_"
+            }
+        }
+    }
+}
+
+# --- Create tables in the storage account if required
+if ($TableName -and $StorageAccount) {
+    $Subscription = Get-AzureSubscription -Current
+    Set-AzureSubscription -CurrentStorageAccountName $Name -SubscriptionId $Subscription.SubscriptionId
+    foreach ($Table in $TableName) {
+        $TableExists = Get-AzureStorageTable -Name $Table -ErrorAction SilentlyContinue
+        if (!$TableExists) {
+            try {
+                Write-Log -LogLevel Information -Message "Creating table $Table"
+                $null = New-AzureStorageTable -Name $Table
+            } catch {
+                throw "Could not create table $Table : $_"
+            }
+        }
+    }
+}
+
+# --- Create queues in the storage account if required
+if ($QueueName -and $StorageAccount) {
+    $Subscription = Get-AzureSubscription -Current
+    Set-AzureSubscription -CurrentStorageAccountName $Name -SubscriptionId $Subscription.SubscriptionId
+    foreach ($Queue in $QueueName) {
+        $QueueExists = Get-AzureStorageQueue -Name $Queue -ErrorAction SilentlyContinue
+        if (!$QueueExists) {
+            try {
+                Write-Log -LogLevel Information -Message "Creating queue $Queue"
+                $null = New-AzureStorageQueue -Name $Queue
+            } catch {
+                throw "Could not create queue $QueueName : $_"
             }
         }
     }
