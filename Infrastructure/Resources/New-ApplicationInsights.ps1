@@ -37,7 +37,7 @@ Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 foreach ($Service in $Name) {
 
     Write-Verbose -Message "Checking for existing Application Insights: $Service"
-    $ApplicationInsights = Find-AzureRmResource -ResourceNameEquals $Service -ErrorAction SilentlyContinue
+    $ApplicationInsights = Find-AzureRmResource -ResourceNameEquals $Service -ResourceType "Microsoft.Insights/components"
 
     if (!$ApplicationInsights) {
         Write-Log -LogLevel Information -Message "Creating Application Insights $Service"
@@ -49,6 +49,8 @@ foreach ($Service in $Name) {
             PropertyObject    = @{"Application_Type" = "web"}
         }
         $ApplicationInsights = New-AzureRmResource @ApplicationInsightsParameters -Force
+    } else {
+        $ApplicationInsights = Get-AzureRmResource -ResourceId $ApplicationInsights.ResourceId
     }
 
     Write-Output ("##vso[task.setvariable variable=InstrumentationKey-$($Service);]$($ApplicationInsights.Properties.InstrumentationKey)")
