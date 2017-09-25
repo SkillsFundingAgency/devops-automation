@@ -117,8 +117,8 @@ if ($AppService -and $AppServicePlanTier -ne "Free") {
             APIVersion     = "2015-08-01"
         }
         $null = Set-AzureRmResource @SetAzureResourceParameters -Force -ErrorAction Stop
-        Write-Log -LogLevel Information -Message "Restarting App Service $AppServiceName"
-        $null = Restart-AzureRmWebApp -ResourceGroupName $ResourceGroupName -Name $AppServiceName
+        #Write-Log -LogLevel Information -Message "Restarting App Service $AppServiceName"
+        #$null = Restart-AzureRmWebApp -ResourceGroupName $ResourceGroupName -Name $AppServiceName
     }
     catch {
         throw "Could not set properties on $($AppServiceName): $($_.Exception.Message)"
