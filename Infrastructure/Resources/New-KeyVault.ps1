@@ -15,7 +15,7 @@ The name of the destination Resource Group for the resource
 .PARAMETER Name
 The name of Keyvault
 
-.PARAMETER SPObjectId
+.PARAMETER ServicePrincipalObjectId
 Object ID of the Service principal that can access the KeyVault
 
 .PARAMETER SecretName
@@ -38,7 +38,7 @@ Param (
     [Parameter(Mandatory = $true)]
     [String]$Name,
     [Parameter(Mandatory = $false)]
-    [String]$SPObjectId,
+    [String]$ServicePrincipalObjectId,
     [Parameter(ParameterSetName = "secret", Mandatory = $true)]
     [String]$SecretName,
     [Parameter(ParameterSetName = "secret", Mandatory = $true)]
@@ -57,18 +57,18 @@ if (!$KeyVault) {
     $KeyVault = New-AzureRmKeyVault -VaultName $Name -ResourceGroupName $ResourceGroupName -Location $Location    
 }
 
-if ($SPObjectId) {
+if ($ServicePrincipalObjectId) {
     Write-Log -Message "Checking access policies for specified Object ID" -LogLevel Verbose
-    if (!($KeyVault.AccessPolicies | Where-Object {$_.ObjectId -eq $SPObjectId})) {
+    if (!($KeyVault.AccessPolicies | Where-Object {$_.ObjectId -eq $ServicePrincipalObjectId})) {
         Write-Log -Message "Setting new access policy" -LogLevel Information
-        Set-AzureRmKeyVaultAccessPolicy -VaultName $KeyVault.VaultName -ResourceGroupName $KeyVault.ResourceGroupName -ObjectId $SPObjectId -PermissionsToSecrets get
+        Set-AzureRmKeyVaultAccessPolicy -VaultName $KeyVault.VaultName -ResourceGroupName $KeyVault.ResourceGroupName -ObjectId $ServicePrincipalObjectId -PermissionsToSecrets get
     }
 }
 
 if ($PSCmdlet.ParameterSetName -eq "secret") {
     Write-Log -Message "Checking for existing secret" -LogLevel Verbose
     $Secret = Get-AzureKeyVaultSecret -VaultName $KeyVault.VaultName -Name $SecretName
-    if(!$Secret){
+    if (!$Secret) {
         Write-Log -Message "Adding secret to keyvault" -LogLevel Information
         $SecretPassword = ConvertTo-SecureString -String $SecretValue -AsPlainText -Force
         $null = Set-AzureKeyVaultSecret -VaultName $KeyVault.VaultName -Name $SecretName -SecretValue $SecretPassword
