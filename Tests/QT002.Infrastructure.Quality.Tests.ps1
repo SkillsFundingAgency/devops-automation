@@ -6,7 +6,8 @@ Describe "Code quality tests" -Tag "Quality" {
     $ExcludeRules = @(
         "PSAvoidUsingWriteHost",
         "PSAvoidUsingEmptyCatchBlock",
-        "PSAvoidUsingPlainTextForPassword"
+        "PSAvoidUsingPlainTextForPassword",
+        "PSAvoidUsingConvertToSecureStringWithPlainText"
     )
  
     foreach ($Script in $Scripts) {
