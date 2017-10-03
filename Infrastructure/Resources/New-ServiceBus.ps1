@@ -84,5 +84,23 @@ if ($PSBoundParameters.ContainsKey("QueueName") -and $ServiceBus) {
     }
 }
 
-$Keys = Get-AzureRmServiceBusNamespaceKey -Name $NamespaceName -ResourceGroup $ResourceGroupName -AuthorizationRuleName RootManageSharedAccessKey
+# ---- Create read write access policy
+$AuthorizationRuleName = "ReadWrite"
+$RWAccessPolicy = Get-AzureRmServiceBusNamespaceAuthorizationRule -ResourceGroup $ResourceGroupName -NamespaceName $NamespaceName -AuthorizationRuleName $AuthorizationRuleName -ErrorAction SilentlyContinue
+if(!$RWAccessPolicy) {
+    try {
+        Write-Log -LogLevel Information -Message "Creating Authorization Rule: $AuthorizationRuleName"
+        $RWAccessPolicyParameters = @{
+            ResourceGroup = $ResourceGroupName
+            NamespaceName = $NamespaceName
+            AuthorizationRuleName = $AuthorizationRuleName
+            Rights = "Send","Listen"
+        }
+        $null = New-AzureRmServiceBusNamespaceAuthorizationRule @RWAccessPolicyParameters
+    } catch {
+        throw "Could not create Authorization Rule $($AuthorizationRuleName): $_"
+    }
+}
+
+$Keys = Get-AzureRmServiceBusNamespaceKey -Name $NamespaceName -ResourceGroup $ResourceGroupName -AuthorizationRuleName $AuthorizationRuleName
 Write-Output ("##vso[task.setvariable variable=ServiceBusEndpoint;]$($Keys.PrimaryConnectionString)")

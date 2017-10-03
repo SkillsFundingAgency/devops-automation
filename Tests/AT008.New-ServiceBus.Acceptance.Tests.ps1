@@ -40,6 +40,16 @@ Describe "New-ServiceBus Tests" -Tag "Acceptance-ARM" {
             $ExistingQueue.Name | Should Be $Queue
         }
     }
+
+    It "Should create an authorization rule named ReadWrite" {
+        {Get-AzureRmServiceBusNamespaceAuthorizationRule -ResourceGroup $ResourceGroupName -NamespaceName $ServiceBusName -AuthorizationRuleName ReadWrite} | Should Not Throw
+    }
+
+    It "Should create an authorization rule with Send and Listen rights" {
+        $AuthorizationRule = Get-AzureRmServiceBusNamespaceAuthorizationRule -ResourceGroup $ResourceGroupName -NamespaceName $ServiceBusName -AuthorizationRuleName ReadWrite
+        $Eval = $AuthorizationRule.Rights -contains "Send" -and $AuthorizationRule.Rights -contains "Listen" 
+        $Eval | Should Be $true
+    }
 }
 
 Pop-Location
