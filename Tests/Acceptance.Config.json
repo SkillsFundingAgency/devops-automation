@@ -13,6 +13,14 @@
     "serviceBusQueueName": [
         "q1"
     ],
+    "serviceBusTopicDefinition": [
+        {
+            "topicName": "test_topic",
+            "subscription": [
+                "test_sub1"
+           ]
+        }
+    ],
     "certificateName": "testcert.pfx",
     "certificatePassword": "password",
     "sqlServerAdminUsername": "sqladmin",
