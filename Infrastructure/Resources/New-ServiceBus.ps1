@@ -43,6 +43,8 @@ For Example:
 .EXAMPLE
 .\New-ServiceBus.ps1 -Location "West Europe" -ResourceGroupName arm-rg-01 -NamespaceName svcbusns01 -QueueName q1,q2,q3
 
+.EXAMPLE
+.\New-ServiceBus.ps1 -Location "West Europe" -ResourceGroupName arm-rg-01 -NamespaceName svcbusns01 -TopicDefinition C:\AzureTopicDefinitionStructure.Json
 #>
 
 [CmdletBinding(DefaultParameterSetName="Standard")]
