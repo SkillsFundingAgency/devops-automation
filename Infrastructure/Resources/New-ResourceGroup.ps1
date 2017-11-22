@@ -49,7 +49,7 @@ $ExistingResourceGroup = Get-AzureRmResourceGroup -Name $Name -ErrorAction Silen
 if (!$ExistingResourceGroup) {
     try {
         Write-Log -LogLevel Information -Message "Creating Resource Group"
-        $null = New-AzureRmResourceGroup -Location $Location -Name $Name  -Tag @{$TagConfig.Name = $ConfigTagValue}
+        $null = New-AzureRmResourceGroup -Location $Location -Name $Name -Tag @{$TagConfig.Name = $ConfigTagValue}
     }
     catch {
         throw "Could not create Resource Group $Name : $_"
