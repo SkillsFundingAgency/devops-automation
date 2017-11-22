@@ -98,7 +98,7 @@ if ($ExistingResourceGroup -and $TagConfigPath) {
             }         
         }
         # --- Once all tags enumerated 
-        # --- Set a value if tag already present
+        # --- Overwrite value if Tag already present
         If (!$TagPresentValueCorrect) {
             $Tags[$TagConfig.Name] = $ConfigTagValue 
             Set-AzureRmResourceGroup -Tag $Tags -Name $Name
