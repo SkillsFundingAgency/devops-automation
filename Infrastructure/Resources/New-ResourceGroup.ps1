@@ -16,7 +16,7 @@ The name of the Resource Group
 Path to the configuration JSON file
 
 .EXAMPLE
-.\New-ResourceGroup.ps1 -Name arm-rg-01 -Location "West Europe" -TagConfigPath "c:\Users\phil_\devops-automation\Infrastructure\Resources\TagConfig.json"
+.\New-ResourceGroup.ps1 -Name arm-rg-01 -Location "West Europe" -TagConfigPath "c:\temp\TagConfig.json"
 
 #>
 
