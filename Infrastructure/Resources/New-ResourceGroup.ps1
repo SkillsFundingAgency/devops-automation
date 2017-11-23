@@ -90,12 +90,14 @@ if ($ExistingResourceGroup -and $TagConfigPath) {
         Write-Log -LogLevel Information "Resource Exists - Checking for Valid Tags"
         # --- Enumerate all tags
         foreach ($Tag in $Tags.GetEnumerator()) {
-            # --- See if the tag name and value match the Config values
-            If ($($Tag.Name) -eq $TagConfig.Name -and $($Tag.Value) -ne $ConfigTagValue) {    
-                $TagPresentValueCorrect = $False    
-            }
-            If ($($Tag.Name) -eq $TagConfig.Name -and $($Tag.Value) -eq $ConfigTagValue) {    
-                $TagValueUpdated = $True    
+            If ($Tag -ne $null) {
+                # --- See if the tag name and value match the Config values
+                If ($($Tag.Name) -eq $TagConfig.Name -and $($Tag.Value) -ne $ConfigTagValue) {    
+                    $TagPresentValueCorrect = $False    
+                }
+                If ($($Tag.Name) -eq $TagConfig.Name -and $($Tag.Value) -eq $ConfigTagValue) {    
+                    $TagValueUpdated = $True    
+                }
             }
         }
         # --- Once all tags enumerated 
