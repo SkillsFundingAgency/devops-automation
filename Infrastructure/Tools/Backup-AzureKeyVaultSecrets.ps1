@@ -39,8 +39,8 @@ ForEach ($Subscription in $Subscriptions) {
                 ForEach ($Secret in $Secrets) {
                     $SecretName = $Secret.Name
                     # --- Backup Secrets
-                    Backup-AzureKeyVaultSecret -VaultName $KeyVaults.Name -Name $Secret.Name -OutputFile $BackupPath$SecretName".blob" -force
-                    Write-Log -LogLevel Information -Message "Backed up "$BackupPath$SecretName".blob from " $KeyVaults.Name 
+                    Backup-AzureKeyVaultSecret -VaultName $KeyVault.Name -Name $Secret.Name -OutputFile $BackupPath$SecretName".blob" -force
+                    Write-Log -LogLevel Information -Message "Backed up "$BackupPath$SecretName".blob from " $KeyVault.Name 
                 }
             }
         }
