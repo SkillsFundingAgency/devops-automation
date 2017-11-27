@@ -19,7 +19,7 @@ Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
 # --- Set backup Ptah if not passed as a paramater
-If ($BackupPath -eq $null){
+If ($BackupPath -eq $null) {
     $BackupPath = (get-location).Drive.Name + ":\temp\Backup\"
 }
 
@@ -34,12 +34,14 @@ ForEach ($Subscription in $Subscriptions) {
         $KeyVaults = Get-AzureRmResource -ResourceGroupName $ResourceGroup.ResourceGroupName -ResourceType Microsoft.KeyVault/vaults
         If ($KeyVaults -ne $null ) {
             # --- Retrieve all Secrets from KeyVault
-            $Secrets = Get-AzureKeyVaultSecret -VaultName $KeyVaults.Name 
-            ForEach ($Secret in $Secrets) {
-                $SecretName = $Secret.Name
-                # --- Backup Secrets
-                Backup-AzureKeyVaultSecret -VaultName $KeyVaults.Name -Name $Secret.Name -OutputFile $BackupPath$SecretName".blob" -force
-                Write-Log -LogLevel Information -Message "Backed up "$BackupPath$SecretName".blob from " $KeyVaults.Name 
+            ForEach ($KeyVault in $KeyVaults) {
+                $Secrets = Get-AzureKeyVaultSecret -VaultName $KeyVault.Name 
+                ForEach ($Secret in $Secrets) {
+                    $SecretName = $Secret.Name
+                    # --- Backup Secrets
+                    Backup-AzureKeyVaultSecret -VaultName $KeyVaults.Name -Name $Secret.Name -OutputFile $BackupPath$SecretName".blob" -force
+                    Write-Log -LogLevel Information -Message "Backed up "$BackupPath$SecretName".blob from " $KeyVaults.Name 
+                }
             }
         }
     }
