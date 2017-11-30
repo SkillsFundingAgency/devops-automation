@@ -89,36 +89,37 @@ if ($ExistingResourceGroup -and $TagConfigPath) {
     try {
         Write-Log -LogLevel Information "Resource Exists - Checking for Valid Tags"
         # --- Enumerate all tags
-        foreach ($Tag in $Tags.GetEnumerator()) {
-            If ($Tag -ne $null) {
-                # --- See if the tag name and value match the Config values
-                If ($($Tag.Name) -eq $TagConfig.Name -and $($Tag.Value) -ne $ConfigTagValue) {    
-                    $TagPresentValueCorrect = $False    
-                }
-                If ($($Tag.Name) -eq $TagConfig.Name -and $($Tag.Value) -eq $ConfigTagValue) {    
-                    $TagValueUpdated = $True    
+        If ($Tags -ne $null) {
+                foreach ($Tag in $Tags.GetEnumerator()) {
+                    # --- See if the tag name and value match the Config values
+                    If ($($Tag.Name) -eq $TagConfig.Name -and $($Tag.Value) -ne $ConfigTagValue) {    
+                            $TagPresentValueCorrect = $False    
+                    }
+                    If ($($Tag.Name) -eq $TagConfig.Name -and $($Tag.Value) -eq $ConfigTagValue) {    
+                            $TagValueUpdated = $True    
+                    }
+                    
                 }
             }
-        }
-        # --- Once all tags enumerated 
-        # --- Overwrite value if Tag already present
-        If (!$TagPresentValueCorrect) {
-            $Tags[$TagConfig.Name] = $ConfigTagValue 
-            $null = Set-AzureRmResourceGroup -Tag $Tags -Name $Name
-            Write-Log -LogLevel Information "Existing Tag Value amended Name:$ConfigTagName Values:$ConfigTagValue "
-            $TagValueUpdated = $True
-        }
-        # --- Create Tag & Value if it doesn't exist
-        If (!$TagValueUpdated) {
-            $Tags += @{$TagConfig.Name = $ConfigTagValue}
-            $null = Set-AzureRmResourceGroup -Tag $Tags -Name $Name
-            Write-Log -LogLevel Information "Tag & Value Created  Name:$ConfigTagName Values:$ConfigTagValue "
-        }
-    }  
-    catch {
-        throw "Could not amend Tags . The Error is : $_"
-    }      
-}
+            # --- Once all tags enumerated 
+            # --- Overwrite value if Tag already present
+            If (!$TagPresentValueCorrect) {
+                $Tags[$TagConfig.Name] = $ConfigTagValue 
+                $null = Set-AzureRmResourceGroup -Tag $Tags -Name $Name
+                Write-Log -LogLevel Information "Existing Tag Value amended Name:$ConfigTagName Values:$ConfigTagValue "
+                $TagValueUpdated = $True
+            }
+            # --- Create Tag & Value if it doesn't exist
+            If (!$TagValueUpdated) {
+                $Tags += @{$TagConfig.Name = $ConfigTagValue}
+                $null = Set-AzureRmResourceGroup -Tag $Tags -Name $Name
+                Write-Log -LogLevel Information "Tag & Value Created  Name:$ConfigTagName Values:$ConfigTagValue "
+            }
+        }  
+        catch {
+            throw "Could not amend Tags . The Error is : $_"
+        }      
+    }
 
-Write-Output ("##vso[task.setvariable variable=ResourceGroup;]$Name")
-Write-Output ("##vso[task.setvariable variable=Location;]$Location")
+    Write-Output ("##vso[task.setvariable variable=ResourceGroup;]$Name")
+    Write-Output ("##vso[task.setvariable variable=Location;]$Location")

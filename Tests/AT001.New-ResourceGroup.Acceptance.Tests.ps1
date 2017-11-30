@@ -26,9 +26,9 @@ Describe "New-ResourceGroup Tests" -Tag "Acceptance-ARM" {
     }
 
     It "Should contain a Resource Group with Tags" {
-        $Result = Get-AzureRmResourceGroup -Name $ResourceGroupName -ErrorAction SilentlyContinue
-        $Result.Tags.Count | Should Be -ge 1
-
+        $null = .\New-ResourceGroup.ps1 -Location "$($Config.location)" -Name $ResourceGroupName -TagConfigPath "$($Config.TagConfigPath)" 
+        $Result = Get-AzureRMResourceGroup -Name $ResourceGroupName -Location "$Config.location"
+        $Result.Tags.Count | Should -Not -Be 0
     }
 }
 
