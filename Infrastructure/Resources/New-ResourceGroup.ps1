@@ -61,9 +61,6 @@ If ($TagConfigPath) {
     $TagConfig = Get-Content -Path $TagConfigPath -Raw | ConvertFrom-Json
     $ConfigTagValue = $TagConfig.Value | ConvertTo-Json
     $ConfigTagName = $TagConfig.Name 
-    # --- Define & Set variables for Tags
-    $TagValueUpdated = $False
-    $Tags = $ExistingResourceGroup.Tags
 }
 
 # --- Create Resource Group if it doesn't exist
@@ -86,9 +83,10 @@ if (!$ExistingResourceGroup) {
 # --- If resource already exists check the Tags are present and hold the same values as the Config File       
 if ($ExistingResourceGroup -and $TagConfigPath) {
     try {
+        $Tags = $ExistingResourceGroup.Tags
         Write-Log -LogLevel Information "Resource Exists - Checking for Valid Tags"
-        # --- Enumerate all tags
-        If ($Tags -ne $null) {
+        # --- Enumerate all tags (If statement needed to account for $null values)
+        If ($Tags) {
                 foreach ($Tag in $Tags.GetEnumerator()) {
                     # --- See if the tag name and value match the Config values
                     If ($($Tag.Name) -eq $TagConfig.Name -and $($Tag.Value) -ne $ConfigTagValue) {    
