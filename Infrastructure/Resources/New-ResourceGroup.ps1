@@ -48,21 +48,17 @@ Param (
     [ValidateNotNullOrEmpty()]
     [String]$TagConfigPath
 )
-
 # --- Import Azure Helpers
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
-
 Write-Log -LogLevel Information -Message "Checking for existing Resource Group $Name"
 $ExistingResourceGroup = Get-AzureRmResourceGroup -Name $Name -ErrorAction SilentlyContinue
-
 # --- Enumerate Tag Value's from Config File if Parameter is set 
 If ($TagConfigPath) {
     $TagConfig = Get-Content -Path $TagConfigPath -Raw | ConvertFrom-Json
     $ConfigTagValue = $TagConfig.Value | ConvertTo-Json
     $ConfigTagName = $TagConfig.Name 
 }
-
 # --- Create Resource Group if it doesn't exist
 if (!$ExistingResourceGroup) {
     try {
@@ -78,7 +74,6 @@ if (!$ExistingResourceGroup) {
         throw "Could not create Resource Group $Name : $_"
     }
 }
-
 # --- \\Tags Section\\
 # --- If resource already exists check the Tags are present and hold the same values as the Config File       
 if ($ExistingResourceGroup -and $TagConfigPath) {
@@ -95,7 +90,6 @@ if ($ExistingResourceGroup -and $TagConfigPath) {
                 If ($($Tag.Name) -eq $TagConfig.Name -and $($Tag.Value) -eq $ConfigTagValue) {    
                     $TagValueUpdated = $True    
                 }
-                    
             }
         }
         # --- Once all tags enumerated 
@@ -117,6 +111,5 @@ if ($ExistingResourceGroup -and $TagConfigPath) {
         throw "Could not amend Tags . The Error is : $_"
     }      
 }
-
 Write-Output ("##vso[task.setvariable variable=ResourceGroup;]$Name")
 Write-Output ("##vso[task.setvariable variable=Location;]$Location")
