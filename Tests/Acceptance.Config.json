@@ -41,6 +41,6 @@
     ],
     "sqlServerNotificationRecipient": "noreply@devops.com",
     "suffix": "812d5bepj",
-    "TagConfigPath" :"..\\Resources\\TagConfig.json"
+    "TagConfigPath" :".\\TagConfig.json"
 }
 
