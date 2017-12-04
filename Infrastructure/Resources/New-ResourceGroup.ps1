@@ -62,7 +62,6 @@ If ($TagConfigPath) {
     $ConfigTagValue = $TagConfig.Value | ConvertTo-Json
     $ConfigTagName = $TagConfig.Name 
     # --- Define & Set variables for Tags
-    $TagPresentValueCorrect = $True 
     $TagValueUpdated = $False
     $Tags = $ExistingResourceGroup.Tags
 }
@@ -93,7 +92,7 @@ if ($ExistingResourceGroup -and $TagConfigPath) {
                 foreach ($Tag in $Tags.GetEnumerator()) {
                     # --- See if the tag name and value match the Config values
                     If ($($Tag.Name) -eq $TagConfig.Name -and $($Tag.Value) -ne $ConfigTagValue) {    
-                            $TagPresentValueCorrect = $False    
+                            $TagPresentValueInCorrect = $True    
                     }
                     If ($($Tag.Name) -eq $TagConfig.Name -and $($Tag.Value) -eq $ConfigTagValue) {    
                             $TagValueUpdated = $True    
@@ -103,7 +102,7 @@ if ($ExistingResourceGroup -and $TagConfigPath) {
             }
             # --- Once all tags enumerated 
             # --- Overwrite value if Tag already present
-            If (!$TagPresentValueCorrect) {
+            If ($TagPresentValueInCorrect) {
                 $Tags[$TagConfig.Name] = $ConfigTagValue 
                 $null = Set-AzureRmResourceGroup -Tag $Tags -Name $Name
                 Write-Log -LogLevel Information "Existing Tag Value amended Name:$ConfigTagName Values:$ConfigTagValue "
