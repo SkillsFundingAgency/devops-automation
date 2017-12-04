@@ -24,6 +24,12 @@ Describe "New-ResourceGroup Tests" -Tag "Acceptance-ARM" {
         $Result = Get-AzureRMResourceGroup -Name $ResourceGroupName -Location "$Config.location"
         $Result.location | Should Be $Config.location.Replace(" ","").ToLower()
     }
+
+    It "Should contain a Resource Group with Tags" {
+        $null = .\New-ResourceGroup.ps1 -Location "$($Config.location)" -Name $ResourceGroupName -TagConfigPath "$($Config.TagConfigPath)" 
+        $Result = Get-AzureRMResourceGroup -Name $ResourceGroupName -Location "$Config.location"
+        $Result.Tags.Count | Should -Not -Be 0
+    }
 }
 
 Pop-Location
