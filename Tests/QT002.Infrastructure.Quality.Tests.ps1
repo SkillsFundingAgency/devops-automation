@@ -7,7 +7,6 @@ Describe "Code quality tests" -Tag "Quality" {
         "PSAvoidUsingWriteHost",
         "PSAvoidUsingEmptyCatchBlock",
         "PSAvoidUsingPlainTextForPassword"
-        "PSPossibleIncorrectComparisonWithNull"
     )
  
     foreach ($Script in $Scripts) {
