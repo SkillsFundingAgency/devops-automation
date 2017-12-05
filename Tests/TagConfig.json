@@ -1,0 +1,26 @@
+{
+    "Tags": [
+        {
+            "Name": "CP",
+            "Value": {
+                "BSA": "DAS",
+                "SA": "DAS",
+                "ENV": "PD",
+                "WL": "TBD",
+                "DC": "TBD",
+                "BC": "DAS"
+            }
+        },
+        {
+            "Name": "DO",
+            "Value": {
+                "BSA": "TBD",
+                "SA": "TBD",
+                "ENV": "PJO",
+                "WL": "MRO",
+                "DC": "KEO",
+                "BC": "DAS"
+            }
+        }
+    ]
+}
