@@ -91,12 +91,12 @@ If ($ExistingResourceGroup -and $TagConfigPath) {
         # --- If statement needed to account for $null values
         If ($Tags) {
             # --- enumerate all tags in json
-            foreach ($ConfigTag in $TagConfig.Tags) {
+            ForEach ($ConfigTag in $TagConfig.Tags) {
                 if ($ConfigTag) {
                     $ConfigTagValue = $ConfigTag.Value | ConvertTo-Json
                     $ConfigTagName = $ConfigTag.Name
                     # --- enumerate all tags in retrived RG object        
-                    foreach ($Tag in $Tags.GetEnumerator()) {
+                    ForEach ($Tag in $Tags.GetEnumerator()) {
                         # --- See if the tag name and value match the Config values
                         If ($($Tag.Name) -eq $ConfigTagName -and $($Tag.Value) -ne $ConfigTagValue) {    
                             $TagPresentValueInCorrect = $True    
@@ -122,11 +122,24 @@ If ($ExistingResourceGroup -and $TagConfigPath) {
                     $TagValueUpdated = $null
                 }
             }
+        } 
+        # --- Create Tags if RG tag array is not already initialised and we have a tag config path passed
+        Else {
+            If ($TagConfigPath) {
+                ForEach ($ConfigTag in $TagConfig.Tags) {  
+                    $ConfigTagValue = $ConfigTag.Value | ConvertTo-Json
+                    $ConfigTagName = $ConfigTag.Name
+                    $Tags += @{$ConfigTagName = $ConfigTagValue}
+                    $null = Set-AzureRmResourceGroup -Tag $Tags -Name $Name
+                    Write-Log -LogLevel Information "Tag & Value Created  Name:$ConfigTagName Values:$ConfigTagValue "    
+                }
+            }    
         }
-    }  
+    } 
     catch {
         throw "Could not amend Tags . The Error is : $_"
     }      
-}
+}   
+    
 Write-Output ("##vso[task.setvariable variable=ResourceGroup;]$Name")
 Write-Output ("##vso[task.setvariable variable=Location;]$Location")
