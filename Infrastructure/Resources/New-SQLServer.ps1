@@ -179,9 +179,8 @@ if ($SQLServer) {
     $AuditingPolicyParameters = @{
         ResourceGroupName  = $ResourceGroupName
         ServerName         = $ServerName
+        State              = "Enabled"
         StorageAccountName = $AuditingStorageAccountName
-        AuditType          = "Blob"
-        EventType          = "All"
         RetentionInDays    = 90
     }
     Set-AzureRmSqlServerAuditingPolicy @AuditingPolicyParameters

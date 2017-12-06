@@ -104,7 +104,7 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
         }
 
         It "Should create a SQL Server and enable auditing" {
-            $AuditingPolicy = Get-AzureRmSqlServerAuditingPolicy -ResourceGroupName $ResourceGroupName -ServerName $SQLServerName
+            $AuditingPolicy = Get-AzureRmSqlServerAuditing -ResourceGroupName $ResourceGroupName -ServerName $SQLServerName
             $AuditingPolicy.AuditState | Should Be "Enabled"
         }
 
