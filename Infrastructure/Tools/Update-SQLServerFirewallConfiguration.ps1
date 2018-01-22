@@ -48,53 +48,85 @@ Update-SQLServerFirewallConfiguration -ServerName "svr-01" -FirewallRuleConfigur
 #>
 
 Param (
-    [Parameter(Mandatory = $true, Position = 0)]    
-    [String]$ServerName,
-    [Parameter(Mandatory = $true, Position = 1)]
-    [String]$FirewallRuleConfiguration,
-    [Parameter(Mandatory = $false, Position = 2)]
-    [Switch]$RemoveLegacyRules
+    [Parameter(Mandatory = $true)]    
+    [String[]]$SubscriptionName,
+    [Parameter(Mandatory = $true)]   
+    [String]$ServerNamePattern,
+    [Parameter(Mandatory = $true)]
+    [String]$FirewallRuleConfigurationPath,
+    [Parameter(Mandatory = $false)]
+    [Switch]$RemoveLegacyRules,
+    [Parameter(Mandatory = $false)]
+    [Switch]$DryRun
 )
 
 # --- Import helper modules
-Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
-# --- Check for an existing sql server in the subscription
-Write-Log -LogLevel Information -Message "Checking for SQL Server $ServerName"
-$SQLServer = Find-AzureRmResource -ResourceNameEquals $ServerName
+try {
 
-if (!$SQLServer) {
-    Write-Log -LogLevel Error -Message "Could not find SQL Server with name $ServerName"
-    throw "Could not find SQL Server with name $ServerName"
-}
-
-# --- Set Resource Group Name
-$ResourceGroupName = $SQLServer.ResourceGroupName
-
-# --- Create or update firewall rules on the SQL Server instance
-$Config = Get-Content -Path (Resolve-Path -Path $FirewallRuleConfiguration).Path -Raw | ConvertFrom-Json
-foreach ($Rule in $Config) {
-
-    $FirewallRuleParameters = @{
-        ResourceGroupName = $ResourceGroupName
-        ServerName        = $ServerName
-        FirewallRuleName  = $Rule.Name
-        StartIpAddress    = $Rule.StartIpAddress
-        EndIPAddress      = $Rule.EndIPAddress
+    if (!((Get-AzureRmContext).Account)) {
+        throw "You need to log in first"
     }
-    Write-Log -LogLevel Information -Message "Creating firewall entry $($Rule.Name)"
-    Set-SqlServerFirewallRule @FirewallRuleParameters -Verbose:$VerbosePreference -Confirm:$false
-}
 
-# --- If the rule exists in Azure but not in the config it should be removed
-if ($PSBoundParameters.ContainsKey("RemoveLegacyRules")) {
-    $ExistingRuleNames = Get-AzureRmSqlServerFirewallRule -ResourceGroupName $ResourceGroupName -ServerName $ServerName | Select-Object -ExpandProperty FirewallRuleName
-    $ConfigRuleNames = $Config | Select-Object -ExpandProperty Name
-    foreach ($ExistingRule in $ExistingRuleNames) {
-        if (!$ConfigRuleNames.Contains($ExistingRule)) {
-            Write-Log -LogLevel Warning -Message "Removing Firewall Rule $ExistingRule"
-            $null = Remove-AzureRmSqlServerFirewallRule -ResourceGroupName $ResourceGroupName -ServerName $ServerName -FirewallRuleName $ExistingRule -Force
+    # --- Retrieve configuration and parse
+    $Config = Get-Content -Path (Resolve-Path -Path $FirewallRuleConfigurationPath).Path -Raw | ConvertFrom-Json
+
+    foreach ($Subscription in $SubscriptionName) {
+        Write-Log -LogLevel Information -Message "Searching for Sql Servers matching $ServerNamePattern in $Subscription"
+        $null = Select-AzureRmSubscription -SubscriptionName $Subscription
+        $SubscriptionSqlServers = Find-AzureRmResource -ResourceNameContains $ServerNamePattern -ResourceType "Microsoft.Sql/Servers"
+
+        foreach ($SqlServer in $SubscriptionSqlServers) {
+            # --- Set Resource Group Name
+            $ResourceGroupName = $SQLServer.ResourceGroupName
+            $ServerName = $SqlServer.Name
+
+            Write-Log -LogLevel Information -Message "Processing Sql Server $ServerName"
+            
+            # --- Create or update firewall rules on the SQL Server instance
+            foreach ($Rule in $Config) {
+
+                $FirewallRuleParameters = @{
+                    ResourceGroupName = $ResourceGroupName
+                    ServerName        = $ServerName
+                    FirewallRuleName  = $Rule.Name
+                    StartIpAddress    = $Rule.StartIpAddress
+                    EndIPAddress      = $Rule.EndIPAddress
+                }
+
+                $FirewallRule = Get-AzureRmSqlServerFirewallRule -FirewallRuleName $Rule.Name -ServerName $ServerName -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue
+
+                if (!$FirewallRule) {
+                    Write-Log -LogLevel Information -Message "  -> Creating firewall rule $($Rule.Name)"
+
+                    if (!$DryRun.IsPresent){
+                        $null = New-AzureRmSqlServerFirewallRule @FirewallRuleParameters -ErrorAction Stop
+                    }
+                } else {
+                    Write-Log -LogLevel Information -Message "  -> Updating firewall rule $($Rule.Name)"
+                    if (!$DryRun.IsPresent){
+                        $null = Set-AzureRmSqlServerFirewallRule @FirewallRuleParameters -ErrorAction Stop
+                    }
+                }
+            }
+
+            # --- If the rule exists in Azure but not in the config it should be removed
+            if ($PSBoundParameters.ContainsKey("RemoveLegacyRules")) {
+                $ExistingRuleNames = Get-AzureRmSqlServerFirewallRule -ResourceGroupName $ResourceGroupName -ServerName $ServerName | Select-Object -ExpandProperty FirewallRuleName
+                $ConfigRuleNames = $Config | Select-Object -ExpandProperty Name
+                foreach ($ExistingRule in $ExistingRuleNames) {
+                    if (!$ConfigRuleNames.Contains($ExistingRule)) {
+                        Write-Log -LogLevel Warning -Message "Removing Firewall Rule $ExistingRule"
+                        if (!$DryRun.IsPresent) {
+                            $null = Remove-AzureRmSqlServerFirewallRule -ResourceGroupName $ResourceGroupName -ServerName $ServerName -FirewallRuleName $ExistingRule -Force
+                        }
+                    }
+                }
+            }
         }
     }
+}
+catch {
+    throw $_
 }
