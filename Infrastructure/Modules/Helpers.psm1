@@ -39,7 +39,7 @@ function New-Password {
         # --- https://msdn.microsoft.com/en-us/library/system.web.security.membership.generatepassword.aspx
         $null = [Reflection.Assembly]::LoadWithPartialName("System.Web")
         $Password = [System.Web.Security.Membership]::GeneratePassword($Length,$NumberOfNonAlphaNumericCharacters)
-
+        $Password = $Password -replace ";" ,"S"
         [PSCustomObject]@{
             PasswordAsString = $Password
             PasswordAsSecureString = ($Password | ConvertTo-SecureString -AsPlainText -Force)
