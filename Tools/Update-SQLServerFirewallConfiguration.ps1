@@ -78,7 +78,7 @@ Param (
 
 Begin {
     # --- Import helper modules
-    Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
+    Import-Module (Resolve-Path -Path $PSScriptRoot\..\Infrastructure\Modules\Helpers.psm1).Path
 
     # --- Check if there is a session open
     if (!((Get-AzureRmContext).Account)) {
