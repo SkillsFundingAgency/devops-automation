@@ -19,6 +19,7 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
         KeyVaultSecretName = $SQLServerName
         ServerName = $SQLServerName
         ServerAdminUsername = $Config.SQLServerAdminUsername
+        ActiveDirectoryAdministrator = $Config.SQLServerActiveDirectoryAdministrator
         FirewallRuleConfiguration = $FirewallRuleConfigurationPath
         AuditingStorageAccountName = $StorageAccountName
         ThreatDetectionNotificationRecipient = $Config.SQLServerNotificationRecipient
@@ -111,6 +112,11 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
         It "Should create a SQL Server and enable threat detection" {
             $ThreatDetectionPolicy = Get-AzureRmSqlServerThreatDetectionPolicy -ResourceGroupName $ResourceGroupName -ServerName $SQLServerName
             $ThreatDetectionPolicy.ThreatDetectionState | Should be "Enabled"
+        }
+
+        It "Should add an Active Directory administrator to the server" {
+            $SQLServerActiveDirectoryAdministrator = Get-AzureRmSqlServerActiveDirectoryAdministrator -ResourceGroupName $ResourceGroupName -ServerName $SQLServerName
+            $SQLServerActiveDirectoryAdministrator.DisplayName | Should Be $Config.SQLServerActiveDirectoryAdministrator
         }
     }
 

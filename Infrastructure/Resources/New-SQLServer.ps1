@@ -24,6 +24,9 @@ The name of the Azure SQL Server
 .PARAMETER ServerAdminUsername
 The username of the SA account for the SQL Server
 
+.PARAMETER ActiveDirectoryAdministrator
+The name of the principal to add as an active directory administrator
+
 .PARAMETER FirewallRuleConfiguration
 The path to the firewall rule JSON configuration document
 
@@ -62,6 +65,7 @@ $SQLServerParameters = @ {
     KeyVaultSecretName = "secret01"
     ServerName = "sql-svr-01"
     ServerAdminUserName = "sql-sa"
+    ActiveDirectoryAdministrator = "SQL ADMIN GROUP"
     FirewallRuleConfiguration = ".\sql.firewall.rules.json"
 }
 .\New-SQLServer.ps1 @SQLServerParameters
@@ -83,6 +87,8 @@ Param (
     [String]$ServerName,
     [Parameter(Mandatory = $true)]
     [String]$ServerAdminUsername,
+    [Parameter(Mandatory = $false)]
+    [String]$ActiveDirectoryAdministrator,
     [Parameter(Mandatory = $true)]
     [String]$FirewallRuleConfiguration,
     [Parameter(Mandatory = $true)]
@@ -144,6 +150,20 @@ if (!$SQLServer) {
 }
 
 if ($SQLServer) {
+
+    # --- If the ActiveDirectoryAdministrator parameter has been passed, add the principal to the server
+    if ($PSBoundParameters.ContainsKey("ActiveDirectoryAdministrator")){
+        Write-Log -LogLevel Information -Message "Setting an Active Directory Administrator $ActiveDirectoryAdministrator"
+        $ServerActiveDirectoryAdministrator = Get-AzureRmSqlServerActiveDirectoryAdministrator -ResourceGroupName $ResourceGroupName -ServerName $ServerName
+
+        if ($ServerActiveDirectoryAdministrator -ne $ActiveDirectoryAdministrator) {
+            try {
+                $null = Set-AzureRmSqlServerActiveDirectoryAdministrator -ResourceGroupName $ResourceGroupName -ServerName $ServerName -DisplayName $ActiveDirectoryAdministrator
+            } catch {
+                throw "Could not set an Active Directory Administrator on server $($ServerName): $_"
+            }
+        }
+    }
 
     # --- If the server exists and there is no associated secret, throw an error
     if (!$ServerAdminPassword) {
