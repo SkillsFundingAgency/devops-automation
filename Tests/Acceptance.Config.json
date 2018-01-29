@@ -40,5 +40,6 @@
         }
     ],
     "sqlServerNotificationRecipient": "noreply@devops.com",
+    "sqlServerActiveDirectoryAdministrator": "DAS DEV SQL ADM",
     "suffix": "812d5bex"
 }
