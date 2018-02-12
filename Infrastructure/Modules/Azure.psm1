@@ -114,9 +114,7 @@ Function Set-SQLServerFirewallRule {
 
     #>
 
-    #Temporarily set to Low to resolve issues
-    #TODO: Investigate and revert
-    [CmdletBinding(SupportsShouldProcess, ConfirmImpact="Low")]
+    [CmdletBinding(SupportsShouldProcess, ConfirmImpact="High")]
     Param (
         [Parameter(Mandatory=$true)]
         [String]$ResourceGroupName,
