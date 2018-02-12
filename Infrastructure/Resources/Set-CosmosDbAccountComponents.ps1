@@ -1,3 +1,31 @@
+<#
+
+.SYNOPSIS
+Create databases, collections and stored procedures within a CosmosDb Account
+
+.DESCRIPTION
+Create databases, collections and stored procedures within a CosmosDb Account
+
+.PARAMETER ResourceGroupName
+The name of the Resource Group for the CosmosDb Account
+
+.PARAMETER CosmosDbAccountName
+The name of the CosmosDb Account
+
+.PARAMETER CosmosDbConfigurationString
+CosmosDb JSON configuration in string format
+
+.PARAMETER CosmosDbConfigurationFilePath
+CosmosDb JSON configuration as a file
+
+.Parameter CosmosDbProjectFolderPath
+Root folder to search for Stored Procedure files
+
+.EXAMPLE
+.\Set-CosmosDbAccountComponents -ResourceGroupName $ResourceGroupName -CosmosDbAccountName $CosmosDbAccountName `
+                -CosmosDbConfigurationFilePath $ConfigurationFilePath  -CosmosDbProjectFolderPath $MongoDbProjectFolderPath
+#>
+
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $false)]
