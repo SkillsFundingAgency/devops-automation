@@ -107,6 +107,7 @@ $CosmosDbConnection = New-CosmosDbConnection -Account $CosmosDbAccountName -Reso
 foreach ($Database in $CosmosDbConfiguration.Databases) {
     # --- Create Database
     try {
+        $ExistingDatabase = $null
         $ExistingDatabase = Get-CosmosDbDatabase -Connection $CosmosDbConnection -Id $Database.DatabaseName
     }
     catch {
@@ -119,6 +120,7 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
     foreach ($Collection in $Database.Collections) {
         # --- Create or Update Collection
         try {
+            $ExistingCollection = $null
             $GetCosmosDbDatabaseParameters = @{
                 Connection = $CosmosDbConnection
                 Database   = $Database.DatabaseName
@@ -135,6 +137,7 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
                 Database        = $Database.DatabaseName
                 Id              = $Collection.CollectionName
                 OfferThroughput = $Collection.OfferThroughput
+                PartitionKey    = $Collection.PartitionKey
             }
             $null = New-CosmosDbCollection @NewCosmosDbCollectionParameters
         }
@@ -142,6 +145,7 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
         foreach ($StoredProcedure in $Collection.StoredProcedures) {
             # --- Create Stored Procedure
             try {
+                $ExistingStoredProcedure = $null
                 $GetCosmosDbStoredProcParameters = @{
                     Connection   = $CosmosDbConnection
                     Database     = $Database.DatabaseName
