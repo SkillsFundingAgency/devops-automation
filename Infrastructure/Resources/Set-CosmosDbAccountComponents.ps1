@@ -22,8 +22,13 @@ CosmosDb JSON configuration as a file
 Root folder to search for Stored Procedure files
 
 .EXAMPLE
-.\Set-CosmosDbAccountComponents -ResourceGroupName $ResourceGroupName -CosmosDbAccountName $CosmosDbAccountName `
-                -CosmosDbConfigurationFilePath $ConfigurationFilePath  -CosmosDbProjectFolderPath $MongoDbProjectFolderPath
+$CosmosDbParameters = @{
+    ResourceGroupName = $ResourceGroupName
+    CosmosDbAccountName = $CosmosDbAccountName
+    CosmosDbConfigurationFilePath = $ConfigurationFilePath
+    CosmosDbProjectFolderPath = $MongoDbProjectFolderPath
+}
+.\Set-CosmosDbAccountComponents @CosmosDbParameters
 #>
 
 [CmdletBinding()]
@@ -61,16 +66,18 @@ Class CosmosDbSchema {
     [CosmosDbDatabase[]]$Databases
 }
 
-
 if (!(Get-Module CosmosDB)) {
     Install-Module CosmosDB -Scope CurrentUser -Force
     Import-Module CosmosDB
 }
 
-
 Write-Verbose "Searching for existing account"
-$ExistingAccount = Find-AzureRmResource -ResourceType "Microsoft.DocumentDb/databaseAccounts"-ResourceGroupName $ResourceGroupName `
-    -ResourceNameEquals $CosmosDbAccountName
+$FindCosmosDbAccountParameters = @{
+    ResourceType       = "Microsoft.DocumentDb/databaseAccounts"
+    ResourceGroupName  = $ResourceGroupName
+    ResourceNameEquals = $CosmosDbAccountName
+}
+$ExistingAccount = Find-AzureRmResource @FindCosmosDbAccountParameters
 
 if (!$ExistingAccount) {
     throw "CosmosDb Account could not be found, make sure it has been deployed."
@@ -93,7 +100,6 @@ catch {
 
 $CosmosDbConnection = New-CosmosDbConnection -Account $CosmosDbAccountName -ResourceGroup $ResourceGroupName -MasterKeyType 'PrimaryMasterKey'
 
-
 foreach ($Database in $CosmosDbConfiguration.Databases) {
     # --- Create Database
     try {
@@ -109,27 +115,46 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
     foreach ($Collection in $Database.Collections) {
         # --- Create or Update Collection
         try {
-            $ExistingCollection = Get-CosmosDbCollection -Connection $CosmosDbConnection -Database $Database.DatabaseName `
-                -Id $Collection.CollectionName
+            $GetCosmosDbDatabaseParameters = @{
+                Connection = $CosmosDbConnection
+                Database   = $Database.DatabaseName
+                Id         = $Collection.CollectionName
+            }
+            $ExistingCollection = Get-CosmosDbCollection @GetCosmosDbDatabaseParameters
         }
         catch {
         }
         if (!$ExistingCollection) {
             Write-Host "Creating Collection: $($Collection.CollectionName) in $($Database.DatabaseName)"
-            $null = New-CosmosDbCollection -Connection $CosmosDbConnection -Database $Database.DatabaseName `
-                -Id $Collection.CollectionName -OfferThroughput $($Collection.OfferThroughput)
+            $NewCosmosDbCollectionParameters = @{
+                Connection      = $CosmosDbConnection
+                Database        = $Database.DatabaseName
+                Id              = $Collection.CollectionName
+                OfferThroughput = $Collection.OfferThroughput
+            }
+            $null = New-CosmosDbCollection @NewCosmosDbCollectionParameters
         }
 
         foreach ($StoredProcedure in $Collection.StoredProcedures) {
             # --- Create Stored Procedure
             try {
-                $ExistingStoredProcedure = Get-CosmosDbStoredProcedure -Connection $CosmosDbConnection -Database $Database.DatabaseName `
-                    -CollectionId $Collection.CollectionName -Id $StoredProcedure.StoredProcedureName
+                $GetCosmosDbStoredProcParameters = @{
+                    Connection   = $CosmosDbConnection
+                    Database     = $Database.DatabaseName
+                    CollectionId = $Collection.CollectionName
+                    Id           = $StoredProcedure.StoredProcedureName
+                }
+                $ExistingStoredProcedure = Get-CosmosDbStoredProcedure @GetCosmosDbStoredProcParameters
             }
             catch {
             }
-            $StoredProcedureFile = Get-ChildItem -Path (Resolve-Path $CosmosDbProjectFolderPath) -Filter "$($StoredProcedure.StoredProcedureName)*" `
-                -Recurse -File | ForEach-Object { $_.FullName }
+            $FindStoredProcFileParameters = @{
+                Path    = (Resolve-Path $CosmosDbProjectFolderPath)
+                Filter  = "$($StoredProcedure.StoredProcedureName)*"
+                Recurse = $true
+                File    = $true
+            }
+            $StoredProcedureFile = Get-ChildItem @FindStoredProcFileParameters | ForEach-Object { $_.FullName }
             if (!$StoredProcedureFile) {
                 throw "Stored Procedure name $($StoredProcedure.StoredProcedureName) could not be found in $(Resolve-Path $CosmosDbProjectFolderPath)"
             }
@@ -138,13 +163,25 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
             }
             if (!$ExistingStoredProcedure) {
                 Write-Host "Creating Stored Procedure: $($StoredProcedure.StoredProcedureName) in $($Collection.CollectionName) in $($Database.DatabaseName)"
-                $null = New-CosmosDbStoredProcedure -Connection $CosmosDbConnection -Database $Database.DatabaseName `
-                    -CollectionId $Collection.CollectionName -Id $StoredProcedure.StoredProcedureName -StoredProcedureBody (Get-Content $StoredProcedureFile -Raw)
+                $NewCosmosDbStoredProcParameters = @{
+                    Connection          = $CosmosDbConnection
+                    Database            = $Database.DatabaseName
+                    CollectionId        = $Collection.CollectionName
+                    Id                  = $StoredProcedure.StoredProcedureName
+                    StoredProcedureBody = (Get-Content $StoredProcedureFile -Raw)
+                }
+                $null = New-CosmosDbStoredProcedure @NewCosmosDbStoredProcParameters
             }
             elseif ($ExistingStoredProcedure.body -ne (Get-Content $StoredProcedureFile -Raw)) {
                 Write-Host "Updating Stored Procedure: $($StoredProcedure.StoredProcedureName) in $($Collection.CollectionName) in $($Database.DatabaseName)"
-                $null = Set-CosmosDbStoredProcedure -Connection $CosmosDbConnection -Database $Database.DatabaseName `
-                    -CollectionId $Collection.CollectionName -Id $StoredProcedure.StoredProcedureName -StoredProcedureBody (Get-Content $StoredProcedureFile -Raw)
+                $SetCosmosDbStoredProcParameters = @{
+                    Connection          = $CosmosDbConnection
+                    Database            = $Database.DatabaseName
+                    CollectionId        = $Collection.CollectionName
+                    Id                  = $StoredProcedure.StoredProcedureName
+                    StoredProcedureBody = (Get-Content $StoredProcedureFile -Raw)
+                }
+                $null = Set-CosmosDbStoredProcedure @SetCosmosDbStoredProcParameters
             }
         }
     }
