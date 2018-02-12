@@ -19,7 +19,7 @@
             "subscription": [
                 "test_sub1",
                 "test_sub2"
-           ]
+            ]
         }
     ],
     "certificateName": "testcert.pfx",
@@ -41,5 +41,25 @@
     ],
     "sqlServerNotificationRecipient": "noreply@devops.com",
     "sqlServerActiveDirectoryAdministrator": "DAS DEV SQL ADM",
+    "cosmosDbAccountName": "devops-at-cosmosacc",
+    "cosmosDbTestConfig": {
+        "Databases": [
+            {
+                "DatabaseName": "db1",
+                "Collections": [
+                    {
+                        "CollectionName": "coll1",
+                        "OfferThroughput": 500,
+                        "PartitionKey": "part1",
+                        "StoredProcedures": [
+                            {
+                                "StoredProcedureName": "sproc1"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
     "suffix": "812d5bex"
 }
