@@ -87,7 +87,7 @@ if (!$ExistingAccount) {
 
 try {
     if ($PSCmdlet.ParameterSetName -eq "AsFilePath") {
-        if (!Test-Path $CosmosDbConfigurationFilePath) {
+        if (!(Test-Path $CosmosDbConfigurationFilePath)) {
             Write-Log -Message "Configuration File Path can not be found" -LogLevel Error
             throw "$_"
         }
