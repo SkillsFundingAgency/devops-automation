@@ -91,7 +91,7 @@ Begin {
 
         # --- Fall back to old property structure
         if (!$SubscriptionName){
-            (Get-AzureRmContext).Subscription.SubscriptionName
+            $SubscriptionName = (Get-AzureRmContext).Subscription.SubscriptionName
         }
 
         if (!$SubscriptionName){
