@@ -64,9 +64,9 @@ Update-SQLServerFirewallConfiguration -SubscriptionName $SubScriptions -ServerNa
 #>
 [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = "High")]
 Param (
-    [Parameter(Mandatory = $true, ValueFromPipeline = $true)]    
+    [Parameter(Mandatory = $false, ValueFromPipeline = $true)]
     [String[]]$SubscriptionName,
-    [Parameter(Mandatory = $true)]   
+    [Parameter(Mandatory = $true)]
     [String]$ServerNamePattern,
     [Parameter(Mandatory = $true)]
     [String]$FirewallRuleConfigurationPath,
@@ -85,6 +85,11 @@ Begin {
         throw "You need to log in first"
     }
 
+    # --- If SubscriptionName is null get the current subscription from the context
+    if (!$PSBoundParameters.ContainsKey("SubscriptionName")){
+        $SubscriptionName = (Get-AzureRmContext).Subscription.Name
+    }
+
     # --- Retrieve configuration and parse
     $Config = Get-Content -Path (Resolve-Path -Path $FirewallRuleConfigurationPath).Path -Raw | ConvertFrom-Json
 }
@@ -95,17 +100,17 @@ Process {
             Write-Log -LogLevel Information -Message "Searching for Sql Servers matching $ServerNamePattern in $Subscription"
             $null = Select-AzureRmSubscription -SubscriptionName $Subscription
             $SubscriptionSqlServers = Find-AzureRmResource -ResourceNameContains $ServerNamePattern -ResourceType "Microsoft.Sql/Servers"
-    
+
             foreach ($SqlServer in $SubscriptionSqlServers) {
                 # --- Set Resource Group Name
                 $ResourceGroupName = $SQLServer.ResourceGroupName
                 $ServerName = $SqlServer.Name
-    
+
                 Write-Log -LogLevel Information -Message "Processing Sql Server $ServerName"
-                
+
                 # --- Create or update firewall rules on the SQL Server instance
                 foreach ($Rule in $Config) {
-    
+
                     $FirewallRuleParameters = @{
                         ResourceGroupName = $ResourceGroupName
                         ServerName        = $ServerName
@@ -113,13 +118,13 @@ Process {
                         StartIpAddress    = $Rule.StartIpAddress
                         EndIPAddress      = $Rule.EndIPAddress
                     }
-    
+
                     # --- Try to retrieve the firewall rule by name
                     $FirewallRule = Get-AzureRmSqlServerFirewallRule -FirewallRuleName $Rule.Name -ServerName $ServerName -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue
-    
+
                     if (!$FirewallRule) {
                         Write-Log -LogLevel Information -Message "  -> Creating firewall rule $($Rule.Name)"
-    
+
                         if (!$DryRun.IsPresent) {
                             $null = New-AzureRmSqlServerFirewallRule @FirewallRuleParameters -ErrorAction Stop
                         }
@@ -131,7 +136,7 @@ Process {
                         }
                     }
                 }
-    
+
                 # --- If the rule exists in Azure but not in the config it should be removed
                 if ($PSBoundParameters.ContainsKey("RemoveLegacyRules")) {
                     $ExistingRuleNames = Get-AzureRmSqlServerFirewallRule -ResourceGroupName $ResourceGroupName -ServerName $ServerName | Select-Object -ExpandProperty FirewallRuleName
