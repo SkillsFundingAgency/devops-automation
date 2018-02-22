@@ -88,6 +88,15 @@ Begin {
     # --- If SubscriptionName is null get the current subscription from the context
     if (!$PSBoundParameters.ContainsKey("SubscriptionName")){
         $SubscriptionName = (Get-AzureRmContext).Subscription.Name
+
+        # --- Fall back to old property structure
+        if (!$SubscriptionName){
+            (Get-AzureRmContext).Subscription.SubscriptionName
+        }
+
+        if (!$SubscriptionName){
+            throw "Could not retrieve subscription name from context"
+        }
     }
 
     # --- Retrieve configuration and parse
