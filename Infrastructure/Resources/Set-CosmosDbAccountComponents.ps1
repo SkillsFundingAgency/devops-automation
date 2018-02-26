@@ -50,10 +50,18 @@ Class CosmosDbStoredProcedure {
     [string]$StoredProcedureName
 }
 
+Class CosmosDbIndexingPolicy {
+	[string]$indexStringRange = New-CosmosDbCollectionIncludedPathIndex -Kind Range -DataType String -Precision -1
+	[int]$indexNumberRange = New-CosmosDbCollectionIncludedPathIndex -Kind Range -DataType Number -Precision -1
+	[string]$indexIncludedPath = New-CosmosDbCollectionIncludedPath -Path '/*' -Index $indexStringRange, $indexNumberRange
+	[string]$indexingPolicy = New-CosmosDbCollectionIndexingPolicy -Automatic $true -IndexingMode Consistent -IncludedPath $indexIncludedPath
+}
+
 Class CosmosDbCollection {
     [string]$CollectionName
     [string]$PartitionKey
     [int]$OfferThroughput
+	[CosmosDbIndexingPolicy[]]$IndexingPolicy
     [CosmosDbStoredProcedure[]]$StoredProcedures
 }
 
@@ -138,6 +146,7 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
                 Id              = $Collection.CollectionName
                 OfferThroughput = $Collection.OfferThroughput
                 PartitionKey    = $Collection.PartitionKey
+				InexingPolicy   = $Collection.InexingPolicy
             }
             $null = New-CosmosDbCollection @NewCosmosDbCollectionParameters
         }
