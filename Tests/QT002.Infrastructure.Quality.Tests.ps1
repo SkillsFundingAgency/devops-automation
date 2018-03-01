@@ -8,7 +8,7 @@ Describe "Code quality tests" -Tag "Quality" {
         "PSAvoidUsingEmptyCatchBlock",
         "PSAvoidUsingPlainTextForPassword"
     )
- 
+
     foreach ($Script in $Scripts) {
         Context $Script.BaseName {
             forEach ($Rule in $Rules) {
