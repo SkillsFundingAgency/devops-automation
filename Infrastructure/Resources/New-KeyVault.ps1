@@ -45,10 +45,6 @@ Param (
     [String]$SecretValue
 )
 
-# --- Import Azure Helpers
-Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
-Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
-
 $DeploymentParams = @{
     ResourceGroupName        = $ResourceGroupName
     TemplateFile             = "$PSScriptRoot\ARM-Templates\keyvault.json"
