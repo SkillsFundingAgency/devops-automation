@@ -27,21 +27,21 @@ Value of the secret to add
 .EXAMPLE
 
 #>
-[CmdletBinding(DefaultParameterSetName = "standard")]
+[CmdletBinding()]
 Param (
     [Parameter(Mandatory = $false)]
     [ValidateSet("West Europe", "North Europe")]
     [String]$Location = $ENV:Location,
     [Parameter(Mandatory = $false)]
     [ValidateNotNullOrEmpty()]
-    [String]$ResourceGroupName = $ENV:ResourceGroup,	
+    [String]$ResourceGroupName = $ENV:ResourceGroup,
     [Parameter(Mandatory = $true)]
     [String]$Name,
-    [Parameter(Mandatory = $false)]
+    [Parameter(Mandatory = $true)]
     [String]$ServicePrincipalObjectId,
-    [Parameter(ParameterSetName = "secret", Mandatory = $true)]
+    [Parameter(Mandatory = $true)]
     [String]$SecretName,
-    [Parameter(ParameterSetName = "secret", Mandatory = $true)]
+    [Parameter(Mandatory = $true)]
     [String]$SecretValue
 )
 
@@ -49,30 +49,16 @@ Param (
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
-Write-Log -Message "Searching for existing KeyVault" -LogLevel Verbose
-$KeyVault = Get-AzureRmKeyVault -VaultName $Name -ResourceGroupName $ResourceGroupName
-
-if (!$KeyVault) {
-    Write-Log -Message "Creating new KeyVault $($Name) in $($ResourceGroupName)" -LogLevel Information
-    $KeyVault = New-AzureRmKeyVault -VaultName $Name -ResourceGroupName $ResourceGroupName -Location $Location    
+$DeploymentParams = @{
+    ResourceGroupName        = $ResourceGroupName
+    TemplateFile             = "$PSScriptRoot\ARM-Templates\keyvault.json"
+    keyVaultName             = $Name
+    servicePrincipalObjectId = $ServicePrincipalObjectId
+    secretName               = $SecretName
+    secretValue              = $SecretValue
 }
-
-if ($ServicePrincipalObjectId) {
-    Write-Log -Message "Checking access policies for specified Object ID" -LogLevel Verbose
-    if (!($KeyVault.AccessPolicies | Where-Object {$_.ObjectId -eq $ServicePrincipalObjectId})) {
-        Write-Log -Message "Setting new access policy" -LogLevel Information
-        Set-AzureRmKeyVaultAccessPolicy -VaultName $KeyVault.VaultName -ResourceGroupName $KeyVault.ResourceGroupName -ObjectId $ServicePrincipalObjectId -PermissionsToSecrets get
-    }
+$DeploymentOutput = New-AzureRmResourceGroupDeployment @DeploymentParams
+$KeyVaultUri = $DeploymentOutput.Outputs.keyVaultUri.Value
+if ($KeyVaultUri) {
+    Write-Output ("##vso[task.setvariable variable=KeyVaultUri;]$($KeyVaultUri)")
 }
-
-if ($PSCmdlet.ParameterSetName -eq "secret") {
-    Write-Log -Message "Checking for existing secret" -LogLevel Verbose
-    $Secret = Get-AzureKeyVaultSecret -VaultName $KeyVault.VaultName -Name $SecretName
-    if (!$Secret) {
-        Write-Log -Message "Adding secret to keyvault" -LogLevel Information
-        $SecretPassword = ConvertTo-SecureString -String $SecretValue -AsPlainText -Force
-        $null = Set-AzureKeyVaultSecret -VaultName $KeyVault.VaultName -Name $SecretName -SecretValue $SecretPassword
-    }
-}
-
-Write-Output ("##vso[task.setvariable variable=KeyVaultUri;]$($KeyVault.VaultUri)")

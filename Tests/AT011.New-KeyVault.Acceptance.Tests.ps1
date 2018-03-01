@@ -24,11 +24,6 @@ Describe "New-KeyVault Tests" -Tag "Acceptance-ARM" {
         $Keyvault = Get-AzureRmKeyVault -VaultName $KeyVaultName -ResourceGroupName $ResourceGroupName
         ($KeyVault.AccessPolicies | Where-Object {$_.ObjectId -eq $config.servicePrincipalObjectId}).Count | Should be 1
     }
-
-    It "Should create a KeyVault with the specified secret name and value" {
-        $Secret = Get-AzureKeyVaultSecret -VaultName $KeyVaultName -Name $config.keyVaultSecretName
-        $Secret.SecretValueText | Should be $config.keyVaultSecretValue
-    }
 }
 
 Pop-Location

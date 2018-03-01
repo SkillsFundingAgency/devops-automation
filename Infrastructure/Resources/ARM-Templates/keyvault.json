@@ -1,0 +1,64 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "keyVaultName": {
+            "type": "string"
+        },
+        "servicePrincipalObjectId": {
+            "type": "string"
+        },
+        "secretName": {
+            "type": "string"
+        },
+        "secretValue": {
+            "type": "string"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.KeyVault/vaults",
+            "name": "[parameters('keyVaultName')]",
+            "apiVersion": "2015-06-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "accessPolicies": [
+                    {
+                        "objectId": "[parameters('servicePrincipalObjectId')]",
+                        "tenantId": "[subscription().tenantId]",
+                        "permissions": {
+                            "secrets": [
+                                "Get",
+                                "List",
+                                "Set"
+                            ]
+                        }
+                    }
+                ],
+                "tenantId": "[subscription().tenantId]",
+                "sku": {
+                    "name": "Standard",
+                    "family": "A"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "name": "[concat(parameters('keyVaultName'), '/',  parameters('secretName'))]",
+            "apiVersion": "2015-06-01",
+            "properties": {
+                "value": "[parameters('secretValue')]"
+            },
+            "dependsOn": [
+                "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+            ]
+        }
+    ],
+    "outputs": {
+        "KeyVaultUri": {
+            "type": "string",
+            "value": "[reference(parameters('keyVaultName')).vaultUri]"
+        }
+    }
+}
