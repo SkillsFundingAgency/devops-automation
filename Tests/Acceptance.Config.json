@@ -40,10 +40,10 @@
         }
     ],
     "sqlServerNotificationRecipient": "noreply@devops.com",
-    "keyVaultName" : "devops-at-kv",
-    "servicePrincipalObjectId" : "00f3af31-c78f-4ca3-aedf-0f2858cbcfa7",
-    "keyVaultSecretName" : "username",
-    "keyVaultSecretValue" : "password",
+    "keyVaultName": "devops-at-kv",
+    "servicePrincipalObjectId": "00f3af31-c78f-4ca3-aedf-0f2858cbcfa7",
+    "keyVaultSecretName": "username",
+    "keyVaultSecretValue": "password",
     "sqlServerActiveDirectoryAdministrator": "DAS DEV SQL ADM",
     "cosmosDbAccountName": "devops-at-cosmosacc",
     "cosmosDbTestConfig": {
