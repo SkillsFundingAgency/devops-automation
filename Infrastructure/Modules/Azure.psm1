@@ -19,7 +19,7 @@
         .EXAMPLE
         Resolve-AzureRMResource -PublicResourceFQDN resource1.azurewebsites.net
 
-    #>    
+    #>
     [CmdletBinding(DefaultParameterSetName="Standard")]
     Param (
         [Parameter(Mandatory=$true, ParameterSetName="ResourceGroup")]
@@ -29,27 +29,29 @@
         [Parameter(Mandatory=$false)]
         [Int]$TimeOut = 200
     )
-    
+
     $i = 1
     $exists = $false
     while (!$exists) {
         Write-host "Checking deployment status in $($i*5) seconds"
         Start-Sleep -s ($i * 5)
-        if ($i -lt 12) { 
+        if ($i -lt 12) {
             $i++
-        } 
+        }
         try {
-            
+
             if ($PSCmdlet.ParameterSetName -eq "ResourceGroup") {
                 $resource = Get-AzureRmResource -ResourceGroupName $ResourceGroupName -ResourceName $ResourceName
-            } else {
+            }
+            else {
                 $resource = Find-AzureRmResource -ResourceNameEquals $ResourceName
             }
 
             if ($resource) {
                 $exists = $true
             }
-        } catch {
+        }
+        catch {
             Write-Host "$($_.Exception)"
         }
     }
@@ -75,11 +77,11 @@ function Resolve-AzureRmResource {
         [Parameter(Mandatory=$true, Position=0)]
         [String]$PublicResourceFqdn
     )
-    
+
     $NSLookupResult = Resolve-DnsName -Name $PublicResourceFqdn.ToLower() -ErrorAction SilentlyContinue
-	if ($NSLookupResult.Count -gt 0 -and $NSLookupResult.IPAddress -notcontains "81.200.64.50"){
+    if ($NSLookupResult.Count -gt 0 -and $NSLookupResult.IPAddress -notcontains "81.200.64.50") {
         $ResourceExists = $true
-	}
+    }
     $ResourceExists
 }
 
@@ -111,10 +113,11 @@ Function Set-SQLServerFirewallRule {
     Set-AzureSqlServerFirewallRule -FirewallRuleName "Rule1" -StartIpAddress "xxx.xxx.xxx.xxx" -EndIpAddress "xxx.xxx.xxx.xxx" -ServerName $ServerName -ResourceGroupName $ResourceGroupName
 
     #>
-    [CmdletBinding(SupportsShouldProcess,ConfirmImpact="High")]
+
+    [CmdletBinding(SupportsShouldProcess, ConfirmImpact="High")]
     Param (
         [Parameter(Mandatory=$true)]
-        [String]$ResourceGroupName, 
+        [String]$ResourceGroupName,
         [Parameter(Mandatory=$true)]
         [String]$ServerName,
         [Parameter(Mandatory=$true)]
@@ -135,21 +138,23 @@ Function Set-SQLServerFirewallRule {
             # --- If the firewall doesn't exist, create it. If it does, update it
             $FirewallRuleParameters = @{
                 ResourceGroupName = $ResourceGroupName
-                ServerName = $ServerName
-                FirewallRuleName = $FirewallRuleName
-                StartIpAddress = $StartIpAddress
-                EndIpAddress = $EndIpAddress
+                ServerName        = $ServerName
+                FirewallRuleName  = $FirewallRuleName
+                StartIpAddress    = $StartIpAddress
+                EndIpAddress      = $EndIpAddress
             }
 
             if (!$FirewallRule) {
                 Write-Verbose -Message "Creating firewall rule $FireWallRuleName"
                 $null = New-AzureRmSqlServerFirewallRule @FirewallRuleParameters -ErrorAction Stop
-            } else {
+            }
+            else {
                 Write-Verbose -Message "Updating firewall rule $FirewallRuleName"
                 $null = Set-AzureRmSqlServerFirewallRule @FirewallRuleParameters -ErrorAction Stop
             }
         }
-    }catch {
+    }
+    catch {
         throw "Could not set SQL server firewall rule $FirewallRuleName on $($ServerName): $_"
     }
 }

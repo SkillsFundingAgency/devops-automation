@@ -13,6 +13,15 @@
     "serviceBusQueueName": [
         "q1"
     ],
+    "serviceBusTopicDefinition": [
+        {
+            "topicName": "test_topic",
+            "subscription": [
+                "test_sub1",
+                "test_sub2"
+            ]
+        }
+    ],
     "certificateName": "testcert.pfx",
     "certificatePassword": "password",
     "sqlServerAdminUsername": "sqladmin",
@@ -31,9 +40,33 @@
         }
     ],
     "sqlServerNotificationRecipient": "noreply@devops.com",
+<<<<<<< HEAD
     "keyVaultName" : "devops-at-kv",
     "servicePrincipalObjectId" : "00f3af31-c78f-4ca3-aedf-0f2858cbcfa7",
     "keyVaultSecretName" : "username",
     "keyVaultSecretValue" : "password",
+=======
+    "sqlServerActiveDirectoryAdministrator": "DAS DEV SQL ADM",
+    "cosmosDbAccountName": "devops-at-cosmosacc",
+    "cosmosDbTestConfig": {
+        "Databases": [
+            {
+                "DatabaseName": "db1",
+                "Collections": [
+                    {
+                        "CollectionName": "coll1",
+                        "OfferThroughput": 500,
+                        "PartitionKey": "part1",
+                        "StoredProcedures": [
+                            {
+                                "StoredProcedureName": "sproc1"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+>>>>>>> master
     "suffix": "812d5bex"
 }

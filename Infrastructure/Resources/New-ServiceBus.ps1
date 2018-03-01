@@ -21,27 +21,56 @@ The Sku of the Service Bus Namespace
 .PARAMETER QueueName
 One or more queues to create in the Service Bus Namespace
 
+.Parameter TopicDefinition
+A file containing an array of topics and their subscribers. This file is managed by the developers of the solution.
+
+For Example:
+
+[
+    {
+        "topicName": "test_topic",
+        "subscription": [
+            "test_sub1",
+            "test_sub2",
+            "test_sub3"
+       ]
+    }
+]
+
 .EXAMPLE
 .\New-ServiceBus.ps1 -Location "West Europe" -ResourceGroupName arm-rg-01 -ServiceBusNamespaceName svcbusns01
 
 .EXAMPLE
 .\New-ServiceBus.ps1 -Location "West Europe" -ResourceGroupName arm-rg-01 -NamespaceName svcbusns01 -QueueName q1,q2,q3
 
+.EXAMPLE
+.\New-ServiceBus.ps1 -Location "West Europe" -ResourceGroupName arm-rg-01 -NamespaceName svcbusns01 -TopicDefinition C:\AzureTopicDefinitionStructure.Json
 #>
 
+[CmdletBinding(DefaultParameterSetName="Standard")]
 Param (
-    [Parameter(Mandatory = $false)]
+    [Parameter(Mandatory = $false, ParameterSetName = "Standard")]    
+    [Parameter(Mandatory = $false, ParameterSetName = "Queue")]
+    [Parameter(Mandatory = $false, ParameterSetName = "Topic")]
     [ValidateSet("West Europe", "North Europe")]
     [String]$Location = $ENV:Location,
-    [Parameter(Mandatory = $false)]
+    [Parameter(Mandatory = $false, ParameterSetName = "Standard")]        
+    [Parameter(Mandatory = $false, ParameterSetName = "Queue")]
+    [Parameter(Mandatory = $false, ParameterSetName = "Topic")]
     [ValidateNotNullOrEmpty()]
     [String]$ResourceGroupName = $ENV:ResourceGroup,
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $true, ParameterSetName = "Standard")]        
+    [Parameter(Mandatory = $true, ParameterSetName = "Queue")]
+    [Parameter(Mandatory = $true, ParameterSetName = "Topic")]
     [String]$NamespaceName,
-    [Parameter(Mandatory = $false)]
+    [Parameter(Mandatory = $false, ParameterSetName = "Standard")]        
+    [Parameter(Mandatory = $false, ParameterSetName = "Queue")]
+    [Parameter(Mandatory = $false, ParameterSetName = "Topic")]
     [String]$Sku = "Standard",
-    [Parameter(Mandatory = $true)]
-    [String[]]$QueueName
+    [Parameter(Mandatory = $true, ParameterSetName = "Queue")]
+    [String[]]$QueueName,
+    [Parameter(Mandatory = $true, ParameterSetName = "Topic")]
+    [String]$TopicDefinition
 )
 
 # --- Import Azure Helpers
@@ -49,7 +78,7 @@ Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
 # --- Check for existing namespace, if it doesn't exist create it
-Write-Log -LogLevel Information -Message "Checking for existing Service Bus Namespace: $NamespaceName"			 
+Write-Log -LogLevel Information -Message "Checking for existing Service Bus Namespace: $NamespaceName"
 $ServiceBus = Get-AzureRmServiceBusNamespace  -Name $NamespaceName -ResourceGroup $ResourceGroupName -ErrorAction SilentlyContinue
 
 $GloballyResolvable = Resolve-AzureRMResource -PublicResourceFqdn "$($NamespaceName.ToLower()).servicebus.windows.net"
@@ -68,8 +97,8 @@ if (!$ServiceBus) {
     }
 }
 
-# --- If required, create queues
-if ($PSBoundParameters.ContainsKey("QueueName") -and $ServiceBus) {
+# --- If required, create queues OR topics
+if ($PSCmdlet.ParameterSetName -eq "Queue" -and $ServiceBus) {    
     foreach ($Queue in $QueueName) {
         $ExistingQueue = Get-AzureRmServiceBusQueue -ResourceGroup $ResourceGroupName -NamespaceName $NamespaceName -QueueName $Queue -ErrorAction SilentlyContinue
         if (!$ExistingQueue) {
@@ -82,7 +111,77 @@ if ($PSBoundParameters.ContainsKey("QueueName") -and $ServiceBus) {
             }
         }
     }
+} elseif ($PSCmdlet.ParameterSetName -eq "Topic" -and $ServiceBus) {
+
+    $Definition = Get-Content -Path (Resolve-Path -Path $TopicDefinition).Path -Raw | ConvertFrom-Json
+    foreach ($Topic in $Definition) {
+
+        # --- If the topic doesn't exist in the namespace, create it
+        Write-Log -LogLevel Information -Message "Checking for Topic: $($Topic.TopicName)"
+        $ExistingTopic = Get-AzureRmServiceBusTopic -ResourceGroup $ResourceGroupName -NamespaceName $NamespaceName -TopicName $Topic.TopicName -ErrorAction SilentlyContinue
+        if (!$ExistingTopic) {
+            try {
+                Write-Log -LogLevel Information -Message "Creating Topic: $($Topic.TopicName)"
+                $null = New-AzureRmServiceBusTopic -ResourceGroup $ResourceGroupName -NamespaceName $NamespaceName -TopicName $Topic.TopicName -EnablePartitioning $False -ErrorAction SilentlyContinue
+            } catch {
+                throw "Could not create Service Bus Topic $($Topic.TopicName): $_"
+            }
+        }
+
+        # --- If the subscription doesn't exist in the topic, create it
+        foreach ($Subscription in $Topic.Subscription) {
+            Write-Log -LogLevel Information -Message "Checking for Subscription $Subscription on Topic $($Topic.TopicName)"
+            $ExistingSubscription = Get-AzureRmServiceBusSubscription -ResourceGroup $ResourceGroupName -NamespaceName $NamespaceName -TopicName $Topic.TopicName -SubscriptionName $Subscription -ErrorAction SilentlyContinue
+            if (!$ExistingSubscription) {
+                try {
+                    Write-Log -LogLevel Information -Message "Creating Subscription: $($Subscription)"
+                    $null = New-AzureRmServiceBusSubscription -ResourceGroup $ResourceGroupName -NamespaceName $NamespaceName -SubscriptionName $Subscription -TopicName $Topic.TopicName
+                } catch {
+                    throw "Cloud not create Subscription: $($Subscription)"
+                }
+            }
+        }
+    }
 }
 
-$Keys = Get-AzureRmServiceBusNamespaceKey -Name $NamespaceName -ResourceGroup $ResourceGroupName -AuthorizationRuleName RootManageSharedAccessKey
-Write-Output ("##vso[task.setvariable variable=ServiceBusEndpoint;]$($Keys.PrimaryConnectionString)")
+# ---- Create read write access policy
+$RWAuthorizationRuleName = "ReadWrite"
+$RWAccessPolicy = Get-AzureRmServiceBusNamespaceAuthorizationRule -ResourceGroup $ResourceGroupName -NamespaceName $NamespaceName -AuthorizationRuleName $RWAuthorizationRuleName -ErrorAction SilentlyContinue
+if(!$RWAccessPolicy) {
+    try {
+        Write-Log -LogLevel Information -Message "Creating Authorization Rule: $RWAuthorizationRuleName"
+        $RWAccessPolicyParameters = @{
+            ResourceGroup = $ResourceGroupName
+            NamespaceName = $NamespaceName
+            AuthorizationRuleName = $RWAuthorizationRuleName
+            Rights = "Send","Listen"
+        }
+        $null = New-AzureRmServiceBusNamespaceAuthorizationRule @RWAccessPolicyParameters
+    } catch {
+        throw "Could not create Authorization Rule $($RWAuthorizationRuleName): $_"
+    }
+}
+
+# ---- Create read only access policy
+$RAuthorizationRuleName = "Read"
+$RAccessPolicy = Get-AzureRmServiceBusNamespaceAuthorizationRule -ResourceGroup $ResourceGroupName -NamespaceName $NamespaceName -AuthorizationRuleName $RAuthorizationRuleName -ErrorAction SilentlyContinue
+if(!$RAccessPolicy) {
+    try {
+        Write-Log -LogLevel Information -Message "Creating Authorization Rule: $RAuthorizationRuleName"
+        $RAccessPolicyParameters = @{
+            ResourceGroup = $ResourceGroupName
+            NamespaceName = $NamespaceName
+            AuthorizationRuleName = $RAuthorizationRuleName
+            Rights = "Listen"
+        }
+        $null = New-AzureRmServiceBusNamespaceAuthorizationRule @RAccessPolicyParameters
+    } catch {
+        throw "Could not create Authorization Rule $($RAuthorizationRuleName): $_"
+    }
+}
+
+$RWKeys = Get-AzureRmServiceBusNamespaceKey -Name $NamespaceName -ResourceGroup $ResourceGroupName -AuthorizationRuleName $RWAuthorizationRuleName
+Write-Output ("##vso[task.setvariable variable=ServiceBusEndpoint;]$($RWKeys.PrimaryConnectionString)") 
+
+$RKeys = Get-AzureRmServiceBusNamespaceKey -Name $NamespaceName -ResourceGroup $ResourceGroupName -AuthorizationRuleName $RAuthorizationRuleName
+Write-Output ("##vso[task.setvariable variable=ServiceBusEndpointReadOnly;]$($RKeys.PrimaryConnectionString)") 
