@@ -8,7 +8,7 @@
         <projectUrl>https://github.com/SkillsFundingAgency/devops-automation</projectUrl>
     </metadata>
     <files>
-        <file src="..\Infrastructure\Modules\*" target="Infrastructure\Modules" />
-        <file src="..\Infrastructure\Resources\*" target="Infrastructure\Resources" />
+        <file src="..\Infrastructure\Modules\**\*" target="Infrastructure\Modules" />
+        <file src="..\Infrastructure\Resources\**\*" target="Infrastructure\Resources" />
     </files>
 </package>
