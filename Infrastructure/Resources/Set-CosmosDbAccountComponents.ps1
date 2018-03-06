@@ -23,10 +23,10 @@ Root folder to search for Stored Procedure files
 
 .EXAMPLE
 $CosmosDbParameters = @{
-    ResourceGroupName = $ResourceGroupName
-    CosmosDbAccountName = $CosmosDbAccountName
-    CosmosDbConfigurationFilePath = $ConfigurationFilePath
-    CosmosDbProjectFolderPath = $MongoDbProjectFolderPath
+    ResourceGroupName = "sam"
+    CosmosDbAccountName = "samdb"
+    CosmosDbConfigurationFilePath = "C:\Users\faa-dev-01\Desktop\IndexingPolicyTest\Configuration.json"
+    CosmosDbProjectFolderPath = "C:\Users\faa-dev-01\Desktop\IndexingPolicyTest"
 }
 .\Set-CosmosDbAccountComponents @CosmosDbParameters
 #>
@@ -50,26 +50,26 @@ Class CosmosDbStoredProcedure {
     [string]$StoredProcedureName
 }
 
-Class CosmosDbIncludedPathIndex {
-	[string]$Kind
-	[string]$DataType
-	[int]$Precision
+Class CosmosDbIndex {
+	[string]$kind
+	[string]$dataType
+	[int]$precision
 }
 
 Class CosmosDbIncludedPath {
-	[string]$Path
-	[CosmosDbIncludedPathIndex[]]$Index
+	[string]$path
+	[CosmosDbIndex[]]$indexes
 }
 
 Class CosmosDbExcludedPath {
-	[string]$Path
+	[string]$path
 }
 
 Class CosmosDbIndexingPolicy {
-	[CosmosDbIncludedPath[]]$IndexingPolicyIncludedPaths
-	[CosmosDbExcludedPath[]]$IndexingPolicyExcludedPaths
-	[bool]$Automatic
-	[string]$IndexingMode
+	[CosmosDbIncludedPath[]]$includedPaths
+	[CosmosDbExcludedPath[]]$excludedPaths
+	[bool]$automatic
+	[string]$indexingMode
 
 }
 
@@ -157,30 +157,33 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
         if (!$ExistingCollection) {
             Write-Log -Message "Creating Collection: $($Collection.CollectionName) in $($Database.DatabaseName)" -LogLevel Information
 
-			$IndexIncludedPaths = New-Object System.Collections.ArrayList
-			$IndexExcludedPaths = New-Object System.Collections.ArrayList
+			$IndexIncludedPaths = @()
+            $IndexExcludedPaths = @()
+            $IndexRanges = @()
 
-			foreach($IndexingPolicyIncludedPath in $Collection.IndexingPolicyIncludedPaths) {
-				$indexStringRange = New-CosmosDbCollectionIncludedPathIndex -Kind $Collection.IndexingPolicy.IndexingPolicyIncludedPath.Index.Kind -DataType $Collection.IndexingPolicy.IndexingPolicyIncludedPaths.Index.DataType -Precision $Collection.IndexingPolicy.IndexingPolicyIncludedPaths.Index.Precision
-				$indexNumberRange = New-CosmosDbCollectionIncludedPathIndex -Kind $Collection.IndexingPolicy.IndexingPolicyIncludedPath.Index.Kind -DataType $Collection.IndexingPolicy.IndexingPolicyIncludedPaths.Index.DataType -Precision $Collection.IndexingPolicy.IndexingPolicyIncludedPaths.Index.Precision
-				$indexIncludedPath = New-CosmosDbCollectionIncludedPath -Path $Collection.IndexingPolicy.IndexingPolicyIncludedPath.Path -Index $indexStringRange, $indexNumberRange
-				$null = $IndexIncludedPaths.Add($indexIncludedPath)
+			foreach($includedPath in $Collection.IndexingPolicy.includedPaths) {
+                foreach($index in $Collection.IndexingPolicy.includedPath.indexes) {
+                    $indexRange = New-CosmosDbCollectionIncludedPathIndex -Kind $Collection.IndexingPolicy.includedPath.index.kind -DataType $Collection.IndexingPolicy.includedPath.index.dataType -Precision $Collection.IndexingPolicy.includedPath.index.precision
+                    $IndexRanges = $IndexRanges + $indexRange
+                }
+				$indexIncludedPath = New-CosmosDbCollectionIncludedPath -Path $Collection.IndexingPolicy.includedPath.path -Index $IndexRanges
+				$IndexIncludedPaths = $IndexIncludedPaths + $indexIncludedPath
 			}
 
-			foreach($IndexingPolicyExcludedPath in $Collection.IndexingPolicyExcludedPaths) {
-				$indexExcludedPath = New-CosmosDbCollectionExcludedPath -Path $Collection.IndexingPolicy.IndexingPolicyExcludedPath.Path
-				$null = $IndexExcludedPaths.Add($indexExcludedPath)
+			foreach($excludedPath in $Collection.IndexingPolicy.excludedPaths) {
+				$indexExcludedPath = New-CosmosDbCollectionExcludedPath -Path $Collection.IndexingPolicy.excludedPath.path
+				$IndexExcludedPaths = $IndexExcludedPaths + $indexExcludedPath
             }
 
-            $IndexingPolicy  = New-CosmosDbCollectionIndexingPolicy -Automatic $Collection.IndexingPolicy.Automatic -IndexingMode $Collection.IndexingPolicy.IndexingMode -IncludedPaths $IndexIncludedPaths -ExcludedPaths $IndexExcludedPaths
+            $IndexingPolicy  = New-CosmosDbCollectionIndexingPolicy -Automatic $Collection.IndexingPolicy.automatic -IndexingMode $Collection.IndexingPolicy.indexingMode -IncludedPath $IndexIncludedPaths -ExcludedPath $IndexExcludedPaths
 
             $NewCosmosDbCollectionParameters = @{
                 Connection      = $CosmosDbConnection
                 Database        = $Database.DatabaseName
                 Id              = $Collection.CollectionName
                 OfferThroughput = $Collection.OfferThroughput
-                IndexingPolicy  = $IndexingPolicy
                 PartitionKey    = $Collection.PartitionKey
+                IndexingPolicy  = $IndexingPolicy
             }
             $null = New-CosmosDbCollection @NewCosmosDbCollectionParameters
         }
