@@ -1,0 +1,69 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "cloudServiceName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the cloud service resource"
+            }
+        },
+        "certificateData": {
+            "type": "securestring",
+            "defaultValue": "",
+            "metadata": {
+                "description": "PFX Certificate encoded as a string"
+            }
+        },
+        "certificateThumbprint": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Thumbprint of the provided certificate"
+            }
+        },
+        "certificateThumbprintAlgorithm": {
+            "type": "string",
+            "defaultValue": "SHA1",
+            "metadata": {
+                "description": "Thumbprint algorithm of the provided certificate"
+            }
+        },
+        "certificatePassword": {
+            "type": "securestring",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Password for the provided certificate"
+            }
+        }
+    },
+    "variables": {
+        "certificateValuesProvided": "[and(and(greater(length(parameters('certificateData')), 0),greater(length(parameters('certificateThumbprint')), 0)),greater(length(parameters('certificatePassword')), 0))]"
+    },
+    "resources": [
+        {
+            "name": "[parameters('cloudServiceName')]",
+            "type": "Microsoft.ClassicCompute/domainNames",
+            "apiVersion": "2017-11-01",
+            "location": "[resourceGroup().location]",
+            "properties": {}
+        },
+        {
+            "apiVersion": "2016-11-01",
+            "name": "[concat(parameters('cloudServiceName'), '/', parameters('certificateThumbprintAlgorithm'), '-', parameters('certificateThumbprint'))]",
+            "type": "Microsoft.ClassicCompute/domainNames/serviceCertificates",
+            "condition": "[variables('certificateValuesProvided')]",
+            "properties": {
+                "thumbprintAlgorithm": "[parameters('certificateThumbprintAlgorithm')]",
+                "thumbprint": "[parameters('certificateThumbprint')]",
+                "data": "[parameters('certificateData')]",
+                "certificateFormat": "pfx",
+                "password": "[parameters('certificatePassword')]"
+            },
+            "dependsOn": [
+                "[parameters('cloudServiceName')]"
+            ]
+        }
+    ],
+    "outputs": {}
+}
