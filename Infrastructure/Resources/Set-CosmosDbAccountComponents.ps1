@@ -52,7 +52,7 @@ Class CosmosDbStoredProcedure {
 
 Class CosmosDbCollection {
     [string]$CollectionName
-    [string]$PartitionKey
+    [string]$PartitionKey = $null
     [int]$OfferThroughput
     [CosmosDbStoredProcedure[]]$StoredProcedures
 }
@@ -73,14 +73,14 @@ if (!(Get-Module CosmosDB | Where-Object { $_.Version.ToString() -eq "2.0.3.190"
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
 Write-Log -Message "Searching for existing account" -LogLevel Verbose
-$FindCosmosDbAccountParameters = @{
-    ResourceType       = "Microsoft.DocumentDb/databaseAccounts"
-    ResourceGroupName  = $ResourceGroupName
-    ResourceNameEquals = $CosmosDbAccountName
+$GetCosmosDbAccountParameters = @{
+    ResourceType      = "Microsoft.DocumentDb/databaseAccounts"
+    ResourceGroupName = $ResourceGroupName
+    ResourceName      = $CosmosDbAccountName
 }
-$ExistingAccount = Find-AzureRmResource @FindCosmosDbAccountParameters
+$ExistingAccount = Get-AzureRmResource @GetCosmosDbAccountParameters
 
-if (!$ExistingAccount) {
+if (!$ExistingAccount -or $ExistingAccount.Properties.provisioningState -ne "Succeeded") {
     Write-Log -Message "CosmosDb Account could not be found, make sure it has been deployed." -LogLevel Error
     throw "$_"
 }
@@ -122,9 +122,9 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
         try {
             $ExistingCollection = $null
             $GetCosmosDbDatabaseParameters = @{
-                Context = $CosmosDbContext
-                Database   = $Database.DatabaseName
-                Id         = $Collection.CollectionName
+                Context  = $CosmosDbContext
+                Database = $Database.DatabaseName
+                Id       = $Collection.CollectionName
             }
             $ExistingCollection = Get-CosmosDbCollection @GetCosmosDbDatabaseParameters
         }
@@ -133,11 +133,13 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
         if (!$ExistingCollection) {
             Write-Log -Message "Creating Collection: $($Collection.CollectionName) in $($Database.DatabaseName)" -LogLevel Information
             $NewCosmosDbCollectionParameters = @{
-                Context      = $CosmosDbContext
+                Context         = $CosmosDbContext
                 Database        = $Database.DatabaseName
                 Id              = $Collection.CollectionName
                 OfferThroughput = $Collection.OfferThroughput
-                PartitionKey    = $Collection.PartitionKey
+            }
+            if ($Collection.PartitionKey) {
+                $NewCosmosDbCollectionParameters.Add('PartitionKey', $Collection.PartitionKey)
             }
             $null = New-CosmosDbCollection @NewCosmosDbCollectionParameters
         }
@@ -147,7 +149,7 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
             try {
                 $ExistingStoredProcedure = $null
                 $GetCosmosDbStoredProcParameters = @{
-                    Context   = $CosmosDbContext
+                    Context      = $CosmosDbContext
                     Database     = $Database.DatabaseName
                     CollectionId = $Collection.CollectionName
                     Id           = $StoredProcedure.StoredProcedureName
@@ -174,7 +176,7 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
             if (!$ExistingStoredProcedure) {
                 Write-Log -Message "Creating Stored Procedure: $($StoredProcedure.StoredProcedureName) in $($Collection.CollectionName) in $($Database.DatabaseName)" -LogLevel Information
                 $NewCosmosDbStoredProcParameters = @{
-                    Context          = $CosmosDbContext
+                    Context             = $CosmosDbContext
                     Database            = $Database.DatabaseName
                     CollectionId        = $Collection.CollectionName
                     Id                  = $StoredProcedure.StoredProcedureName
@@ -185,7 +187,7 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
             elseif ($ExistingStoredProcedure.body -ne (Get-Content $StoredProcedureFile -Raw)) {
                 Write-Log -Message "Updating Stored Procedure: $($StoredProcedure.StoredProcedureName) in $($Collection.CollectionName) in $($Database.DatabaseName)" -LogLevel Information
                 $SetCosmosDbStoredProcParameters = @{
-                    Context          = $CosmosDbContext
+                    Context             = $CosmosDbContext
                     Database            = $Database.DatabaseName
                     CollectionId        = $Collection.CollectionName
                     Id                  = $StoredProcedure.StoredProcedureName
