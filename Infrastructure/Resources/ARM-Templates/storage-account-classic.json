@@ -1,0 +1,39 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "storageAccountName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the storage account"
+            }
+        },
+        "accountType": {
+            "type": "string",
+            "defaultValue": "Standard_LRS",
+            "allowedValues": [
+                "Standard_LRS",
+                "Standard_GRS",
+                "Standard_RAGRS",
+                "Premium_LRS"
+            ]
+        }
+    },
+    "resources": [
+        {
+            "apiVersion": "2016-11-01",
+            "name": "[parameters('storageAccountName')]",
+            "type": "Microsoft.ClassicStorage/storageAccounts",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "accountType": "[parameters('accountType')]"
+            }
+        }
+    ],
+    "outputs": {
+        "StorageConnectionString": {
+            "type": "string",
+            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.ClassicStorage/storageAccounts', parameters('storageAccountName')),'2016-11-01').primaryKey)]"
+        }
+    }
+}
