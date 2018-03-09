@@ -20,37 +20,37 @@ Describe "Set-CosmosDbAccountComponents Tests" -Tag "Acceptance-ARM" {
                 -CosmosDbConfigurationString ($Config.cosmosDbTestConfig | ConvertTo-Json -Depth 10) -CosmosDbProjectFolderPath "."} | Should not throw
     }
 
-    $TestConnection = New-CosmosDbConnection -Account $CosmosDbAccountName -ResourceGroup $ResourceGroupName -MasterKeyType "PrimaryMasterKey"
+    $TestContext = New-CosmosDbContext -Account $CosmosDbAccountName -ResourceGroup $ResourceGroupName -MasterKeyType "PrimaryMasterKey"
 
     It "Should create a database" {
-        $TestDb = Get-CosmosDbDatabase -Connection $TestConnection -Id $config.cosmosDbTestConfig.Databases[0].DatabaseName
+        $TestDb = Get-CosmosDbDatabase -Context $TestContext -Id $config.cosmosDbTestConfig.Databases[0].DatabaseName
         $TestDb.Id | Should be $config.cosmosDbTestConfig.Databases[0].DatabaseName
     }
 
     It "Should create a collection" {
-        $TestColl = Get-CosmosDbCollection -Connection $TestConnection -Database $config.cosmosDbTestConfig.Databases[0].DatabaseName `
+        $TestColl = Get-CosmosDbCollection -Context $TestContext -Database $config.cosmosDbTestConfig.Databases[0].DatabaseName `
             -Id $config.cosmosDbTestConfig.Databases[0].Collections[0].CollectionName
         $TestColl.Id | Should be $config.cosmosDbTestConfig.Databases[0].Collections[0].CollectionName
     }
 
     It "Should create a stored procedure with the correct code body" {
-        $TestSproc = Get-CosmosDbStoredProcedure -Connection $TestConnection -Database $config.cosmosDbTestConfig.Databases[0].DatabaseName `
+        $TestSproc = Get-CosmosDbStoredProcedure -Context $TestContext -Database $config.cosmosDbTestConfig.Databases[0].DatabaseName `
             -CollectionId $config.cosmosDbTestConfig.Databases[0].Collections[0].CollectionName `
             -Id $config.cosmosDbTestConfig.Databases[0].Collections[0].StoredProcedures[0].StoredProcedureName
         $TestSproc.Id | Should be $config.cosmosDbTestConfig.Databases[0].Collections[0].StoredProcedures[0].StoredProcedureName
         $TestSproc.body | Should be (Get-Content "./$($config.cosmosDbTestConfig.Databases[0].Collections[0].StoredProcedures[0].StoredProcedureName).ext" -Raw)
     }
 
-    It "Should should update stored procedures if they change" {
+    It "Should update stored procedures if they change" {
         $NewStoredProcCode = "function(x,y){}"
         Set-Content -Path "./$($config.cosmosDbTestConfig.Databases[0].Collections[0].StoredProcedures[0].StoredProcedureName).ext" -Value $NewStoredProcCode
         {.\Set-CosmosDbAccountComponents -ResourceGroupName $ResourceGroupName -CosmosDbAccountName $CosmosDbAccountName `
                 -CosmosDbConfigurationString ($Config.cosmosDbTestConfig | ConvertTo-Json -Depth 10) -CosmosDbProjectFolderPath "."} | Should not throw
 
-        $TestSproc = Get-CosmosDbStoredProcedure -Connection $TestConnection -Database $config.cosmosDbTestConfig.Databases[0].DatabaseName `
+        $TestSproc = Get-CosmosDbStoredProcedure -Context $TestContext -Database $config.cosmosDbTestConfig.Databases[0].DatabaseName `
             -CollectionId $config.cosmosDbTestConfig.Databases[0].Collections[0].CollectionName `
             -Id $config.cosmosDbTestConfig.Databases[0].Collections[0].StoredProcedures[0].StoredProcedureName
-        ($TestSproc.body) -replace "\r\n", "" | Should be $NewStoredProcCode
+        ($TestSproc.body) | Should be (Get-Content "./$($config.cosmosDbTestConfig.Databases[0].Collections[0].StoredProcedures[0].StoredProcedureName).ext" -Raw)
     }
 
     Remove-Item -Path "./$($config.cosmosDbTestConfig.Databases[0].Collections[0].StoredProcedures[0].StoredProcedureName).ext" -Force
