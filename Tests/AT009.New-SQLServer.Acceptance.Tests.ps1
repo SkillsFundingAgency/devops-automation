@@ -28,7 +28,7 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
     # --- Global Mocks
     $MockGetKeyVaultSecretParameters = @{
         CommandName = "Get-AzureKeyVaultSecret"
-        MockWith = {                 
+        MockWith = {
             return [PSCustomObject]@{
                 SecretValueText = "ZQjSrcxJahlN?e-"
                 SecretValue = "ZQjSrcxJahlN?e-" | ConvertTo-SecureString -AsPlainText -Force
@@ -95,7 +95,7 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
             $FirewallConfig | ConvertTo-Json | Set-Content -Path $FirewallRuleConfigurationPath
 
             $null = .\New-SQLServer.ps1 @NewSQLServerParameters
-            
+
             $GetFirewallRuleParametres = @{
                 ResourceGroupName = $ResourceGroupName
                 ServerName = $SQLServerName
@@ -105,7 +105,7 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
         }
 
         It "Should create a SQL Server and enable auditing" {
-            $AuditingPolicy = Get-AzureRmSqlServerAuditingPolicy -ResourceGroupName $ResourceGroupName -ServerName $SQLServerName
+            $AuditingPolicy = Get-AzureRmSqlServerAuditing -ResourceGroupName $ResourceGroupName -ServerName $SQLServerName
             $AuditingPolicy.AuditState | Should Be "Enabled"
         }
 

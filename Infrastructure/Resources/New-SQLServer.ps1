@@ -83,7 +83,7 @@ Param (
     [String]$KeyVaultName,
     [Parameter(Mandatory = $true)]
     [String]$KeyVaultSecretName,
-    [Parameter(Mandatory = $true)]    
+    [Parameter(Mandatory = $true)]
     [String]$ServerName,
     [Parameter(Mandatory = $true)]
     [String]$ServerAdminUsername,
@@ -94,7 +94,7 @@ Param (
     [Parameter(Mandatory = $true)]
     [String]$AuditingStorageAccountName,
     [Parameter(Mandatory = $true)]
-    [String[]]$ThreatDetectionNotificationRecipient 
+    [String[]]$ThreatDetectionNotificationRecipient
 )
 
 # --- Import helper modules
@@ -200,11 +200,10 @@ if ($SQLServer) {
         ResourceGroupName  = $ResourceGroupName
         ServerName         = $ServerName
         StorageAccountName = $AuditingStorageAccountName
-        AuditType          = "Blob"
-        EventType          = "All"
         RetentionInDays    = 90
+        State              = "Enabled"
     }
-    Set-AzureRmSqlServerAuditingPolicy @AuditingPolicyParameters
+    Set-AzureRmSqlServerAuditing @AuditingPolicyParameters
 
     Write-Log -LogLevel Information -Message "Configuring threat detection policy"
     $ThreatDetectionPolicyParameters = @{
