@@ -53,7 +53,7 @@ Class CosmosDbStoredProcedure {
 Class CosmosDbIndex {
 	[string]$kind
 	[string]$dataType
-	[int]$precision
+	[int32]$precision
 }
 
 Class CosmosDbIncludedPath {
@@ -155,27 +155,50 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
         catch {
         }
         if (!$ExistingCollection) {
+
             Write-Log -Message "Creating Collection: $($Collection.CollectionName) in $($Database.DatabaseName)" -LogLevel Information
 
-			$IndexIncludedPaths = @()
-            $IndexExcludedPaths = @()
-            $IndexRanges = @()
+            [CosmosDB.IndexingPolicy.Path.IncludedPath[]]$IndexIncludedPaths = @()
+            [CosmosDB.IndexingPolicy.Path.ExcludedPath[]]$IndexExcludedPaths = @()
 
 			foreach($includedPath in $Collection.IndexingPolicy.includedPaths) {
-                foreach($index in $Collection.IndexingPolicy.includedPath.indexes) {
-                    $indexRange = New-CosmosDbCollectionIncludedPathIndex -Kind $Collection.IndexingPolicy.includedPath.index.kind -DataType $Collection.IndexingPolicy.includedPath.index.dataType -Precision $Collection.IndexingPolicy.includedPath.index.precision
-                    $IndexRanges = $IndexRanges + $indexRange
-                }
-				$indexIncludedPath = New-CosmosDbCollectionIncludedPath -Path $Collection.IndexingPolicy.includedPath.path -Index $IndexRanges
-				$IndexIncludedPaths = $IndexIncludedPaths + $indexIncludedPath
-			}
+                [CosmosDB.IndexingPolicy.Path.Index[]]$IndexRanges = @()
 
-			foreach($excludedPath in $Collection.IndexingPolicy.excludedPaths) {
-				$indexExcludedPath = New-CosmosDbCollectionExcludedPath -Path $Collection.IndexingPolicy.excludedPath.path
-				$IndexExcludedPaths = $IndexExcludedPaths + $indexExcludedPath
+                foreach($index in $includedPath.indexes) {
+                    [CosmosDB.IndexingPolicy.Path.Index]$indexRange = New-CosmosDbCollectionIncludedPathIndex -Kind $index.kind -DataType $index.dataType -Precision $index.precision
+                    Write-Log -Message "IncludedPathIndex kind: $($indexRange.kind) index: $($indexRange.DataType) precision: $($indexRange.precision)" -LogLevel Information
+                    $IndexRanges += $indexRange
+                }
+
+                $indexIncludedPath = New-CosmosDbCollectionIncludedPath -Path $includedPath.path -Index $indexRanges
+                $IndexIncludedPaths += $indexIncludedPath
+
+                Write-Log -Message "indexIncludedPath path: $($includedPath.path.GetType()) index: $($indexRanges.GetType())" -LogLevel Information
+                Write-Log -Message "indexIncludedPath indexes (object): $($indexRanges)" -LogLevel Information
             }
 
-            $IndexingPolicy  = New-CosmosDbCollectionIndexingPolicy -Automatic $Collection.IndexingPolicy.automatic -IndexingMode $Collection.IndexingPolicy.indexingMode -IncludedPath $IndexIncludedPaths -ExcludedPath $IndexExcludedPaths
+            Write-Log -Message "indexIncludedPaths: $($IndexIncludedPaths)" -LogLevel Information
+
+			foreach($excludedPath in $Collection.IndexingPolicy.excludedPaths) {
+                $indexExcludedPath = New-CosmosDbCollectionExcludedPath -Path $excludedPath.path
+                $IndexExcludedPaths += $indexExcludedPath
+
+                Write-Log -Message "indexExcludedPath path: $($excludedPath.path)" -LogLevel Information
+            }
+
+            Write-Log -Message "indexExcludedPaths: $($IndexExcludedPaths)" -LogLevel Information
+
+            $IndexingPolicy  = New-CosmosDbCollectionIndexingPolicy -Automatic $Collection.IndexingPolicy.automatic -IndexingMode $Collection.IndexingPolicy.indexingMode -IncludedPath $IndexIncludedPaths -ExcludedPath $IndexExcludedPaths -Debug
+            Write-Log -Message "Created New-CosmosDbCollectionIndexingPolicy: Automatic: $($IndexingPolicy.Automatic) Mode: $($IndexingPolicy.IndexingMode) IPs: $($IndexIncludedPaths.GetType()) EPs: $($IndexExcludedPaths.GetType())" -LogLevel Information
+
+
+            $findexStringRange = New-CosmosDbCollectionIncludedPathIndex -Kind Range -DataType String -Precision -1
+            $findexNumberRange = New-CosmosDbCollectionIncludedPathIndex -Kind Range -DataType Number -Precision -1
+            $findexIncludedPath = New-CosmosDbCollectionIncludedPath -Path '/*' -Index $findexStringRange, $findexNumberRange
+            Write-Log -Message "Created fNew-CosmosDbCollectionIncludedPath: Index: iSr $($findexStringRange.GetType(), $findexNumberRange.GetType())" -LogLevel Information
+            $findexingPolicy = New-CosmosDbCollectionIndexingPolicy -Automatic $true -IndexingMode Consistent -IncludedPath $findexIncludedPath -Debug
+            Write-Log -Message "Created fNew-CosmosDbCollectionIndexingPolicy: Automatic: $($Automatic) Mode: $($IndexingMode) IPs: $($IndexIncludedPath.GetType())" -LogLevel Information
+
 
             $NewCosmosDbCollectionParameters = @{
                 Context      = $CosmosDbContext
@@ -186,6 +209,8 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
                 IndexingPolicy  = $IndexingPolicy
             }
             $null = New-CosmosDbCollection @NewCosmosDbCollectionParameters
+
+            Write-Log -Message "Collection Details: Context: $($CosmosDbContext) Database: $($Database.DatabaseName) IndexingPolicy: $($IndexingPolicy)" -LogLevel Information
         }
 
         foreach ($StoredProcedure in $Collection.StoredProcedures) {
