@@ -2,3 +2,4 @@ TEST-Acceptance.xml
 *.pfx
 sql.firewall.rules.json
 *.nupkg
+launch.json
