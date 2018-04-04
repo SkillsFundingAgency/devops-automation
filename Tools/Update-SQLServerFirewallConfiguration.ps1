@@ -1,19 +1,19 @@
-[CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = "High")]
+[CmdletBinding(DefaultParametersetName='None', SupportsShouldProcess = $true, ConfirmImpact = "High")]
 Param (
-    [Parameter(Mandatory = $false, ValueFromPipeline = $true)]
+    [Parameter(Mandatory=$false, ValueFromPipeline=$true)]
     [String[]]$SubscriptionName,
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory=$true)]
     [String]$ServerNamePattern,
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory=$true)]
     [String]$FirewallRuleConfigurationPath,
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory=$false)]
+    [Bool]$RemoveLegacyRules,
+    [Parameter(ParameterSetName='RemoveDbRules', Mandatory=$false)]
+    [Switch]$RemoveDatabaseRules,
+    [Parameter(ParameterSetName='RemoveDbRules', Mandatory=$true)]
     [String]$KeyVaultName,
-    [Parameter(Mandatory = $true)]
-    [string]$KeyName,
-    [Parameter(Mandatory = $false)]
-    [Switch]$RemoveLegacyRules,
-    [Parameter(Mandatory = $false)]
-    [Switch]$DryRun
+    [Parameter(ParameterSetName='RemoveDbRules', Mandatory=$true)]
+    [string]$KeyName
 )
 
 <#
@@ -81,22 +81,22 @@ Update-SQLServerFirewallConfiguration -SubscriptionName $SubScriptions -ServerNa
 - Depends on and Helpers.psm1
 #>
 function Update-SQLServerFirewallConfiguration {
-    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = "High")]
+    [CmdletBinding(DefaultParametersetName='None', SupportsShouldProcess = $true, ConfirmImpact = "High")]
     Param (
-        [Parameter(Mandatory = $false, ValueFromPipeline = $true)]
+        [Parameter(Mandatory=$false, ValueFromPipeline=$true)]
         [String[]]$SubscriptionName,
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory=$true)]
         [String]$ServerNamePattern,
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory=$true)]
         [String]$FirewallRuleConfigurationPath,
-        [Parameter(Mandatory = $true)]
-        [String]$KeyVaultName,
-        [Parameter(Mandatory = $true)]
-        [string]$KeyName,
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory=$false)]
         [Bool]$RemoveLegacyRules,
-        [Parameter(Mandatory = $false)]
-        [Bool]$DryRun
+        [Parameter(ParameterSetName='RemoveDbRules', Mandatory=$false)]
+        [Switch]$RemoveDatabaseRules,
+        [Parameter(ParameterSetName='RemoveDbRules', Mandatory=$true)]
+        [String]$KeyVaultName,
+        [Parameter(ParameterSetName='RemoveDbRules', Mandatory=$true)]
+        [string]$KeyName
     )
 
     Begin {
@@ -136,7 +136,7 @@ function Update-SQLServerFirewallConfiguration {
             ##TO DO: test Find-AzureRmResource with -TenantLevel switch
             foreach ($Subscription in $SubscriptionName) {
                 Write-Log -LogLevel Information -Message "Searching for Sql Servers matching $ServerNamePattern in $Subscription"
-                $null = Select-AzureRmSubscription -SubscriptionName $Subscription
+                $null = Select-AzureRmSubscription -SubscriptionName $Subscription -WhatIf:$false
                 $SubscriptionSqlServers = Find-AzureRmResource -ResourceNameContains $ServerNamePattern -ResourceType "Microsoft.Sql/Servers" -ExpandProperties
 
                 foreach ($SqlServer in $SubscriptionSqlServers) {
@@ -160,10 +160,13 @@ function Update-SQLServerFirewallConfiguration {
                     }
 
                     # --- Remove firewall rules from each database on the SQL Server instance
-                    $SqlAdministratorPassword = Get-AzureKeyVaultSecret -VaultName $KeyVaultName -Name $KeyName
-                    if ($SqlAdministratorPassword) {
-                        Remove-SqlDatabaseFirewallRules -ResourceGroupName $ResourceGroupName -SqlServer $SqlServer -SqlServerFqdn $SqlServer.Properties.fullyQualifiedDomainName -SqlAdministrationPassword $SqlAdministratorPassword
+                    if($RemoveDatabaseRules) {
+                        $SqlAdministratorPassword = Get-AzureKeyVaultSecret -VaultName $KeyVaultName -Name $KeyName
+                        if ($SqlAdministratorPassword) {
+                            Remove-SqlDatabaseFirewallRules -ResourceGroupName $ResourceGroupName -SqlServer $SqlServer -SqlServerFqdn $SqlServer.Properties.fullyQualifiedDomainName -SqlAdministrationPassword $SqlAdministratorPassword
+                        }
                     }
+
 
                 }
             }
@@ -181,11 +184,11 @@ function Update-SQLServerFirewallConfiguration {
 function Remove-NonStandardSqlServerFirewallRules {
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = "High")]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory=$true)]
         [String]$ResourceGroupName,
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory=$true)]
         [String]$ServerName,
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory=$true)]
         [PSObject]$Config
     )
 
@@ -211,13 +214,13 @@ function Remove-SqlDatabaseFirewallRules {
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = "High")]
     param(
 
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory=$true)]
         [String]$ResourceGroupName,
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory=$true)]
         [PSCustomObject]$SqlServer,
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory=$true)]
         [String]$SqlServerFqdn,
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory=$true)]
         [Microsoft.Azure.Commands.KeyVault.Models.Secret]$SqlAdministrationPassword
 
     )
@@ -247,7 +250,7 @@ function Remove-SqlDatabaseFirewallRules {
         foreach ($Rule in $DatabaseFirewallRules) {
 
             $SqlCmdParameters.Query = "EXECUTE sp_delete_database_firewall_rule N'$($Rule.name)';"
-            Write-Log -LogLevel Information -Message "Removing Firewall Rule $($Rule.name) from $($Database.DatabaseName) by invoking $($SqlCmdParameters.Query)"
+            Write-Log -LogLevel Warning -Message "Removing Firewall Rule $($Rule.name) from $($Database.DatabaseName) by invoking $($SqlCmdParameters.Query)"
             if ($PSCmdlet.ShouldProcess($($SqlCmdParameters.Query), "Invoke-SqlCmd")) {
 
                 ##TO DO: test this command works
@@ -262,11 +265,11 @@ function Remove-SqlDatabaseFirewallRules {
 function Update-SqlServerFirewallRule {
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = "High")]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory=$true)]
         [String]$ResourceGroupName,
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory=$true)]
         [String]$ServerName,
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory=$true)]
         [PSCustomObject]$Rule
     )
 
@@ -295,13 +298,22 @@ function Update-SqlServerFirewallRule {
         }
     }
 }
-
+<#
 $Params = @{
     SubscriptionName = $SubscriptionName
     ServerNamePattern = $ServerNamePattern
     FirewallRuleConfigurationPath = $FirewallRuleConfigurationPath
     RemoveLegacyRules = $RemoveLegacyRules.IsPresent
-    DryRun = $DryRun.IsPresent
+}
+#>
+$Params = @{
+    SubscriptionName              = "SFA-DAS-Dev/Test"
+    ServerNamePattern             = "das-at-"
+    FirewallRuleConfigurationPath = "C:\Users\nick\Documents\Work - DFE\config.json"
+    RemoveLegacyRules             = $true
+    RemoveDatabaseRules           = $true
+    KeyVaultName                  = "das-dev-shared-kv"
+    KeyName                       = "at-sqladminpassword"
 }
 
-Update-SQLServerFirewallConfiguration @Params -WhatIf
+Update-SQLServerFirewallConfiguration @Params -WhatIf -Verbose
