@@ -53,8 +53,14 @@ Configuration is an array of objects and should be represented as follows:
 .PARAMETER RemoveLegacyRules
 If the rule exists in Azure but not in the configuration supplied it will be removed
 
-.PARAMETER DryRun
-Make a test pass with the supplied parameters. No changes will be made if this switch is passed.
+.PARAMETER RemoveDatabaseRules
+Removes all database level firewall rules in the specified subscritption
+
+.PARAMETER KeyVaultName
+Required if RemoveDatabaseRules switch is specified.  Name of the KeyVault that holds the sa passwords for this subscription
+
+.PARAMETER KeyName
+Required if RemoveDatabaseRules switch is specified.  Name of the Key that holds the sa password.  At present this can only be specified for a single server.
 
 .EXAMPLE
 $Subscriptions = @(
@@ -161,6 +167,7 @@ function Update-SQLServerFirewallConfiguration {
 
                     # --- Remove firewall rules from each database on the SQL Server instance
                     if($RemoveDatabaseRules) {
+                        ##TO DO: implement a solution that handles more than one database.  Options include passing server and keynames in as a hashtable or storing them in tags\storage table\etc
                         $SqlAdministratorPassword = Get-AzureKeyVaultSecret -VaultName $KeyVaultName -Name $KeyName
                         if ($SqlAdministratorPassword) {
                             Remove-SqlDatabaseFirewallRules -ResourceGroupName $ResourceGroupName -SqlServer $SqlServer -SqlServerFqdn $SqlServer.Properties.fullyQualifiedDomainName -SqlAdministrationPassword $SqlAdministratorPassword
