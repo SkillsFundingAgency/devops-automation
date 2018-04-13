@@ -111,7 +111,7 @@ function Update-SQLServerFirewallConfiguration {
 
         # --- Install SqlServer module
         Write-Log -LogLevel Information -Message "Installing SqlServer PS module"
-        Install-Module SqlServer -Scope CurrentUser -Force
+        Install-Module SqlServer -Scope CurrentUser
         Import-Module SqlServer
 
         # --- Check if there is a session open
@@ -170,7 +170,7 @@ function Update-SQLServerFirewallConfiguration {
                         ##TO DO: implement a solution that handles more than one database.  Options include passing server and keynames in as a hashtable or storing them in tags\storage table\etc
                         $SqlAdministratorPassword = Get-AzureKeyVaultSecret -VaultName $KeyVaultName -Name $KeyName
                         if ($SqlAdministratorPassword) {
-                            Remove-SqlDatabaseFirewallRules -ResourceGroupName $ResourceGroupName -SqlServer $SqlServer -SqlServerFqdn $SqlServer.Properties.fullyQualifiedDomainName -SqlAdministrationPassword $SqlAdministratorPassword
+                            Remove-SqlDatabaseFirewallRules -ResourceGroupName $ResourceGroupName -SqlServer $SqlServer -SqlAdministrationPassword $SqlAdministratorPassword
                         }
                     }
 
@@ -226,14 +226,12 @@ function Remove-SqlDatabaseFirewallRules {
         [Parameter(Mandatory=$true)]
         [PSCustomObject]$SqlServer,
         [Parameter(Mandatory=$true)]
-        [String]$SqlServerFqdn,
-        [Parameter(Mandatory=$true)]
-        [Microsoft.Azure.Commands.KeyVault.Models.Secret]$SqlAdministrationPassword
+        [Microsoft.Azure.Commands.KeyVault.Models.PSKeyVaultSecret]$SqlAdministratorPassword
 
     )
 
     # --- Get databases
-    $SqlServerDatabases = Get-AzureRmSqlDatabase -ResourceGroupName $ResourceGroupName -ServerName $ServerName -WhatIf:$false
+    $SqlServerDatabases = Get-AzureRmSqlDatabase -ResourceGroupName $ResourceGroupName -ServerName $SqlServer.Name -WhatIf:$false
 
     # --- Get sa credential
     $SqlAdministratorLogin = $SqlServer.Properties.administratorLogin
@@ -241,10 +239,10 @@ function Remove-SqlDatabaseFirewallRules {
 
     foreach ($Database in $SqlServerDatabases) {
 
-        Write-Log -LogLevel Information -Message "Processing Sql Database $($Database.DatabaseName))"
+        Write-Log -LogLevel Information -Message "Processing Sql Database $($Database.DatabaseName)"
 
         $SqlCmdParameters = @{
-            ServerInstance    = $SqlServerFqdn
+            ServerInstance    = $SqlServer.Properties.fullyQualifiedDomainName
             Database          = $Database.DatabaseName
             Username          = $Credential.UserName
             Password          = $Credential.GetNetworkCredential().Password
@@ -252,7 +250,12 @@ function Remove-SqlDatabaseFirewallRules {
             Query             = "SELECT * FROM sys.database_firewall_rules"
         }
 
-        $DatabaseFirewallRules = Invoke-SqlCmd @SqlCmdParameters
+        try {
+            $DatabaseFirewallRules = Invoke-SqlCmd @SqlCmdParameters -ErrorAction Stop
+        }
+        catch {
+            Write-Log -LogLevel Error "Error retrieving database level firewall rules from $($Database.DatabaseName)"
+        }
 
         foreach ($Rule in $DatabaseFirewallRules) {
 
@@ -260,7 +263,6 @@ function Remove-SqlDatabaseFirewallRules {
             Write-Log -LogLevel Warning -Message "Removing Firewall Rule $($Rule.name) from $($Database.DatabaseName) by invoking $($SqlCmdParameters.Query)"
             if ($PSCmdlet.ShouldProcess($($SqlCmdParameters.Query), "Invoke-SqlCmd")) {
 
-                ##TO DO: test this command works
                 Invoke-SqlCmd @SqlCmdParameters
 
             }
@@ -305,22 +307,59 @@ function Update-SqlServerFirewallRule {
         }
     }
 }
+
+if ($RemoveDatabaseRules.IsPresent) {
+    $Params = @{
+        SubscriptionName = $SubscriptionName
+        ServerNamePattern = $ServerNamePattern
+        FirewallRuleConfigurationPath = $FirewallRuleConfigurationPath
+        RemoveLegacyRules = $RemoveLegacyRules.IsPresent
+        RemoveDatabaseRules = $RemoveDatabaseRules.IsPresent
+        KeyVaultName = $KeyVaultName
+        KeyName = $KeyName
+    }
+}
+else {
+    $Params = @{
+        SubscriptionName = $SubscriptionName
+        ServerNamePattern = $ServerNamePattern
+        FirewallRuleConfigurationPath = $FirewallRuleConfigurationPath
+        RemoveLegacyRules = $RemoveLegacyRules.IsPresent
+    }
+}
 <#
 $Params = @{
-    SubscriptionName = $SubscriptionName
-    ServerNamePattern = $ServerNamePattern
-    FirewallRuleConfigurationPath = $FirewallRuleConfigurationPath
-    RemoveLegacyRules = $RemoveLegacyRules.IsPresent
-}
-#>
-$Params = @{
     SubscriptionName              = "SFA-DAS-Dev/Test"
-    ServerNamePattern             = "das-at-"
+    ServerNamePattern             = "das-at-shared-sql"
     FirewallRuleConfigurationPath = "C:\Users\nick\Documents\Work - DFE\config.json"
     RemoveLegacyRules             = $true
     RemoveDatabaseRules           = $true
     KeyVaultName                  = "das-dev-shared-kv"
     KeyName                       = "at-sqladminpassword"
 }
+#>
+
 
 Update-SQLServerFirewallConfiguration @Params -WhatIf -Verbose
+
+<#
+$ResourceGroupName = "das-at-shared-rg"
+$ServerNamePattern = "das-at-shared-sql"
+$SqlServer = Find-AzureRmResource -ResourceNameContains $ServerNamePattern -ResourceType "Microsoft.Sql/Servers" -ExpandProperties
+
+Import-Module (Resolve-Path -Path $PSScriptRoot\..\Infrastructure\Modules\Helpers.psm1).Path
+Install-Module SqlServer -Scope CurrentUser
+Import-Module SqlServer
+
+$SqlAdministratorPassword = New-Object Microsoft.Azure.Commands.KeyVault.Models.PSKeyVaultSecret
+$SqlAdministratorPassword.SecretValue = ("abc123efg456hij789" | ConvertTo-SecureString -AsPlainText -Force)
+
+$param = @{
+    ResourceGroupName = $ResourceGroupName
+    SqlServer = $SqlServer
+    SqlAdministratorPassword = $SqlAdministratorPassword
+}
+
+$result = Remove-SqlDatabaseFirewallRules @param
+$result
+#>
