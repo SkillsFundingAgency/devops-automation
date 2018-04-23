@@ -69,7 +69,7 @@ try {
     # --- If the storage account exists in this subscription get the key and set the env variable
     if ($StorageAccount) {
         $ConnectionString = "DefaultEndpointsProtocol=https;AccountName=$($Name);AccountKey=$($StorageAccountKey)"
-        Write-Output ("##vso[task.setvariable variable=StorageConnectionString;]$($ConnectionString)")
+        Write-Output ("##vso[task.setvariable variable=StorageConnectionString; issecret=true;]$($ConnectionString)")
     }
 }
 catch {
