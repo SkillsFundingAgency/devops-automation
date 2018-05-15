@@ -86,6 +86,9 @@ Update-SQLServerFirewallConfiguration -SubscriptionName $SubScriptions -ServerNa
 .NOTES
 - Depends on and Helpers.psm1
 #>
+
+##TO DO: refactor as module so that test can be executed
+
 function Update-SQLServerFirewallConfiguration {
     [CmdletBinding(DefaultParametersetName='None', SupportsShouldProcess = $true, ConfirmImpact = "High")]
     Param (
@@ -327,39 +330,5 @@ else {
         RemoveLegacyRules = $RemoveLegacyRules.IsPresent
     }
 }
-<#
-$Params = @{
-    SubscriptionName              = "SFA-DAS-Dev/Test"
-    ServerNamePattern             = "das-at-shared-sql"
-    FirewallRuleConfigurationPath = "C:\Users\nick\Documents\Work - DFE\config.json"
-    RemoveLegacyRules             = $true
-    RemoveDatabaseRules           = $true
-    KeyVaultName                  = "das-dev-shared-kv"
-    KeyName                       = "at-sqladminpassword"
-}
-#>
-
 
 Update-SQLServerFirewallConfiguration @Params -WhatIf -Verbose
-
-<#
-$ResourceGroupName = "das-at-shared-rg"
-$ServerNamePattern = "das-at-shared-sql"
-$SqlServer = Find-AzureRmResource -ResourceNameContains $ServerNamePattern -ResourceType "Microsoft.Sql/Servers" -ExpandProperties
-
-Import-Module (Resolve-Path -Path $PSScriptRoot\..\Infrastructure\Modules\Helpers.psm1).Path
-Install-Module SqlServer -Scope CurrentUser
-Import-Module SqlServer
-
-$SqlAdministratorPassword = New-Object Microsoft.Azure.Commands.KeyVault.Models.PSKeyVaultSecret
-$SqlAdministratorPassword.SecretValue = ("abc123efg456hij789" | ConvertTo-SecureString -AsPlainText -Force)
-
-$param = @{
-    ResourceGroupName = $ResourceGroupName
-    SqlServer = $SqlServer
-    SqlAdministratorPassword = $SqlAdministratorPassword
-}
-
-$result = Remove-SqlDatabaseFirewallRules @param
-$result
-#>
