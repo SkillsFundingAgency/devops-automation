@@ -21,6 +21,9 @@ CosmosDb JSON configuration as a file
 .Parameter CosmosDbProjectFolderPath
 Root folder to search for Stored Procedure files
 
+.Parameter PartitionKeyFix
+Use fix for cosmosdb shard keys as per https://blog.olandese.nl/2017/12/13/create-a-sharded-mongodb-in-azure-cosmos-db/
+
 .EXAMPLE
 $CosmosDbParameters = @{
     ResourceGroupName = $ResourceGroupName
