@@ -21,6 +21,9 @@ CosmosDb JSON configuration as a file
 .Parameter CosmosDbProjectFolderPath
 Root folder to search for Stored Procedure files
 
+.Parameter PartitionKeyFix
+Use fix for cosmosdb shard keys as per https://blog.olandese.nl/2017/12/13/create-a-sharded-mongodb-in-azure-cosmos-db/
+
 .EXAMPLE
 $CosmosDbParameters = @{
     ResourceGroupName = $ResourceGroupName
@@ -43,7 +46,9 @@ param(
     [Parameter(Mandatory = $true, ParameterSetName = "AsFilePath")]
     [string]$CosmosDbConfigurationFilePath,
     [Parameter(Mandatory = $true)]
-    [string]$CosmosDbProjectFolderPath
+    [string]$CosmosDbProjectFolderPath,
+    [Parameter(Mandatory = $false)]
+    [switch]$PartitionKeyFix
 )
 
 Class CosmosDbStoredProcedure {
@@ -139,7 +144,12 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
                 OfferThroughput = $Collection.OfferThroughput
             }
             if ($Collection.PartitionKey) {
-                $NewCosmosDbCollectionParameters.Add('PartitionKey', $Collection.PartitionKey)
+                if ($PartitionKeyFix.IsPresent) {
+                    $NewCosmosDbCollectionParameters.Add('PartitionKey', "'`$v'/$($Collection.PartitionKey)/'`$v'")
+                }
+                else {
+                    $NewCosmosDbCollectionParameters.Add('PartitionKey', $Collection.PartitionKey)
+                }
             }
             $null = New-CosmosDbCollection @NewCosmosDbCollectionParameters
         }
