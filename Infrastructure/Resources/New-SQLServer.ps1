@@ -184,19 +184,6 @@ if ($SQLServer) {
         Set-SqlServerFirewallRule @FirewallRuleParameters -Verbose:$VerbosePreference -Confirm:$false
     }
 
-    # --- If the rule exists in Azure but not in the config it should be removed
-    # --- Scoped to PROD only deployments as the scheduled automation tasks will handle other environments
-    if ($ENV:EnvironmentName -eq "PROD") {
-        $ExistingRuleNames = Get-AzureRmSqlServerFirewallRule -ResourceGroupName $ResourceGroupName -ServerName $ServerName | Select-Object -ExpandProperty FirewallRuleName
-        $ConfigRuleNames = $Config | Select-Object -ExpandProperty Name
-        foreach ($ExistingRule in $ExistingRuleNames) {
-            if (!$ConfigRuleNames.Contains($ExistingRule)) {
-                Write-Log -LogLevel Warning -Message "Removing Firewall Rule $ExistingRule"
-                $null = Remove-AzureRmSqlServerFirewallRule -ResourceGroupName $ResourceGroupName -ServerName $ServerName -FirewallRuleName $ExistingRule -Force
-            }
-        }
-    }
-
     # --- Configure Auditing and Threat Detection
     Write-Log -LogLevel Information -Message "Configuring auditing policy"
     $AuditingPolicyParameters = @{
