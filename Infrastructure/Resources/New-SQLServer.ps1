@@ -83,7 +83,7 @@ Param (
     [String]$KeyVaultName,
     [Parameter(Mandatory = $true)]
     [String]$KeyVaultSecretName,
-    [Parameter(Mandatory = $true)]    
+    [Parameter(Mandatory = $true)]
     [String]$ServerName,
     [Parameter(Mandatory = $true)]
     [String]$ServerAdminUsername,
@@ -94,7 +94,7 @@ Param (
     [Parameter(Mandatory = $true)]
     [String]$AuditingStorageAccountName,
     [Parameter(Mandatory = $true)]
-    [String[]]$ThreatDetectionNotificationRecipient 
+    [String[]]$ThreatDetectionNotificationRecipient
 )
 
 # --- Import helper modules
@@ -182,16 +182,6 @@ if ($SQLServer) {
             EndIPAddress      = $Rule.EndIPAddress
         }
         Set-SqlServerFirewallRule @FirewallRuleParameters -Verbose:$VerbosePreference -Confirm:$false
-    }
-
-    # --- If the rule exists in Azure but not in the config it should be removed
-    $ExistingRuleNames = Get-AzureRmSqlServerFirewallRule -ResourceGroupName $ResourceGroupName -ServerName $ServerName | Select-Object -ExpandProperty FirewallRuleName
-    $ConfigRuleNames = $Config | Select-Object -ExpandProperty Name
-    foreach ($ExistingRule in $ExistingRuleNames) {
-        if (!$ConfigRuleNames.Contains($ExistingRule)) {
-            Write-Log -LogLevel Warning -Message "Removing Firewall Rule $ExistingRule"
-            $null = Remove-AzureRmSqlServerFirewallRule -ResourceGroupName $ResourceGroupName -ServerName $ServerName -FirewallRuleName $ExistingRule -Force
-        }
     }
 
     # --- Configure Auditing and Threat Detection

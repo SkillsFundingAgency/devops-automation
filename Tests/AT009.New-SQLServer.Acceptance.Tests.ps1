@@ -28,7 +28,7 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
     # --- Global Mocks
     $MockGetKeyVaultSecretParameters = @{
         CommandName = "Get-AzureKeyVaultSecret"
-        MockWith = {                 
+        MockWith = {
             return [PSCustomObject]@{
                 SecretValueText = "ZQjSrcxJahlN?e-"
                 SecretValue = "ZQjSrcxJahlN?e-" | ConvertTo-SecureString -AsPlainText -Force
@@ -87,21 +87,6 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
                     Get-AzureRmSqlServerFirewallRule @GetFirewallRuleParametres  | Should Throw
                 }
             }
-        }
-
-        It "Should remove a firewall rule that is no longer present in the config" {
-
-            $FirewallConfig = $Config.sqlServerFirewallRules | Where-Object {$_.Name -ne $Config.SQLServerFirewallRuleToRemote}
-            $FirewallConfig | ConvertTo-Json | Set-Content -Path $FirewallRuleConfigurationPath
-
-            $null = .\New-SQLServer.ps1 @NewSQLServerParameters
-            
-            $GetFirewallRuleParametres = @{
-                ResourceGroupName = $ResourceGroupName
-                ServerName = $SQLServerName
-                FirewallRuleName = $Config.SQLServerFirewallRuleToRemote
-            }
-            {Get-AzureRmSqlServerFirewallRule @GetFirewallRuleParametres -ErrorAction Stop} | Should Throw
         }
 
         It "Should create a SQL Server and enable auditing" {
