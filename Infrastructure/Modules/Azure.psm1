@@ -39,12 +39,16 @@
             $i++
         }
         try {
-
             if ($PSCmdlet.ParameterSetName -eq "ResourceGroup") {
                 $resource = Get-AzureRmResource -ResourceGroupName $ResourceGroupName -ResourceName $ResourceName
             }
             else {
-                $resource = Find-AzureRmResource -ResourceNameEquals $ResourceName
+                if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+                    $resource = Get-AzureRmResource -Name $ResourceName
+                }
+                else {
+                    $resource = Find-AzureRmResource -ResourceNameEquals $ResourceName
+                }
             }
 
             if ($resource) {

@@ -40,7 +40,12 @@ try {
 
     Write-Log -LogLevel Information -Message "Resolving storage account"
     # --- Check if storage account exists in our subscription
-    $StorageAccountResource = Find-AzureRmResource -ResourceNameEquals $Name -ResourceType "Microsoft.Storage/storageAccounts"
+    if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+        $StorageAccountResource = Get-AzureRmResource -Name $Name -ResourceType "Microsoft.Storage/storageAccounts"
+    }
+    else {
+        $StorageAccountResource = Find-AzureRmResource -ResourceNameEquals $Name -ResourceType "Microsoft.Storage/storageAccounts"
+    }
     if (!$StorageAccountResource) {
         throw "Could not find storage account $Name"
     }

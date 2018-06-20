@@ -12,7 +12,7 @@ if ($ResourceGroup) {
     Remove-AzureRmResourceGroup -Name $ResourceGroupName -Force
 }
 else {
-    Write-Verbose -Message "Resource group does not exist"    
+    Write-Verbose -Message "Resource group does not exist"
 }
 
 Write-Verbose -Message "Cleaning up Cloud service Resource Group"
@@ -26,7 +26,13 @@ else {
 
 Write-Verbose -Message "Cleaning up Storage account Resource Group"
 $StorageAccountResourceGroupResources = New-Object System.Collections.ArrayList
-ForEach ($resource in (Find-AzureRmResource -ResourceGroupNameEquals "Default-Storage-$($Config.location.replace(' ',''))")) {
+if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+    $resources = (Get-AzureRmResource -ResourceGroupName "Default-Storage-$($Config.location.replace(' ',''))")
+}
+else {
+    $resources = (Find-AzureRmResource -ResourceGroupNameEquals "Default-Storage-$($Config.location.replace(' ',''))")
+}
+foreach ($resource in $resources) {
     $null = $StorageAccountResourceGroupResources.Add($resource)
 }
 

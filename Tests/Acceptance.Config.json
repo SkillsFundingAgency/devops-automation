@@ -1,6 +1,7 @@
 {
     "location": "West Europe",
     "resourceGroupName": "devops-at-rg",
+    "armStorageAccountName": "devopsatarmstr",
     "classicStorageAccountName": "devopsatstr",
     "classicStorageContainerName": "public",
     "classicStorageTableName": "table1",

@@ -25,7 +25,7 @@ Param (
     [String]$Location = $ENV:Location,
     [Parameter(Mandatory = $false)]
     [ValidateNotNullOrEmpty()]
-    [String]$ResourceGroupName = $ENV:ResourceGroup,	
+    [String]$ResourceGroupName = $ENV:ResourceGroup,
     [Parameter(Mandatory = $true)]
     [String[]]$Name
 )
@@ -37,21 +37,47 @@ Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 foreach ($Service in $Name) {
 
     Write-Verbose -Message "Checking for existing Application Insights: $Service"
-    $ApplicationInsights = Find-AzureRmResource -ResourceNameEquals $Service -ResourceType "Microsoft.Insights/components"
+    if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+        $ApplicationInsights = Get-AzureRmResource -Name $Service -ResourceType "Microsoft.Insights/components"
+    }
+    else {
+        $ApplicationInsights = Find-AzureRmResource -ResourceNameEquals $Service -ResourceType "Microsoft.Insights/components"
+    }
 
     if (!$ApplicationInsights) {
         Write-Log -LogLevel Information -Message "Creating Application Insights $Service"
-        $ApplicationInsightsParameters = @{
-            Location          = $Location
-            ResourceGroupName = $ResourceGroupName
-            ResourceName      = $Service
-            ResourceType      = "Microsoft.Insights/components"
-            PropertyObject    = @{"Application_Type" = "web"}
+        if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+            $ApplicationInsightsParameters = @{
+                Location          = $Location
+                ResourceGroupName = $ResourceGroupName
+                Name              = $Service
+                Kind              = "web"
+            }
+            $ApplicationInsights = New-AzureRmApplicationInsights @ApplicationInsightsParameters
         }
-        $ApplicationInsights = New-AzureRmResource @ApplicationInsightsParameters -Force
-    } else {
-        $ApplicationInsights = Get-AzureRmResource -ResourceId $ApplicationInsights.ResourceId
+        else {
+            $ApplicationInsightsParameters = @{
+                Location          = $Location
+                ResourceGroupName = $ResourceGroupName
+                ResourceName      = $Service
+                ResourceType      = "Microsoft.Insights/components"
+                PropertyObject    = @{"Application_Type" = "web"}
+            }
+            $ApplicationInsights = New-AzureRmResource @ApplicationInsightsParameters -Force
+        }
     }
-
-    Write-Output ("##vso[task.setvariable variable=InstrumentationKey-$($Service);]$($ApplicationInsights.Properties.InstrumentationKey)")
+    else {
+        if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+            $ApplicationInsights = Get-AzureRmApplicationInsights -ResourceGroupName $ResourceGroupName -Name $Service
+        }
+        else {
+            $ApplicationInsights = Get-AzureRmResource -ResourceId $ApplicationInsights.ResourceId
+        }
+    }
+    if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+        Write-Output ("##vso[task.setvariable variable=InstrumentationKey-$($Service);]$($ApplicationInsights.InstrumentationKey)")
+    }
+    else {
+        Write-Output ("##vso[task.setvariable variable=InstrumentationKey-$($Service);]$($ApplicationInsights.Properties.InstrumentationKey)")
+    }
 }

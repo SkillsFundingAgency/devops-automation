@@ -13,25 +13,25 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
     $null = $Config.SQLServerFirewallRules | ConvertTo-Json | Set-Content -Path $FirewallRuleConfigurationPath
 
     $NewSQLServerParameters = @{
-        Location = $Config.Location
-        ResourceGroupName = $ResourceGroupName
-        KeyVaultName = $Config.SQLServerKeyVaultName
-        KeyVaultSecretName = $SQLServerName
-        ServerName = $SQLServerName
-        ServerAdminUsername = $Config.SQLServerAdminUsername
-        ActiveDirectoryAdministrator = $Config.SQLServerActiveDirectoryAdministrator
-        FirewallRuleConfiguration = $FirewallRuleConfigurationPath
-        AuditingStorageAccountName = $StorageAccountName
+        Location                             = $Config.Location
+        ResourceGroupName                    = $ResourceGroupName
+        KeyVaultName                         = $Config.SQLServerKeyVaultName
+        KeyVaultSecretName                   = $SQLServerName
+        ServerName                           = $SQLServerName
+        ServerAdminUsername                  = $Config.SQLServerAdminUsername
+        ActiveDirectoryAdministrator         = $Config.SQLServerActiveDirectoryAdministrator
+        FirewallRuleConfiguration            = $FirewallRuleConfigurationPath
+        AuditingStorageAccountName           = $StorageAccountName
         ThreatDetectionNotificationRecipient = $Config.SQLServerNotificationRecipient
     }
 
     # --- Global Mocks
     $MockGetKeyVaultSecretParameters = @{
         CommandName = "Get-AzureKeyVaultSecret"
-        MockWith = {
+        MockWith    = {
             return [PSCustomObject]@{
                 SecretValueText = "ZQjSrcxJahlN?e-"
-                SecretValue = "ZQjSrcxJahlN?e-" | ConvertTo-SecureString -AsPlainText -Force
+                SecretValue     = "ZQjSrcxJahlN?e-" | ConvertTo-SecureString -AsPlainText -Force
             }
         }
     }
@@ -39,7 +39,7 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
 
     $MockSetKeyVaultSecretParameters = @{
         CommandName = "Set-AzureKeyVaultSecret"
-        MockWith = {return $null}
+        MockWith    = {return $null}
 
     }
     Mock @MockSetKeyVaultSecretParameters
@@ -49,15 +49,24 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
 
             $MockResolveAzureRmResourceParameters = @{
                 CommandName = "Resolve-AzureRmResource"
-                MockWith = {return $true}
+                MockWith    = {return $true}
             }
             Mock @MockResolveAzureRmResourceParameters
 
-            $MockFindAzureRmResourceParameters = @{
-                CommandName = "Find-AzureRmResource"
-                MockWith = {return $null}
+            if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+                $MockGetAzureRmResourceParameters = @{
+                    CommandName = "Get-AzureRmResource"
+                    MockWith    = {return $null}
+                }
+                Mock @MockGetAzureRmResourceParameters
             }
-            Mock @MockFindAzureRmResourceParameters
+            else {
+                $MockFindAzureRmResourceParameters = @{
+                    CommandName = "Find-AzureRmResource"
+                    MockWith    = {return $null}
+                }
+                Mock @MockFindAzureRmResourceParameters
+            }
 
             {.\New-SQLServer.ps1 @NewSQLServerParameters} | Should Throw "The SQL Server name $SQLServerName is globally resolvable. It's possible that this name has already been taken."
         }
@@ -72,7 +81,7 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
 
         It "Should create a SQL Server in the correct location" {
             $Result = Get-AzureRmSqlServer -ResourceGroupName $ResourceGroupName -ServerName $SQLServerName
-            $Result.Location.Replace(" ","").ToLower() | Should Be $Config.Location.Replace(" ","").ToLower()
+            $Result.Location.Replace(" ", "").ToLower() | Should Be $Config.Location.Replace(" ", "").ToLower()
         }
 
         It "Should create a SQL Server with the correct firewall rules" {
@@ -81,8 +90,8 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
                 {
                     $GetFirewallRuleParametres = @{
                         ResourceGroupName = $ResourceGroupName
-                        ServerName = $SQLServerName
-                        FirewallRuleName = $Rule.FirewallRuleName
+                        ServerName        = $SQLServerName
+                        FirewallRuleName  = $Rule.FirewallRuleName
                     }
                     Get-AzureRmSqlServerFirewallRule @GetFirewallRuleParametres  | Should Throw
                 }
@@ -90,7 +99,12 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
         }
 
         It "Should create a SQL Server and enable auditing" {
-            $AuditingPolicy = Get-AzureRmSqlServerAuditingPolicy -ResourceGroupName $ResourceGroupName -ServerName $SQLServerName
+            if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+                $AuditingPolicy = Get-AzureRmSqlServerAuditing -ResourceGroupName $ResourceGroupName -ServerName $SQLServerName
+            }
+            else {
+                $AuditingPolicy = Get-AzureRmSqlServerAuditingPolicy -ResourceGroupName $ResourceGroupName -ServerName $SQLServerName
+            }
             $AuditingPolicy.AuditState | Should Be "Enabled"
         }
 
@@ -110,13 +124,13 @@ Describe "New-SQLServer Tests" -Tag "Acceptance-ARM" {
 
             $MockGetKeyVaultSecretParameters = @{
                 CommandName = "Get-AzureKeyVaultSecret"
-                MockWith = {return $null}
+                MockWith    = {return $null}
             }
             Mock @MockGetKeyVaultSecretParameters
 
             $MockSetKeyVaultSecretParameters = @{
                 CommandName = "Set-AzureKeyVaultSecret"
-                MockWith = {return $null}
+                MockWith    = {return $null}
             }
             Mock @MockSetKeyVaultSecretParameters
 

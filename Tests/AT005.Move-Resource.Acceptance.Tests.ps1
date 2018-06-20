@@ -16,12 +16,22 @@ Describe "Move-Resource Tests" -Tag "Acceptance-ARM" {
         $null = .\Move-Resource.ps1 -ResourceName $Resources -DestinationResourceGroup $DestinationResourceGroup
 
         $ResourcesFound = 0
-        $CloudServiceResourceGroup = (Find-AzureRmResource -ResourceNameEquals $CloudServiceName).ResourceGroupName
+        if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+            $CloudServiceResourceGroup = (Get-AzureRmResource -Name $CloudServiceName).ResourceGroupName
+        }
+        else {
+            $CloudServiceResourceGroup = (Find-AzureRmResource -ResourceNameEquals $CloudServiceName).ResourceGroupName
+        }
         if ($CloudServiceResourceGroup -eq $DestinationResourceGroup) {
             $ResourcesFound = $ResourcesFound + 1
         }
 
-        $StorageAccountResourceGroup = (Find-AzureRmResource -ResourceNameEquals $StorageAccountName).ResourceGroupName
+        if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+            $StorageAccountResourceGroup = (Get-AzureRmResource -Name $StorageAccountName).ResourceGroupName
+        }
+        else {
+            $StorageAccountResourceGroup = (Find-AzureRmResource -ResourceNameEquals $StorageAccountName).ResourceGroupName
+        }
         if ($StorageAccountResourceGroup -eq $DestinationResourceGroup) {
             $ResourcesFound = $ResourcesFound + 1
         }

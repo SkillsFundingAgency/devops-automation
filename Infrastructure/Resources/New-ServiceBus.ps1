@@ -49,21 +49,21 @@ For Example:
 
 [CmdletBinding(DefaultParameterSetName="Standard")]
 Param (
-    [Parameter(Mandatory = $false, ParameterSetName = "Standard")]    
+    [Parameter(Mandatory = $false, ParameterSetName = "Standard")]
     [Parameter(Mandatory = $false, ParameterSetName = "Queue")]
     [Parameter(Mandatory = $false, ParameterSetName = "Topic")]
     [ValidateSet("West Europe", "North Europe")]
     [String]$Location = $ENV:Location,
-    [Parameter(Mandatory = $false, ParameterSetName = "Standard")]        
+    [Parameter(Mandatory = $false, ParameterSetName = "Standard")]
     [Parameter(Mandatory = $false, ParameterSetName = "Queue")]
     [Parameter(Mandatory = $false, ParameterSetName = "Topic")]
     [ValidateNotNullOrEmpty()]
     [String]$ResourceGroupName = $ENV:ResourceGroup,
-    [Parameter(Mandatory = $true, ParameterSetName = "Standard")]        
+    [Parameter(Mandatory = $true, ParameterSetName = "Standard")]
     [Parameter(Mandatory = $true, ParameterSetName = "Queue")]
     [Parameter(Mandatory = $true, ParameterSetName = "Topic")]
     [String]$NamespaceName,
-    [Parameter(Mandatory = $false, ParameterSetName = "Standard")]        
+    [Parameter(Mandatory = $false, ParameterSetName = "Standard")]
     [Parameter(Mandatory = $false, ParameterSetName = "Queue")]
     [Parameter(Mandatory = $false, ParameterSetName = "Topic")]
     [String]$Sku = "Standard",
@@ -98,7 +98,7 @@ if (!$ServiceBus) {
 }
 
 # --- If required, create queues OR topics
-if ($PSCmdlet.ParameterSetName -eq "Queue" -and $ServiceBus) {    
+if ($PSCmdlet.ParameterSetName -eq "Queue" -and $ServiceBus) {
     foreach ($Queue in $QueueName) {
         $ExistingQueue = Get-AzureRmServiceBusQueue -ResourceGroup $ResourceGroupName -NamespaceName $NamespaceName -QueueName $Queue -ErrorAction SilentlyContinue
         if (!$ExistingQueue) {
@@ -111,7 +111,8 @@ if ($PSCmdlet.ParameterSetName -eq "Queue" -and $ServiceBus) {
             }
         }
     }
-} elseif ($PSCmdlet.ParameterSetName -eq "Topic" -and $ServiceBus) {
+}
+elseif ($PSCmdlet.ParameterSetName -eq "Topic" -and $ServiceBus) {
 
     $Definition = Get-Content -Path (Resolve-Path -Path $TopicDefinition).Path -Raw | ConvertFrom-Json
     foreach ($Topic in $Definition) {
@@ -123,7 +124,8 @@ if ($PSCmdlet.ParameterSetName -eq "Queue" -and $ServiceBus) {
             try {
                 Write-Log -LogLevel Information -Message "Creating Topic: $($Topic.TopicName)"
                 $null = New-AzureRmServiceBusTopic -ResourceGroup $ResourceGroupName -NamespaceName $NamespaceName -TopicName $Topic.TopicName -EnablePartitioning $False -ErrorAction SilentlyContinue
-            } catch {
+            }
+            catch {
                 throw "Could not create Service Bus Topic $($Topic.TopicName): $_"
             }
         }
@@ -136,7 +138,8 @@ if ($PSCmdlet.ParameterSetName -eq "Queue" -and $ServiceBus) {
                 try {
                     Write-Log -LogLevel Information -Message "Creating Subscription: $($Subscription)"
                     $null = New-AzureRmServiceBusSubscription -ResourceGroup $ResourceGroupName -NamespaceName $NamespaceName -SubscriptionName $Subscription -TopicName $Topic.TopicName
-                } catch {
+                }
+                catch {
                     throw "Cloud not create Subscription: $($Subscription)"
                 }
             }
@@ -146,42 +149,87 @@ if ($PSCmdlet.ParameterSetName -eq "Queue" -and $ServiceBus) {
 
 # ---- Create read write access policy
 $RWAuthorizationRuleName = "ReadWrite"
-$RWAccessPolicy = Get-AzureRmServiceBusNamespaceAuthorizationRule -ResourceGroup $ResourceGroupName -NamespaceName $NamespaceName -AuthorizationRuleName $RWAuthorizationRuleName -ErrorAction SilentlyContinue
-if(!$RWAccessPolicy) {
+if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+    $RWAccessPolicy = Get-AzureRmServiceBusAuthorizationRule -ResourceGroupName $ResourceGroupName -Namespace $NamespaceName -AuthorizationRuleName $RWAuthorizationRuleName -ErrorAction SilentlyContinue
+}
+else {
+    $RWAccessPolicy = Get-AzureRmServiceBusNamespaceAuthorizationRule -ResourceGroup $ResourceGroupName -NamespaceName $NamespaceName -AuthorizationRuleName $RWAuthorizationRuleName -ErrorAction SilentlyContinue
+}
+if (!$RWAccessPolicy) {
     try {
         Write-Log -LogLevel Information -Message "Creating Authorization Rule: $RWAuthorizationRuleName"
-        $RWAccessPolicyParameters = @{
-            ResourceGroup = $ResourceGroupName
-            NamespaceName = $NamespaceName
-            AuthorizationRuleName = $RWAuthorizationRuleName
-            Rights = "Send","Listen"
+
+        if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+            $RWAccessPolicyParameters = @{
+                ResourceGroupName = $ResourceGroupName
+                Namespace         = $NamespaceName
+                Name              = $RWAuthorizationRuleName
+                Rights            = "Send", "Listen"
+            }
+            $null = New-AzureRmServiceBusAuthorizationRule @RWAccessPolicyParameters
         }
-        $null = New-AzureRmServiceBusNamespaceAuthorizationRule @RWAccessPolicyParameters
-    } catch {
+        else {
+            $RWAccessPolicyParameters = @{
+                ResourceGroup         = $ResourceGroupName
+                NamespaceName         = $NamespaceName
+                AuthorizationRuleName = $RWAuthorizationRuleName
+                Rights                = "Send", "Listen"
+            }
+            $null = New-AzureRmServiceBusNamespaceAuthorizationRule @RWAccessPolicyParameters
+        }
+    }
+    catch {
         throw "Could not create Authorization Rule $($RWAuthorizationRuleName): $_"
     }
 }
 
 # ---- Create read only access policy
 $RAuthorizationRuleName = "Read"
-$RAccessPolicy = Get-AzureRmServiceBusNamespaceAuthorizationRule -ResourceGroup $ResourceGroupName -NamespaceName $NamespaceName -AuthorizationRuleName $RAuthorizationRuleName -ErrorAction SilentlyContinue
-if(!$RAccessPolicy) {
+if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+    $RAccessPolicy = Get-AzureRmServiceBusAuthorizationRule -ResourceGroupName $ResourceGroupName -Namespace $NamespaceName -AuthorizationRuleName $RAuthorizationRuleName -ErrorAction SilentlyContinue
+}
+else {
+    $RAccessPolicy = Get-AzureRmServiceBusNamespaceAuthorizationRule -ResourceGroup $ResourceGroupName -NamespaceName $NamespaceName -AuthorizationRuleName $RAuthorizationRuleName -ErrorAction SilentlyContinue
+}
+if (!$RAccessPolicy) {
     try {
         Write-Log -LogLevel Information -Message "Creating Authorization Rule: $RAuthorizationRuleName"
-        $RAccessPolicyParameters = @{
-            ResourceGroup = $ResourceGroupName
-            NamespaceName = $NamespaceName
-            AuthorizationRuleName = $RAuthorizationRuleName
-            Rights = "Listen"
+
+        if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+            $RAccessPolicyParameters = @{
+                ResourceGroupName = $ResourceGroupName
+                Namespace         = $NamespaceName
+                Name              = $RAuthorizationRuleName
+                Rights            = "Listen"
+            }
+            $null = New-AzureRmServiceBusAuthorizationRule @RAccessPolicyParameters
         }
-        $null = New-AzureRmServiceBusNamespaceAuthorizationRule @RAccessPolicyParameters
-    } catch {
+        else {
+            $RAccessPolicyParameters = @{
+                ResourceGroup         = $ResourceGroupName
+                NamespaceName         = $NamespaceName
+                AuthorizationRuleName = $RAuthorizationRuleName
+                Rights                = "Listen"
+            }
+            $null = New-AzureRmServiceBusNamespaceAuthorizationRule @RAccessPolicyParameters
+        }
+    }
+    catch {
         throw "Could not create Authorization Rule $($RAuthorizationRuleName): $_"
     }
 }
+if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+    $RWKeys = Get-AzureRmServiceBusKey -Namespace $NamespaceName -ResourceGroupName $ResourceGroupName -Name $RWAuthorizationRuleName
+}
+else {
+    $RWKeys = Get-AzureRmServiceBusNamespaceKey -Name $NamespaceName -ResourceGroup $ResourceGroupName -AuthorizationRuleName $RWAuthorizationRuleName
+}
+Write-Output ("##vso[task.setvariable variable=ServiceBusEndpoint;]$($RWKeys.PrimaryConnectionString)")
 
-$RWKeys = Get-AzureRmServiceBusNamespaceKey -Name $NamespaceName -ResourceGroup $ResourceGroupName -AuthorizationRuleName $RWAuthorizationRuleName
-Write-Output ("##vso[task.setvariable variable=ServiceBusEndpoint;]$($RWKeys.PrimaryConnectionString)") 
-
-$RKeys = Get-AzureRmServiceBusNamespaceKey -Name $NamespaceName -ResourceGroup $ResourceGroupName -AuthorizationRuleName $RAuthorizationRuleName
-Write-Output ("##vso[task.setvariable variable=ServiceBusEndpointReadOnly;]$($RKeys.PrimaryConnectionString)") 
+if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+    $RKeys = Get-AzureRmServiceBusKey -Namespace $NamespaceName -ResourceGroupName $ResourceGroupName -Name $RAuthorizationRuleName
+}
+else {
+    $RKeys = Get-AzureRmServiceBusNamespaceKey -Name $NamespaceName -ResourceGroup $ResourceGroupName -AuthorizationRuleName $RAuthorizationRuleName
+}
+Write-Output ("##vso[task.setvariable variable=ServiceBusEndpointReadOnly;]$($RKeys.PrimaryConnectionString)")
