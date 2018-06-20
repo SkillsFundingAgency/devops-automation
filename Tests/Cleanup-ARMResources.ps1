@@ -27,10 +27,10 @@ else {
 Write-Verbose -Message "Cleaning up Storage account Resource Group"
 $StorageAccountResourceGroupResources = New-Object System.Collections.ArrayList
 if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
-    $resources = (Get-AzureRmResource -ResourceGroupName "Default-Storage-$($Config.location.replace(' ',''))")
+    $resources = Get-AzureRmResource -ResourceGroupName "Default-Storage-$($Config.location.replace(' ',''))" -ErrorAction SilentlyContinue
 }
 else {
-    $resources = (Find-AzureRmResource -ResourceGroupNameEquals "Default-Storage-$($Config.location.replace(' ',''))")
+    $resources = Find-AzureRmResource -ResourceGroupNameEquals "Default-Storage-$($Config.location.replace(' ',''))"
 }
 foreach ($resource in $resources) {
     $null = $StorageAccountResourceGroupResources.Add($resource)
