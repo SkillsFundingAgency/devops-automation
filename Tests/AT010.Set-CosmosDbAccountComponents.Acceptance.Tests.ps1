@@ -12,7 +12,7 @@ Describe "Set-CosmosDbAccountComponents Tests" -Tag "Acceptance-ARM" {
         -ResourceGroupName $ResourceGroupName -Location $Config.location -Kind "MongoDB" `
         -ResourceName $CosmosDbAccountName -PropertyObject $DBProperties -Force
 
-    New-Item  "./$($config.cosmosDbTestConfig.Databases[0].Collections[0].StoredProcedures[0].StoredProcedureName).ext" -ItemType File
+    New-Item  "./$($config.cosmosDbTestConfig.Databases[0].Collections[0].StoredProcedures[0].StoredProcedureName).ext" -ItemType File -Force
     Set-Content -Path "./$($config.cosmosDbTestConfig.Databases[0].Collections[0].StoredProcedures[0].StoredProcedureName).ext" -Value "function(){}"
 
     It "Should run successfully" {
@@ -31,6 +31,12 @@ Describe "Set-CosmosDbAccountComponents Tests" -Tag "Acceptance-ARM" {
         $TestColl = Get-CosmosDbCollection -Context $TestContext -Database $config.cosmosDbTestConfig.Databases[0].DatabaseName `
             -Id $config.cosmosDbTestConfig.Databases[0].Collections[0].CollectionName
         $TestColl.Id | Should be $config.cosmosDbTestConfig.Databases[0].Collections[0].CollectionName
+    }
+
+    It "Should create a collection with IndexingMode set to None" {
+        $TestColl = Get-CosmosDbCollection -Context $TestContext -Database $config.cosmosDbTestConfig.Databases[0].DatabaseName `
+            -Id $config.cosmosDbTestConfig.Databases[0].Collections[1].CollectionName
+        $TestColl.indexingPolicy.indexingMode | Should be $config.cosmosDbTestConfig.Databases[0].Collections[1].IndexingPolicy.indexingMode
     }
 
     It "Should create a stored procedure with the correct code body" {

@@ -96,7 +96,7 @@ Class CosmosDbSchema {
 
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
-$CosmosDBModuleVersion = "2.0.15.454"
+$CosmosDBModuleVersion = "2.0.16.465"
 
 if (!(Get-Module CosmosDB | Where-Object { $_.Version.ToString() -eq $CosmosDBModuleVersion })) {
     Write-Log -Message "Required module is not imported." -LogLevel Verbose
@@ -244,7 +244,7 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
             }
             $null = New-CosmosDbCollection @NewCosmosDbCollectionParameters
 
-            Write-Log -Message "Collection Details: Context: $($CosmosDbContext) Database: $($Database.DatabaseName) IndexingPolicy: $($IndexingPolicy)" -LogLevel Information
+            Write-Log -Message "Collection Details: Context: Account - $($CosmosDbContext.Account), BaseUri - $($CosmosDbContext.BaseUri); Database: $($Database.DatabaseName); IndexingPolicy: $($IndexingPolicy)" -LogLevel Information
         }
         else{
             Write-Log -Message "Updating Collection: $($Collection.CollectionName) in $($Database.DatabaseName)" -LogLevel Information
@@ -315,62 +315,62 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
             Write-Log -Message "Set Cosmos Collection: $($Collection.CollectionName)" -LogLevel Information
             $null = Set-CosmosDbCollection @UpdatedCosmosDbCollectionParameters
         }
-    }
 
-    foreach ($StoredProcedure in $Collection.StoredProcedures) {
-        # --- Create Stored Procedure
-        try {
-            $ExistingStoredProcedure = $null
-            $GetCosmosDbStoredProcParameters = @{
-                Context      = $CosmosDbContext
-                Database     = $Database.DatabaseName
-                CollectionId = $Collection.CollectionName
-                Id           = $StoredProcedure.StoredProcedureName
+        foreach ($StoredProcedure in $Collection.StoredProcedures) {
+            # --- Create Stored Procedure
+            try {
+                $ExistingStoredProcedure = $null
+                $GetCosmosDbStoredProcParameters = @{
+                    Context      = $CosmosDbContext
+                    Database     = $Database.DatabaseName
+                    CollectionId = $Collection.CollectionName
+                    Id           = $StoredProcedure.StoredProcedureName
+                }
+                $ExistingStoredProcedure = Get-CosmosDbStoredProcedure @GetCosmosDbStoredProcParameters
             }
-            $ExistingStoredProcedure = Get-CosmosDbStoredProcedure @GetCosmosDbStoredProcParameters
-        }
-        catch {
-        }
-
-        $FindStoredProcFileParameters = @{
-            Path    = (Resolve-Path $CosmosDbProjectFolderPath)
-            Filter  = "$($StoredProcedure.StoredProcedureName)*"
-            Recurse = $true
-            File    = $true
-        }
-        $StoredProcedureFile = Get-ChildItem @FindStoredProcFileParameters | ForEach-Object { $_.FullName }
-
-        if (!$StoredProcedureFile) {
-            Write-Log -Message "Stored Procedure name $($StoredProcedure.StoredProcedureName) could not be found in $(Resolve-Path $CosmosDbProjectFolderPath)" -LogLevel Error
-            throw "$_"
-        }
-
-        if ($StoredProcedureFile.GetType().Name -ne "String") {
-            Write-Log -Message "Multiple Stored Procedures with name $($StoredProcedure.StoredProcedureName) found in $(Resolve-Path $CosmosDbProjectFolderPath)" -LogLevel Error
-            throw "$_"
-        }
-
-        if (!$ExistingStoredProcedure) {
-            Write-Log -Message "Creating Stored Procedure: $($StoredProcedure.StoredProcedureName) in $($Collection.CollectionName) in $($Database.DatabaseName)" -LogLevel Information
-            $NewCosmosDbStoredProcParameters = @{
-                Context             = $CosmosDbContext
-                Database            = $Database.DatabaseName
-                CollectionId        = $Collection.CollectionName
-                Id                  = $StoredProcedure.StoredProcedureName
-                StoredProcedureBody = (Get-Content $StoredProcedureFile -Raw)
+            catch {
             }
-            $null = New-CosmosDbStoredProcedure @NewCosmosDbStoredProcParameters
-        }
-        elseif ($ExistingStoredProcedure.body -ne (Get-Content $StoredProcedureFile -Raw)) {
-            Write-Log -Message "Updating Stored Procedure: $($StoredProcedure.StoredProcedureName) in $($Collection.CollectionName) in $($Database.DatabaseName)" -LogLevel Information
-            $SetCosmosDbStoredProcParameters = @{
-                Context             = $CosmosDbContext
-                Database            = $Database.DatabaseName
-                CollectionId        = $Collection.CollectionName
-                Id                  = $StoredProcedure.StoredProcedureName
-                StoredProcedureBody = (Get-Content $StoredProcedureFile -Raw)
+    
+            $FindStoredProcFileParameters = @{
+                Path    = (Resolve-Path $CosmosDbProjectFolderPath)
+                Filter  = "$($StoredProcedure.StoredProcedureName)*"
+                Recurse = $true
+                File    = $true
             }
-            $null = Set-CosmosDbStoredProcedure @SetCosmosDbStoredProcParameters
-        }
+            $StoredProcedureFile = Get-ChildItem @FindStoredProcFileParameters | ForEach-Object { $_.FullName }
+    
+            if (!$StoredProcedureFile) {
+                Write-Log -Message "Stored Procedure name $($StoredProcedure.StoredProcedureName) could not be found in $(Resolve-Path $CosmosDbProjectFolderPath)" -LogLevel Error
+                throw "$_"
+            }
+    
+            if ($StoredProcedureFile.GetType().Name -ne "String") {
+                Write-Log -Message "Multiple Stored Procedures with name $($StoredProcedure.StoredProcedureName) found in $(Resolve-Path $CosmosDbProjectFolderPath)" -LogLevel Error
+                throw "$_"
+            }
+    
+            if (!$ExistingStoredProcedure) {
+                Write-Log -Message "Creating Stored Procedure: $($StoredProcedure.StoredProcedureName) in $($Collection.CollectionName) in $($Database.DatabaseName)" -LogLevel Information
+                $NewCosmosDbStoredProcParameters = @{
+                    Context             = $CosmosDbContext
+                    Database            = $Database.DatabaseName
+                    CollectionId        = $Collection.CollectionName
+                    Id                  = $StoredProcedure.StoredProcedureName
+                    StoredProcedureBody = (Get-Content $StoredProcedureFile -Raw)
+                }
+                $null = New-CosmosDbStoredProcedure @NewCosmosDbStoredProcParameters
+            }
+            elseif ($ExistingStoredProcedure.body -ne (Get-Content $StoredProcedureFile -Raw)) {
+                Write-Log -Message "Updating Stored Procedure: $($StoredProcedure.StoredProcedureName) in $($Collection.CollectionName) in $($Database.DatabaseName)" -LogLevel Information
+                $SetCosmosDbStoredProcParameters = @{
+                    Context             = $CosmosDbContext
+                    Database            = $Database.DatabaseName
+                    CollectionId        = $Collection.CollectionName
+                    Id                  = $StoredProcedure.StoredProcedureName
+                    StoredProcedureBody = (Get-Content $StoredProcedureFile -Raw)
+                }
+                $null = Set-CosmosDbStoredProcedure @SetCosmosDbStoredProcParameters
+            }
+        }        
     }
 }
