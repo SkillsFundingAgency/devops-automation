@@ -26,10 +26,10 @@ Use fix for cosmosdb shard keys as per https://blog.olandese.nl/2017/12/13/creat
 
 .EXAMPLE
 $CosmosDbParameters = @{
-    ResourceGroupName = "sam"
-    CosmosDbAccountName = "samdb"
-    CosmosDbConfigurationFilePath = "C:\Users\faa-dev-01\Desktop\IndexingPolicyTest\Configuration.json"
-    CosmosDbProjectFolderPath = "C:\Users\faa-dev-01\Desktop\IndexingPolicyTest"
+    ResourceGroupName = $ResourceGroupName
+    CosmosDbAccountName = $CosmosDbAccountName
+    CosmosDbConfigurationFilePath = $CosmosDbConfigurationFilePath
+    CosmosDbProjectFolderPath = $CosmosDbProjectFolderPath
 }
 .\Set-CosmosDbAccountComponents @CosmosDbParameters
 #>
@@ -330,7 +330,7 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
             }
             catch {
             }
-    
+
             $FindStoredProcFileParameters = @{
                 Path    = (Resolve-Path $CosmosDbProjectFolderPath)
                 Filter  = "$($StoredProcedure.StoredProcedureName)*"
@@ -338,17 +338,17 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
                 File    = $true
             }
             $StoredProcedureFile = Get-ChildItem @FindStoredProcFileParameters | ForEach-Object { $_.FullName }
-    
+
             if (!$StoredProcedureFile) {
                 Write-Log -Message "Stored Procedure name $($StoredProcedure.StoredProcedureName) could not be found in $(Resolve-Path $CosmosDbProjectFolderPath)" -LogLevel Error
                 throw "$_"
             }
-    
+
             if ($StoredProcedureFile.GetType().Name -ne "String") {
                 Write-Log -Message "Multiple Stored Procedures with name $($StoredProcedure.StoredProcedureName) found in $(Resolve-Path $CosmosDbProjectFolderPath)" -LogLevel Error
                 throw "$_"
             }
-    
+
             if (!$ExistingStoredProcedure) {
                 Write-Log -Message "Creating Stored Procedure: $($StoredProcedure.StoredProcedureName) in $($Collection.CollectionName) in $($Database.DatabaseName)" -LogLevel Information
                 $NewCosmosDbStoredProcParameters = @{
@@ -371,6 +371,6 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
                 }
                 $null = Set-CosmosDbStoredProcedure @SetCosmosDbStoredProcParameters
             }
-        }        
+        }
     }
 }
