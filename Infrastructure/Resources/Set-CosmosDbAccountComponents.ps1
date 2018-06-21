@@ -99,10 +99,10 @@ Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 $CosmosDBModuleVersion = "2.0.16.465"
 
 if (!(Get-Module CosmosDB | Where-Object { $_.Version.ToString() -eq $CosmosDBModuleVersion })) {
-    Write-Log -Message "Required module is not imported." -LogLevel Verbose
-    if(!(Get-InstalledModule CosmosDB)){
-        Write-Log -Message "Required module is not installed. Install it." -LogLevel Verbose
-        Install-Module CosmosDB -RequiredVersion $CosmosDBModuleVersion -Scope CurrentUser -Force
+    Write-Log -Message "Minimum module version is not imported." -LogLevel Verbose
+    if(!(Get-InstalledModule CosmosDB -MinimumVersion $CosmosDBModuleVersion)){
+        Write-Log -Message "Minimum module version is not installed." -LogLevel Verbose
+        Install-Module CosmosDB -MinimumVersion $CosmosDBModuleVersion -Scope CurrentUser -Force
     }
     Import-Module CosmosDB -RequiredVersion $CosmosDBModuleVersion
 }
