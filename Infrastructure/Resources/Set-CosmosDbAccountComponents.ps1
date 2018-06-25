@@ -104,7 +104,7 @@ if (!(Get-Module CosmosDB | Where-Object { $_.Version.ToString() -eq $CosmosDBMo
         Write-Log -Message "Minimum module version is not installed." -LogLevel Verbose
         Install-Module CosmosDB -MinimumVersion $CosmosDBModuleVersion -Scope CurrentUser -Force
     }
-    Import-Module CosmosDB -RequiredVersion $CosmosDBModuleVersion
+    Import-Module CosmosDB -MinimumVersion $CosmosDBModuleVersion
 }
 
 Write-Log -Message "Searching for existing account" -LogLevel Verbose
