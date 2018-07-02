@@ -31,7 +31,7 @@ Param (
     [ValidateNotNullOrEmpty()]
 	[String]$Username,
     [Parameter(Mandatory = $true)]
-    [SecureString]$Password,
+    [String]$Password,
 	[Parameter(Mandatory = $false)]
     [String]$MongoScript
 )
@@ -39,7 +39,7 @@ Param (
 try{
     $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList "Username", $Password
     $ReadablePassword = $Credential.GetNetworkCredential().Password
-    . "mongo" --host $CosmosDb --username $Username --password $ReadablePassword --ssl $MongoScript
+    . "mongo" --host $CosmosDb --username $Username --password $Password --ssl $MongoScript
 }
 catch {
     throw $_
