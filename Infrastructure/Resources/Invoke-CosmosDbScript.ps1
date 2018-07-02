@@ -37,8 +37,8 @@ Param (
 )
 
 try{
-    $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList "Username", $Password
-    $ReadablePassword = $Credential.GetNetworkCredential().Password
+    #$Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList "Username", $Password
+    #$ReadablePassword = $Credential.GetNetworkCredential().Password
     . "mongo" --host $CosmosDb --username $Username --password $Password --ssl $MongoScript
 }
 catch {
