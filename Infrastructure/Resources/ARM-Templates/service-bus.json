@@ -1,0 +1,75 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "serviceBusNamespaceName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the Service Bus namespace"
+            }
+        },
+        "serviceBusSku": {
+            "type": "string",
+            "allowedValues": [
+                "Basic",
+                "Standard",
+                "Premium"
+            ],
+            "defaultValue": "Standard",
+            "metadata": {
+                "description": "The messaging tier for service Bus namespace"
+            }
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "apiVersion": "2017-04-01",
+            "name": "[parameters('serviceBusNamespaceName')]",
+            "type": "Microsoft.ServiceBus/namespaces",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "[parameters('serviceBusSku')]"
+            },
+            "resources": [
+                {
+                    "apiVersion": "2017-04-01",
+                    "name": "ReadWrite",
+                    "type": "AuthorizationRules",
+                    "properties": {
+                        "rights": [
+                            "Send",
+                            "Listen"
+                        ]
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusNamespaceName'))]"
+                    ]
+                },
+                {
+                    "apiVersion": "2017-04-01",
+                    "name": "Read",
+                    "type": "AuthorizationRules",
+                    "properties": {
+                        "rights": [
+                            "Listen"
+                        ]
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusNamespaceName'))]"
+                    ]
+                }
+            ]
+        }
+    ],
+    "outputs": {
+        "ServiceBusEndpoint": {
+            "type": "string",
+            "value": "[listkeys(resourceId('Microsoft.ServiceBus/namespaces/AuthorizationRules', parameters('serviceBusNamespaceName'), 'ReadWrite'), '2017-04-01').primaryConnectionString]"
+        },
+        "ServiceBusEndpointReadOnly": {
+            "type": "string",
+            "value": "[listkeys(resourceId('Microsoft.ServiceBus/namespaces/AuthorizationRules', parameters('serviceBusNamespaceName'), 'Read'), '2017-04-01').primaryConnectionString]"
+        }
+    }
+}

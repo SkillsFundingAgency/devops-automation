@@ -1,0 +1,74 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "appServicePlanName": {
+            "type": "string"
+        },
+        "aseHostingEnvironmentName": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "aseResourceGroup": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "aspSize": {
+            "type": "string",
+            "allowedValues": [
+                "1",
+                "2",
+                "3"
+            ]
+        },
+        "aspInstances": {
+            "type": "int"
+        }
+    },
+    "variables": {
+        "deployToASE": "[greater(length(parameters('aseHostingEnvironmentName')), 0)]",
+        "aspResourceProperties": {
+            "WithASE": {
+                "name": "[parameters('appServicePlanName')]",
+                "hostingEnvironmentProfile": {
+                    "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('aseResourceGroup'), '/providers/Microsoft.Web/hostingEnvironments/', parameters('aseHostingEnvironmentName'))]"
+                }
+            },
+            "WithoutASE": {
+                "name": "[parameters('appServicePlanName')]"
+            }
+        },
+        "defaultAppServicePlanSKUs": {
+            "Standard": {
+                "name": "[concat('S', parameters('aspSize'))]",
+                "tier": "Standard",
+                "size": "[concat('S', parameters('aspSize'))]",
+                "family": "S",
+                "capacity": "[parameters('aspInstances')]"
+            },
+            "Isolated": {
+                "name": "[concat('I', parameters('aspSize'))]",
+                "tier": "Isolated",
+                "size": "[concat('I', parameters('aspSize'))]",
+                "family": "I",
+                "capacity": "[parameters('aspInstances')]"
+            }
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2016-09-01",
+            "name": "[parameters('appServicePlanName')]",
+            "location": "[resourceGroup().location]",
+            "properties": "[if(variables('DeployToASE'), variables('ASPResourceProperties').WithASE, variables('ASPResourceProperties').WithoutASE)]",
+            "sku": "[if(variables('DeployToASE'), variables('defaultAppServicePlanSKUs').Isolated, variables('defaultAppServicePlanSKUs').Standard)]"
+        }
+    ],
+    "outputs": {
+        "appServicePlanId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]"
+        }
+    }
+}
