@@ -29,6 +29,10 @@
             "metadata": {
                 "description": "This can be passed into the template via the reference function: [reference(resourceId(parameters('certificateResourceGroup'), 'Microsoft.Web/certificates', parameters('certificateName')), '2016-08-01').Thumbprint]"
             }
+        },
+        "deployStagingSlot": {
+            "type": "bool",
+            "defaultValue": true
         }
     },
     "variables": {
@@ -53,6 +57,7 @@
             },
             "resources": [
                 {
+                    "condition": "[parameters('deployStagingSlot')]",
                     "name": "staging",
                     "type": "slots",
                     "apiVersion": "2016-08-01",
