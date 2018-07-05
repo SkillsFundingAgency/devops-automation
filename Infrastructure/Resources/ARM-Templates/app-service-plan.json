@@ -23,6 +23,15 @@
         },
         "aspInstances": {
             "type": "int"
+        },
+        "nonASETier": {
+            "type": "string",
+            "allowedValues": [
+                "Basic",
+                "Standard",
+                "Premium"
+            ],
+            "defaultValue": "Standard"
         }
     },
     "variables": {
@@ -39,11 +48,11 @@
             }
         },
         "defaultAppServicePlanSKUs": {
-            "Standard": {
-                "name": "[concat('S', parameters('aspSize'))]",
-                "tier": "Standard",
-                "size": "[concat('S', parameters('aspSize'))]",
-                "family": "S",
+            "NonASE": {
+                "name": "[concat(take(parameters('nonASETier'), 1), parameters('aspSize'))]",
+                "tier": "[parameters('nonASETier')]",
+                "size": "[concat(take(parameters('nonASETier'), 1), parameters('aspSize'))]",
+                "family": "[take(parameters('nonASETier'), 1)]",
                 "capacity": "[parameters('aspInstances')]"
             },
             "Isolated": {
@@ -62,7 +71,7 @@
             "name": "[parameters('appServicePlanName')]",
             "location": "[resourceGroup().location]",
             "properties": "[if(variables('DeployToASE'), variables('ASPResourceProperties').WithASE, variables('ASPResourceProperties').WithoutASE)]",
-            "sku": "[if(variables('DeployToASE'), variables('defaultAppServicePlanSKUs').Isolated, variables('defaultAppServicePlanSKUs').Standard)]"
+            "sku": "[if(variables('DeployToASE'), variables('defaultAppServicePlanSKUs').Isolated, variables('defaultAppServicePlanSKUs').NonASE)]"
         }
     ],
     "outputs": {
