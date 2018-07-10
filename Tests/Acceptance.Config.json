@@ -60,7 +60,45 @@
                             {
                                 "StoredProcedureName": "sproc1"
                             }
-                        ]
+                        ],
+                        "IndexingPolicy": {
+                            "indexingMode": "consistent",
+                            "automatic": true,
+                            "includedPaths": [
+                              {
+                                "path": "/*",
+                                "indexes": [
+                                  {
+                                    "kind": "Range",
+                                    "dataType": "Number",
+                                    "precision": -1
+                                  },
+                                  {
+                                    "kind": "Range",
+                                    "dataType": "String",
+                                    "precision": -1
+                                  }
+                                ]
+                              }
+                            ],
+                            "excludedPaths": [
+                                {
+                                    "path": "/path1/*"
+                                }
+                            ]
+                          }
+                    },
+                    {
+                        "CollectionName": "coll2",
+                        "OfferThroughput": 500,
+                        "PartitionKey": "part2",
+                        "StoredProcedures": [],
+                        "IndexingPolicy": {
+                            "indexingMode": "none",
+                            "automatic": false,
+                            "includedPaths": [],
+                            "excludedPaths": []
+                          }
                     }
                 ]
             }
