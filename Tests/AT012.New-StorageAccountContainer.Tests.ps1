@@ -16,7 +16,7 @@ Describe "New-StorageAccountContainer Tests" -Tag "Acceptance-ARM" {
 
     It "Should create a Storage Container in a Storage Account" {
         $null = .\New-StorageAccountContainer.ps1 -Location "West Europe" -Name $StorageAccountName -ContainerName $ContainerName
-        $Container = Get-AzureStorageContainer -Context $StorageAccountContext -Name $Container -ErrorAction SilentlyContinue
+        $Container = Get-AzureStorageContainer -Context $StorageAccountContext -Name $ContainerName -ErrorAction SilentlyContinue
         $Container.Name | Should Be $ContainerName
     }
 
