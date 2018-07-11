@@ -1,0 +1,95 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "appServiceName": {
+            "type": "string"
+        },
+        "appServicePlanName": {
+            "type": "string"
+        },
+        "appServicePlanResourceGroup": {
+            "type": "string"
+        },
+        "appServiceAppSettings": {
+            "type": "array",
+            "defaultValue": []
+        },
+        "appServiceConnectionStrings": {
+            "type": "array",
+            "defaultValue": []
+        },
+        "customHostName": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "certificateThumbprint": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "This can be passed into the template via the reference function: [reference(resourceId(parameters('certificateResourceGroup'), 'Microsoft.Web/certificates', parameters('certificateName')), '2016-08-01').Thumbprint]"
+            }
+        },
+        "deployStagingSlot": {
+            "type": "bool",
+            "defaultValue": true
+        }
+    },
+    "variables": {
+        "useCustomHostname": "[greater(length(parameters('customHostname')), 0)]",
+        "appServicePlanId": "[resourceId(parameters('appServicePlanResourceGroup'), 'Microsoft.Web/serverfarms', parameters('appServicePlanName'))]"
+    },
+    "resources": [
+        {
+            "name": "[parameters('appServiceName')]",
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2016-08-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "serverFarmId": "[variables('appServicePlanId')]",
+                "clientAffinityEnabled": false,
+                "siteConfig": {
+                    "alwaysOn": true,
+                    "appSettings": "[parameters('appServiceAppSettings')]",
+                    "connectionStrings": "[parameters('appServiceConnectionStrings')]"
+                },
+                "httpsOnly": true
+            },
+            "resources": [
+                {
+                    "condition": "[parameters('deployStagingSlot')]",
+                    "name": "staging",
+                    "type": "slots",
+                    "apiVersion": "2016-08-01",
+                    "location": "[resourceGroup().location]",
+                    "properties": {
+                        "clientAffinityEnabled": false,
+                        "siteConfig": {
+                            "appSettings": "[parameters('appServiceAppSettings')]",
+                            "connectionStrings": "[parameters('appServiceConnectionStrings')]"
+                        }
+                    },
+                    "dependsOn": [
+                        "[parameters('appServiceName')]"
+                    ]
+                }
+            ],
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Web/sites/hostnameBindings",
+            "condition": "[variables('UseCustomHostname')]",
+            "name": "[concat(parameters('appServiceName'), '/', if(variables('useCustomHostname'), parameters('customHostname'), 'placeholder'))]",
+            "apiVersion": "2016-08-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "sslState": "SniEnabled",
+                "thumbprint": "[parameters('certificateThumbprint')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('appServiceName'))]"
+            ]
+        }
+    ],
+    "outputs": {}
+}
