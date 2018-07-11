@@ -48,7 +48,9 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$CosmosDbProjectFolderPath,
     [Parameter(Mandatory = $false)]
-    [switch]$PartitionKeyFix
+    [switch]$PartitionKeyFix,
+    [Parameter(Mandatory = $false)]
+    [switch]$UpdateIndexPolicyFix
 )
 
 Class CosmosDbStoredProcedure {
@@ -56,32 +58,32 @@ Class CosmosDbStoredProcedure {
 }
 
 Class CosmosDbIndex {
-	[string]$kind
-	[string]$dataType
-	[int32]$precision
+    [string]$kind
+    [string]$dataType
+    [int32]$precision
 }
 
 Class CosmosDbIncludedPath {
-	[string]$path
-	[CosmosDbIndex[]]$indexes
+    [string]$path
+    [CosmosDbIndex[]]$indexes
 }
 
 Class CosmosDbExcludedPath {
-	[string]$path
+    [string]$path
 }
 
 Class CosmosDbIndexingPolicy {
-	[CosmosDbIncludedPath[]]$includedPaths
-	[CosmosDbExcludedPath[]]$excludedPaths
-	[bool]$automatic
-	[string]$indexingMode
+    [CosmosDbIncludedPath[]]$includedPaths
+    [CosmosDbExcludedPath[]]$excludedPaths
+    [bool]$automatic
+    [string]$indexingMode
 }
 
 Class CosmosDbCollection {
     [string]$CollectionName
     [string]$PartitionKey = $null
     [int]$OfferThroughput
-	[CosmosDbIndexingPolicy]$IndexingPolicy
+    [CosmosDbIndexingPolicy]$IndexingPolicy
     [CosmosDbStoredProcedure[]]$StoredProcedures
 }
 
@@ -100,7 +102,7 @@ $CosmosDBModuleVersion = "2.0.16.465"
 
 if (!(Get-Module CosmosDB | Where-Object { $_.Version.ToString() -eq $CosmosDBModuleVersion })) {
     Write-Log -Message "Minimum module version is not imported." -LogLevel Verbose
-    if(!(Get-InstalledModule CosmosDB -MinimumVersion $CosmosDBModuleVersion -ErrorAction SilentlyContinue)){
+    if (!(Get-InstalledModule CosmosDB -MinimumVersion $CosmosDBModuleVersion -ErrorAction SilentlyContinue)) {
         Write-Log -Message "Minimum module version is not installed." -LogLevel Verbose
         Install-Module CosmosDB -MinimumVersion $CosmosDBModuleVersion -Scope CurrentUser -Force
     }
@@ -177,27 +179,28 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
         }
         catch {
         }
+
         if (!$ExistingCollection) {
 
             Write-Log -Message "Creating Collection: $($Collection.CollectionName) in $($Database.DatabaseName)" -LogLevel Information
 
-            if($Collection.IndexingPolicy){
+            if ($Collection.IndexingPolicy) {
                 [CosmosDB.IndexingPolicy.Path.IncludedPath[]]$IndexIncludedPaths = @()
                 [CosmosDB.IndexingPolicy.Path.ExcludedPath[]]$IndexExcludedPaths = @()
 
-			    foreach($includedPath in $Collection.IndexingPolicy.includedPaths) {
+                foreach ($includedPath in $Collection.IndexingPolicy.includedPaths) {
                     [CosmosDB.IndexingPolicy.Path.Index[]]$IndexRanges = @()
 
-                    foreach($index in $includedPath.indexes) {
-                        if($index.kind -eq "Spatial"){
+                    foreach ($index in $includedPath.indexes) {
+                        if ($index.kind -eq "Spatial") {
                             [CosmosDB.IndexingPolicy.Path.IndexSpatial]$thisIndex = New-CosmosDbCollectionIncludedPathIndex -Kind $index.kind -DataType $index.dataType
                             Write-Log -Message "IncludedPathIndex kind: $($thisIndex.kind) index: $($thisIndex.DataType)" -LogLevel Information
                         }
-                        elseif($index.kind -eq "Range") {
+                        elseif ($index.kind -eq "Range") {
                             [CosmosDB.IndexingPolicy.Path.IndexRange]$thisIndex = New-CosmosDbCollectionIncludedPathIndex -Kind $index.kind -DataType $index.dataType -Precision $index.precision
                             Write-Log -Message "IncludedPathIndex kind: $($thisIndex.kind) index: $($thisIndex.DataType) precision: $($thisIndex.precision)" -LogLevel Information
                         }
-                        elseif($index.kind -eq "Hash") {
+                        elseif ($index.kind -eq "Hash") {
                             [CosmosDB.IndexingPolicy.Path.IndexHash]$thisIndex = New-CosmosDbCollectionIncludedPathIndex -Kind $index.kind -DataType $index.dataType -Precision $index.precision
                             Write-Log -Message "IncludedPathIndex kind: $($thisIndex.kind) index: $($thisIndex.DataType) precision: $($thisIndex.precision)" -LogLevel Information
                         }
@@ -213,7 +216,7 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
 
                 Write-Log -Message "indexIncludedPaths: $($IndexIncludedPaths)" -LogLevel Information
 
-			    foreach($excludedPath in $Collection.IndexingPolicy.excludedPaths) {
+                foreach ($excludedPath in $Collection.IndexingPolicy.excludedPaths) {
                     $indexExcludedPath = New-CosmosDbCollectionExcludedPath -Path $excludedPath.path
                     $IndexExcludedPaths += $indexExcludedPath
 
@@ -233,7 +236,7 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
                 }
 
             }
-            elseif(!$Collection.IndexingPolicy) {
+            elseif (!$Collection.IndexingPolicy) {
                 Write-Log -Message "No IndexingPolicy for Collection: $($Collection.CollectionName)" -LogLevel Information
 
                 $NewCosmosDbCollectionParameters = @{
@@ -256,27 +259,27 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
 
             Write-Log -Message "Collection Details: Context: Account - $($CosmosDbContext.Account), BaseUri - $($CosmosDbContext.BaseUri); Database: $($Database.DatabaseName); IndexingPolicy: $($IndexingPolicy)" -LogLevel Information
         }
-        else{
+        else {
             Write-Log -Message "Updating Collection: $($Collection.CollectionName) in $($Database.DatabaseName)" -LogLevel Information
 
             # Check for any indexes and update
-            if($Collection.IndexingPolicy){
+            if ($Collection.IndexingPolicy) {
                 [CosmosDB.IndexingPolicy.Path.IncludedPath[]]$IndexIncludedPaths = @()
                 [CosmosDB.IndexingPolicy.Path.ExcludedPath[]]$IndexExcludedPaths = @()
 
-                foreach($includedPath in $Collection.IndexingPolicy.includedPaths) {
+                foreach ($includedPath in $Collection.IndexingPolicy.includedPaths) {
                     [CosmosDB.IndexingPolicy.Path.Index[]]$IndexRanges = @()
 
-                    foreach($index in $includedPath.indexes) {
-                        if($index.kind -eq "Spatial"){
+                    foreach ($index in $includedPath.indexes) {
+                        if ($index.kind -eq "Spatial") {
                             [CosmosDB.IndexingPolicy.Path.IndexSpatial]$thisIndex = New-CosmosDbCollectionIncludedPathIndex -Kind $index.kind -DataType $index.dataType
                             Write-Log -Message "IncludedPathIndex kind: $($thisIndex.kind) index: $($thisIndex.DataType)" -LogLevel Information
                         }
-                        elseif($index.kind -eq "Range") {
+                        elseif ($index.kind -eq "Range") {
                             [CosmosDB.IndexingPolicy.Path.IndexRange]$thisIndex = New-CosmosDbCollectionIncludedPathIndex -Kind $index.kind -DataType $index.dataType -Precision $index.precision
                             Write-Log -Message "IncludedPathIndex kind: $($thisIndex.kind) index: $($thisIndex.DataType) precision: $($thisIndex.precision)" -LogLevel Information
                         }
-                        elseif($index.kind -eq "Hash") {
+                        elseif ($index.kind -eq "Hash") {
                             [CosmosDB.IndexingPolicy.Path.IndexHash]$thisIndex = New-CosmosDbCollectionIncludedPathIndex -Kind $index.kind -DataType $index.dataType -Precision $index.precision
                             Write-Log -Message "IncludedPathIndex kind: $($thisIndex.kind) index: $($thisIndex.DataType) precision: $($thisIndex.precision)" -LogLevel Information
                         }
@@ -292,7 +295,7 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
 
                 Write-Log -Message "indexIncludedPaths: $($IndexIncludedPaths)" -LogLevel Information
 
-                foreach($excludedPath in $Collection.IndexingPolicy.excludedPaths) {
+                foreach ($excludedPath in $Collection.IndexingPolicy.excludedPaths) {
                     $indexExcludedPath = New-CosmosDbCollectionExcludedPath -Path $excludedPath.path
                     $IndexExcludedPaths += $indexExcludedPath
 
@@ -305,21 +308,35 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
                 Write-Log -Message "Created New-CosmosDbCollectionIndexingPolicy: Automatic: $($IndexingPolicy.Automatic) Mode: $($IndexingPolicy.IndexingMode) IPs: $($IndexIncludedPaths.GetType()) EPs: $($IndexExcludedPaths.GetType())" -LogLevel Information
 
                 $UpdatedCosmosDbCollectionParameters = @{
-                    Context         = $CosmosDbContext
-                    Database        = $Database.DatabaseName
-                    Id              = $Collection.CollectionName
-                    IndexingPolicy  = $IndexingPolicy
+                    Context        = $CosmosDbContext
+                    Database       = $Database.DatabaseName
+                    Id             = $Collection.CollectionName
+                    IndexingPolicy = $IndexingPolicy
                 }
             }
-            elseif(!$Collection.IndexingPolicy) {
+            elseif (!$Collection.IndexingPolicy) {
                 Write-Log -Message "No IndexingPolicy for Collection: $($Collection.CollectionName)" -LogLevel Information
+                if ($UpdateIndexPolicyFix.IsPresent) {
+                    $DefaultIndexString = New-CosmosDbCollectionIncludedPathIndex -Kind Hash -DataType String -Precision 3
+                    $DefaultIndexNumber = New-CosmosDbCollectionIncludedPathIndex -Kind Range -DataType Number -Precision -1
+                    $DefaultIndexIncludedPath = New-CosmosDbCollectionIncludedPath -Path '/*' -Index $DefaultIndexString,$DefaultIndexNumber
+                    $DefaultIndexingPolicy  = New-CosmosDbCollectionIndexingPolicy -Automatic $true -IndexingMode Consistent -IncludedPath $DefaultIndexIncludedPath
 
-                $UpdatedCosmosDbCollectionParameters = @{
-                    Context         = $CosmosDbContext
-                    Database        = $Database.DatabaseName
-                    Id              = $Collection.CollectionName
-                    IndexingPolicy  = $IndexingPolicy
+                    $UpdatedCosmosDbCollectionParameters = @{
+                        Context        = $CosmosDbContext
+                        Database       = $Database.DatabaseName
+                        Id             = $Collection.CollectionName
+                        IndexingPolicy = $DefaultIndexingPolicy
+                    }
                 }
+                else {
+                    $UpdatedCosmosDbCollectionParameters = @{
+                        Context  = $CosmosDbContext
+                        Database = $Database.DatabaseName
+                        Id       = $Collection.CollectionName
+                    }
+                }
+
             }
 
             Write-Log -Message "Set Cosmos Collection: $($Collection.CollectionName)" -LogLevel Information
