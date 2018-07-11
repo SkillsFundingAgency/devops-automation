@@ -24,6 +24,9 @@ Root folder to search for Stored Procedure files
 .Parameter PartitionKeyFix
 Use fix for cosmosdb shard keys as per https://blog.olandese.nl/2017/12/13/create-a-sharded-mongodb-in-azure-cosmos-db/
 
+.Parameter UpdateIndexPolicyFix
+Use fix for cosmosdb indexing policy default until this is fixed https://github.com/PlagueHO/CosmosDB/issues/140
+
 .EXAMPLE
 $CosmosDbParameters = @{
     ResourceGroupName = $ResourceGroupName
