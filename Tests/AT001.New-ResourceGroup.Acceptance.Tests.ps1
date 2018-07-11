@@ -5,7 +5,7 @@ Describe "New-ResourceGroup Tests" -Tag "Acceptance-ARM" {
 
     $ResourceGroupName = "$($Config.resourceGroupName)$($Config.suffix)"
 
-    It "Should create a Resouce Group and return two outputs" {
+    It "Should create a Resource Group and return two outputs" {
         $Result = .\New-ResourceGroup.ps1 -Location "$($Config.location)" -Name $ResourceGroupName
         $Result.Count | Should Be 2
     }
@@ -22,7 +22,7 @@ Describe "New-ResourceGroup Tests" -Tag "Acceptance-ARM" {
 
     It "Should create a Resource Group in the correct location" {
         $Result = Get-AzureRMResourceGroup -Name $ResourceGroupName -Location "$Config.location"
-        $Result.location | Should Be $Config.location.Replace(" ","").ToLower()
+        $Result.location | Should Be $Config.location.Replace(" ", "").ToLower()
     }
 }
 

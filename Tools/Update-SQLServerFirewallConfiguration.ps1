@@ -86,15 +86,15 @@ Begin {
     }
 
     # --- If SubscriptionName is null get the current subscription from the context
-    if (!$PSBoundParameters.ContainsKey("SubscriptionName")){
+    if (!$PSBoundParameters.ContainsKey("SubscriptionName")) {
         $SubscriptionName = (Get-AzureRmContext).Subscription.Name
 
         # --- Fall back to old property structure
-        if (!$SubscriptionName){
+        if (!$SubscriptionName) {
             $SubscriptionName = (Get-AzureRmContext).Subscription.SubscriptionName
         }
 
-        if (!$SubscriptionName){
+        if (!$SubscriptionName) {
             throw "Could not retrieve subscription name from context"
         }
     }
@@ -108,6 +108,8 @@ Process {
         foreach ($Subscription in $SubscriptionName) {
             Write-Log -LogLevel Information -Message "Searching for Sql Servers matching $ServerNamePattern in $Subscription"
             $null = Select-AzureRmSubscription -SubscriptionName $Subscription
+
+            #TODO: Migrate to version 6, ResourceNameContains logic may not be possible
             $SubscriptionSqlServers = Find-AzureRmResource -ResourceNameContains $ServerNamePattern -ResourceType "Microsoft.Sql/Servers"
 
             foreach ($SqlServer in $SubscriptionSqlServers) {

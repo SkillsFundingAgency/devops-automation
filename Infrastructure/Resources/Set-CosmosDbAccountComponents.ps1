@@ -108,13 +108,23 @@ if (!(Get-Module CosmosDB | Where-Object { $_.Version.ToString() -eq $CosmosDBMo
 }
 
 Write-Log -Message "Searching for existing account" -LogLevel Verbose
-$GetCosmosDbAccountParameters = @{
-    ResourceType      = "Microsoft.DocumentDb/databaseAccounts"
-    ResourceGroupName = $ResourceGroupName
-    ResourceName      = $CosmosDbAccountName
+if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+    $GetCosmosDbAccountParameters = @{
+        Name              = $CosmosDbAccountName
+        ResourceGroupName = $ResourceGroupName
+        ExpandProperties  = $true
+        ResourceType      = "Microsoft.DocumentDB/databaseAccounts"
+    }
+    $ExistingAccount = Get-AzureRmResource @GetCosmosDbAccountParameters
 }
-
-$ExistingAccount = Get-AzureRmResource @GetCosmosDbAccountParameters
+else {
+    $GetCosmosDbAccountParameters = @{
+        ResourceType      = "Microsoft.DocumentDb/databaseAccounts"
+        ResourceGroupName = $ResourceGroupName
+        ResourceName      = $CosmosDbAccountName
+    }
+    $ExistingAccount = Get-AzureRmResource @GetCosmosDbAccountParameters
+}
 
 if (!$ExistingAccount -or $ExistingAccount.Properties.provisioningState -ne "Succeeded") {
     Write-Log -Message "CosmosDb Account could not be found, make sure it has been deployed." -LogLevel Error

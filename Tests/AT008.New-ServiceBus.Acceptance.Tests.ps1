@@ -69,24 +69,48 @@ Describe "New-ServiceBus Tests" -Tag "Acceptance-ARM" {
 
     # --- Access Policies
     It "Should create an authorization rule named ReadWrite" {
-        {Get-AzureRmServiceBusNamespaceAuthorizationRule -ResourceGroup $ResourceGroupName -NamespaceName $ServiceBusName -AuthorizationRuleName ReadWrite} | Should Not Throw
+        {
+            if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+                Get-AzureRmServiceBusAuthorizationRule -ResourceGroupName $ResourceGroupName -Namespace $ServiceBusName -AuthorizationRuleName ReadWrite
+            }
+            else {
+                Get-AzureRmServiceBusNamespaceAuthorizationRule -ResourceGroup $ResourceGroupName -NamespaceName $ServiceBusName -AuthorizationRuleName ReadWrite
+            }
+        } | Should Not Throw
     }
 
     It "Should create an authorization rule with Send and Listen rights" {
-        $AuthorizationRule = Get-AzureRmServiceBusNamespaceAuthorizationRule -ResourceGroup $ResourceGroupName -NamespaceName $ServiceBusName -AuthorizationRuleName ReadWrite
-        $Eval = $AuthorizationRule.Rights -contains "Send" -and $AuthorizationRule.Rights -contains "Listen" 
+        if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+            $AuthorizationRule = Get-AzureRmServiceBusAuthorizationRule -ResourceGroupName $ResourceGroupName -Namespace $ServiceBusName -AuthorizationRuleName ReadWrite
+        }
+        else {
+            $AuthorizationRule = Get-AzureRmServiceBusNamespaceAuthorizationRule -ResourceGroup $ResourceGroupName -NamespaceName $ServiceBusName -AuthorizationRuleName ReadWrite
+        }
+        $Eval = $AuthorizationRule.Rights -contains "Send" -and $AuthorizationRule.Rights -contains "Listen"
         $Eval | Should Be $true
     }
 
     It "Should create an authorization rule named Read" {
-        {Get-AzureRmServiceBusNamespaceAuthorizationRule -ResourceGroup $ResourceGroupName -NamespaceName $ServiceBusName -AuthorizationRuleName Read } | Should Not Throw
+        {
+            if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+                Get-AzureRmServiceBusAuthorizationRule -ResourceGroupName $ResourceGroupName -Namespace $ServiceBusName -AuthorizationRuleName Read
+            }
+            else {
+                Get-AzureRmServiceBusNamespaceAuthorizationRule -ResourceGroup $ResourceGroupName -NamespaceName $ServiceBusName -AuthorizationRuleName Read
+            }
+        } | Should Not Throw
     }
 
     It "Should create an authorization rule with Listen rights" {
-        $AuthorizationRule = Get-AzureRmServiceBusNamespaceAuthorizationRule -ResourceGroup $ResourceGroupName -NamespaceName $ServiceBusName -AuthorizationRuleName Read
-        $Eval = $AuthorizationRule.Rights -contains "Listen" 
+        if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+            $AuthorizationRule = Get-AzureRmServiceBusAuthorizationRule -ResourceGroupName $ResourceGroupName -Namespace $ServiceBusName -AuthorizationRuleName Read
+        }
+        else {
+            $AuthorizationRule = Get-AzureRmServiceBusNamespaceAuthorizationRule -ResourceGroup $ResourceGroupName -NamespaceName $ServiceBusName -AuthorizationRuleName Read
+        }
+        $Eval = $AuthorizationRule.Rights -contains "Listen"
         $Eval | Should Be $true
-    }    
+    }
 }
 
 Pop-Location

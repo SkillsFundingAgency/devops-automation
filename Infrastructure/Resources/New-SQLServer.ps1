@@ -103,7 +103,12 @@ Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
 # --- Check for an existing sql server in the subscription
 Write-Log -LogLevel Information -Message "Checking for existing SQL Server $ServerName"
-$SQLServer = Find-AzureRmResource -ResourceNameEquals $ServerName
+if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+    $SQLServer = Get-AzureRmResource -Name $ServerName
+}
+else {
+    $SQLServer = Find-AzureRmResource -ResourceNameEquals $ServerName
+}
 
 # --- Ensure KeyVaultSecretName is lower case
 $KeyVaultSecretName = $KeyVaultSecretName.ToLower()
@@ -152,14 +157,15 @@ if (!$SQLServer) {
 if ($SQLServer) {
 
     # --- If the ActiveDirectoryAdministrator parameter has been passed, add the principal to the server
-    if ($PSBoundParameters.ContainsKey("ActiveDirectoryAdministrator")){
+    if ($PSBoundParameters.ContainsKey("ActiveDirectoryAdministrator")) {
         Write-Log -LogLevel Information -Message "Setting an Active Directory Administrator $ActiveDirectoryAdministrator"
         $ServerActiveDirectoryAdministrator = Get-AzureRmSqlServerActiveDirectoryAdministrator -ResourceGroupName $ResourceGroupName -ServerName $ServerName
 
         if ($ServerActiveDirectoryAdministrator -ne $ActiveDirectoryAdministrator) {
             try {
                 $null = Set-AzureRmSqlServerActiveDirectoryAdministrator -ResourceGroupName $ResourceGroupName -ServerName $ServerName -DisplayName $ActiveDirectoryAdministrator
-            } catch {
+            }
+            catch {
                 throw "Could not set an Active Directory Administrator on server $($ServerName): $_"
             }
         }
@@ -186,15 +192,27 @@ if ($SQLServer) {
 
     # --- Configure Auditing and Threat Detection
     Write-Log -LogLevel Information -Message "Configuring auditing policy"
-    $AuditingPolicyParameters = @{
-        ResourceGroupName  = $ResourceGroupName
-        ServerName         = $ServerName
-        StorageAccountName = $AuditingStorageAccountName
-        AuditType          = "Blob"
-        EventType          = "All"
-        RetentionInDays    = 90
+    if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+        $AuditingPolicyParameters = @{
+            ResourceGroupName  = $ResourceGroupName
+            ServerName         = $ServerName
+            StorageAccountName = $AuditingStorageAccountName
+            RetentionInDays    = 90
+            State              = "Enabled"
+        }
+        Set-AzureRmSqlServerAuditing @AuditingPolicyParameters
     }
-    Set-AzureRmSqlServerAuditingPolicy @AuditingPolicyParameters
+    else {
+        $AuditingPolicyParameters = @{
+            ResourceGroupName  = $ResourceGroupName
+            ServerName         = $ServerName
+            StorageAccountName = $AuditingStorageAccountName
+            AuditType          = "Blob"
+            EventType          = "All"
+            RetentionInDays    = 90
+        }
+        Set-AzureRmSqlServerAuditingPolicy @AuditingPolicyParameters
+    }
 
     Write-Log -LogLevel Information -Message "Configuring threat detection policy"
     $ThreatDetectionPolicyParameters = @{

@@ -28,8 +28,8 @@ Param (
 )
 
 # --- Import Azure Helpers
-Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path
-Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
+Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Azure.psm1).Path -Force
+Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path -Force
 
 foreach ($Resource in $ResourceName) {
 
@@ -37,7 +37,12 @@ foreach ($Resource in $ResourceName) {
     Wait-AzureRmResource -ResourceName $Resource
 
     # --- Retrieve resource details
-    $AzResource = Find-AzureRmResource -ResourceNameEquals $Resource -ErrorAction SilentlyContinue
+    if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+        $AzResource = Get-AzureRmResource -Name $Resource -ErrorAction SilentlyContinue
+    }
+    else {
+        $AzResource = Find-AzureRmResource -ResourceNameEquals $Resource -ErrorAction SilentlyContinue
+    }
 
     # --- Double check that NewCloudService is valid
     if ($AzResource.Count -gt 1 -or $AzResource.Count -eq 0) {
@@ -51,7 +56,12 @@ foreach ($Resource in $ResourceName) {
             $null = Move-AzureRmResource -DestinationResourceGroupName $DestinationResourceGroup -ResourceId $AzResource.ResourceId -Force
             Wait-AzureRmResource -ResourceGroupName $DestinationResourceGroup -ResourceName $Resource
 
-            $Resources = Find-AzureRmResource -ResourceGroupNameEquals $AzResource.ResourceGroupName
+            if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
+                $Resources = Get-AzureRmResource -ResourceGroupName $AzResource.ResourceGroupName
+            }
+            else {
+                $Resources = Find-AzureRmResource -ResourceGroupNameEquals $AzResource.ResourceGroupName
+            }
             if ($Resources.Count -eq 0) {
                 Write-Log -LogLevel Information -Message "Removing source Resource Group $($AzResource.ResourceGroupName)"
                 $null = Remove-AzureRmResourceGroup -Name $AzResource.ResourceGroupName -Force

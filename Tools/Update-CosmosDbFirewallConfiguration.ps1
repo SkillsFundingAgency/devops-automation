@@ -89,6 +89,8 @@ Process {
         foreach ($Subscription in $SubscriptionName) {
             Write-Log -LogLevel Information -Message "Searching for Cosmos DB Accounts matching $ServerNamePattern in $Subscription"
             $null = Select-AzureRmSubscription -SubscriptionName $Subscription
+
+            #TODO: Migrate to version 6, ResourceNameContains logic may not be possible
             $SubscriptionCosmosDbAccs = Find-AzureRmResource -ResourceNameContains $ServerNamePattern -ResourceType "Microsoft.DocumentDb/databaseAccounts"
 
             foreach ($CosmosDbAcc in $SubscriptionCosmosDbAccs) {
@@ -100,7 +102,8 @@ Process {
                     # if the rule exists in Azure but not in the config it should be removed
                     # so rebuild the ipRangeFilter from scratch
                     $irf = @()
-                } else {
+                }
+                else {
                     # load the existing rules
                     $irf = $CosmosDb.Properties.ipRangeFilter -split ','
                 }
