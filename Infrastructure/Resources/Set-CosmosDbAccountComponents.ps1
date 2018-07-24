@@ -88,6 +88,7 @@ Class CosmosDbCollection {
     [int]$OfferThroughput
     [CosmosDbIndexingPolicy]$IndexingPolicy
     [CosmosDbStoredProcedure[]]$StoredProcedures
+    [int]$DefaultTtl
 }
 
 Class CosmosDbDatabase {
@@ -258,6 +259,14 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
                     $NewCosmosDbCollectionParameters.Add('PartitionKey', $Collection.PartitionKey)
                 }
             }
+
+            if ($Collection.DefaultTtl) {
+                Write-Log -Message "Add DefaultTtl: $($Collection.DefaultTtl)" -LogLevel Information
+                $NewCosmosDbCollectionParameters += @{
+                    DefaultTimeToLive = $Collection.DefaultTtl
+                }
+            }
+
             $null = New-CosmosDbCollection @NewCosmosDbCollectionParameters
 
             Write-Log -Message "Collection Details: Context: Account - $($CosmosDbContext.Account), BaseUri - $($CosmosDbContext.BaseUri); Database: $($Database.DatabaseName); IndexingPolicy: $($IndexingPolicy)" -LogLevel Information
@@ -340,6 +349,13 @@ foreach ($Database in $CosmosDbConfiguration.Databases) {
                     }
                 }
 
+            }
+
+            if ($Collection.DefaultTtl) {
+                Write-Log -Message "Add DefaultTtl: $($Collection.DefaultTtl)" -LogLevel Information
+                $UpdatedCosmosDbCollectionParameters += @{
+                    DefaultTimeToLive = $Collection.DefaultTtl
+                }
             }
 
             Write-Log -Message "Set Cosmos Collection: $($Collection.CollectionName)" -LogLevel Information
