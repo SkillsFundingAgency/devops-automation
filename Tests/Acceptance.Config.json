@@ -92,6 +92,7 @@
                         "CollectionName": "coll2",
                         "OfferThroughput": 500,
                         "PartitionKey": "part2",
+                        "DefaultTtl": 300,
                         "StoredProcedures": [],
                         "IndexingPolicy": {
                             "indexingMode": "none",

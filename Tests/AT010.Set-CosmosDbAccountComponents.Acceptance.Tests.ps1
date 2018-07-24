@@ -33,10 +33,11 @@ Describe "Set-CosmosDbAccountComponents Tests" -Tag "Acceptance-ARM" {
         $TestColl.Id | Should be $config.cosmosDbTestConfig.Databases[0].Collections[0].CollectionName
     }
 
-    It "Should create a collection with IndexingMode set to None" {
+    It "Should create a collection with IndexingMode set to None and DefaultTtl of 300" {
         $TestColl = Get-CosmosDbCollection -Context $TestContext -Database $config.cosmosDbTestConfig.Databases[0].DatabaseName `
             -Id $config.cosmosDbTestConfig.Databases[0].Collections[1].CollectionName
         $TestColl.indexingPolicy.indexingMode | Should be $config.cosmosDbTestConfig.Databases[0].Collections[1].IndexingPolicy.indexingMode
+        $TestColl.DefaultTtl | Should be $config.cosmosDbTestConfig.Databases[0].Collections[1].DefaultTtl
     }
 
     It "Should create a stored procedure with the correct code body" {
