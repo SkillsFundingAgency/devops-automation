@@ -55,6 +55,7 @@
                     {
                         "CollectionName": "coll1",
                         "OfferThroughput": 500,
+                        "DefaultTtl": 300,
                         "PartitionKey": "part1",
                         "StoredProcedures": [
                             {
@@ -92,7 +93,6 @@
                         "CollectionName": "coll2",
                         "OfferThroughput": 500,
                         "PartitionKey": "part2",
-                        "DefaultTtl": 300,
                         "StoredProcedures": [],
                         "IndexingPolicy": {
                             "indexingMode": "none",
