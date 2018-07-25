@@ -102,7 +102,7 @@ Class CosmosDbSchema {
 
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
-$CosmosDBModuleVersion = "2.0.16.465"
+$CosmosDBModuleVersion = "2.1.3.528"
 
 if (!(Get-Module CosmosDB | Where-Object { $_.Version.ToString() -eq $CosmosDBModuleVersion })) {
     Write-Log -Message "Minimum module version is not imported." -LogLevel Verbose
