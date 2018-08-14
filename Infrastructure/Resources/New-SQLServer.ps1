@@ -200,7 +200,12 @@ if ($SQLServer) {
             RetentionInDays    = 90
             State              = "Enabled"
         }
-        Set-AzureRmSqlServerAuditing @AuditingPolicyParameters
+        $currentAuditingSetting = Get-AzureRmSqlServerAuditing -ResourceGroupName $ResourceGroupName -ServerName $ServerName
+        if ($currentAuditingSetting.AuditState -ne $AuditingPolicyParameters.State `
+                -or $currentAuditingSetting.RetentionInDays -ne $AuditingPolicyParameters.RetentionInDays `
+                -or $currentAuditingSetting.StorageAccountName -ne $AuditingPolicyParameters.StorageAccountName) {
+            Set-AzureRmSqlServerAuditing @AuditingPolicyParameters
+        }
     }
     else {
         $AuditingPolicyParameters = @{
@@ -211,7 +216,13 @@ if ($SQLServer) {
             EventType          = "All"
             RetentionInDays    = 90
         }
-        Set-AzureRmSqlServerAuditingPolicy @AuditingPolicyParameters
+        $currentAuditingSetting = Get-AzureRmSqlServerAuditingPolicy -ResourceGroupName $ResourceGroupName -ServerName $ServerName
+        if ($currentAuditingSetting.AuditState -ne $AuditingPolicyParameters.State `
+                -or $currentAuditingSetting.AuditType -ne $AuditingPolicyParameters.AuditType `
+                -or $currentAuditingSetting.RetentionInDays -ne $AuditingPolicyParameters.RetentionInDays `
+                -or $currentAuditingSetting.StorageAccountName -ne $AuditingPolicyParameters.StorageAccountName) {
+            Set-AzureRmSqlServerAuditingPolicy @AuditingPolicyParameters
+        }
     }
 
     Write-Log -LogLevel Information -Message "Configuring threat detection policy"
