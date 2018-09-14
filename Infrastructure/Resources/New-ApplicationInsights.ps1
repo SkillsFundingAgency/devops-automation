@@ -1,10 +1,10 @@
 ﻿<#
 
 .SYNOPSIS
-Create a Service Bus Namespace and optionally create associated queues
+Create an Application Insights instance
 
 .DESCRIPTION
-Create a Service Bus Namespace and optionally create associated queues
+Create an Application Insights instance
 
 .PARAMETER Location
 The location of the Resource Group. This is limited to West Europe and North Europe
