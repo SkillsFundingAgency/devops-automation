@@ -76,8 +76,10 @@ foreach ($Service in $Name) {
     }
     if ((((Get-Module AzureRM -ListAvailable | Sort-Object { $_.Version.Major } -Descending).Version.Major))[0] -gt 5) {
         Write-Output ("##vso[task.setvariable variable=InstrumentationKey-$($Service);]$($ApplicationInsights.InstrumentationKey)")
+        Write-Output ("##vso[task.setvariable variable=AppId-$($Service);]$($ApplicationInsights.AppId)")
     }
     else {
         Write-Output ("##vso[task.setvariable variable=InstrumentationKey-$($Service);]$($ApplicationInsights.Properties.InstrumentationKey)")
+        Write-Output ("##vso[task.setvariable variable=AppId-$($Service);]$($ApplicationInsights.Properties.AppId)")
     }
 }
