@@ -1,10 +1,10 @@
 <#
 
 .SYNOPSIS
-Get a the connection string for a service bus namespace
+Get a connection string for a servicebus namespace
 
 .DESCRIPTION
-Get a the connection string for a service bus namespace. If one does not exist with the given name, it will be created
+Get a connection string for a servicebus namespace. If one does not exist with the given name, it will be created
 
 .PARAMETER ResourceGroupName
 The name of the destination Resource Group for the resource
