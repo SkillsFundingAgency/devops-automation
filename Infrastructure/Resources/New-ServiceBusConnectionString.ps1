@@ -79,7 +79,8 @@ try {
         }
     }
 
-    Write-Output ("##vso[task.setvariable variable=ServiceBusConnectionString;]$($ConnectionString)")
+    Write-Log -LogLevel Information -Message "Publishing VSTS variable: ServiceBusConnectionString"
+    Write-Output ("##vso[task.setvariable variable=ServiceBusConnectionString; issecret=true]$($ConnectionString)")
 
 }
 catch {
