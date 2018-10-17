@@ -34,9 +34,9 @@ Param(
     [String]$Name,
     [Parameter(Mandatory = $true)]
     [String[]]$ContainerName,
-    [Parameter(Mandatory= $true)]
+    [Parameter(Mandatory= $false)]
     [ValidateSet("Container", "Blob", "Off")]
-    [String[]]$ContainerPermission
+    [String]$ContainerPermission = "Off"
 
 )
 
