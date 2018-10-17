@@ -30,7 +30,11 @@ Param(
     [Parameter(Mandatory = $true)]
     [String]$Name,
     [Parameter(Mandatory = $true)]
-    [String[]]$ContainerName
+    [String[]]$ContainerName,
+    [Parameter(Mandatory= $true)]
+    [ValidateSet("Container", "Blob", "Off")]
+    [String[]]$ContainerPermission
+
 )
 
 try {
@@ -62,7 +66,7 @@ try {
             if (!$ContainerExists) {
                 try {
                     Write-Log -LogLevel Information -Message "Creating container $Container"
-                    $null = New-AzureStorageContainer -Context $StorageAccountContext -Name $Container -Permission Off
+                    $null = New-AzureStorageContainer -Context $StorageAccountContext -Name $Container -Permission $ContainerPermission
                 }
                 catch {
                     throw "Could not create container $Container : $_"
