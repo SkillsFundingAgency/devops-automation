@@ -15,11 +15,14 @@ The name of the Storage Account
 .PARAMETER ContainerName
 The names of one or more Containers to create in the Storage Account
 
-.EXAMPLE
-.\New-StorageAccountContainer.ps1 -Location "West Europe" -Name stracc -ContainerName public
+.PARAMETER ContainerPermission
+The permission on the Container(s).  The acceptable values are 'Container', 'Blob' or 'Off'
 
 .EXAMPLE
-.\New-StorageAccountContainer.ps1 -Location "West Europe" -Name stracc -ContainerName public,private,images
+.\New-StorageAccountContainer.ps1 -Location "West Europe" -Name stracc -ContainerName public -ContainerPermission "Blob"
+
+.EXAMPLE
+.\New-StorageAccountContainer.ps1 -Location "West Europe" -Name stracc -ContainerName public,private,images -ContainerPermission "Blob"
 
 #>
 
@@ -30,7 +33,11 @@ Param(
     [Parameter(Mandatory = $true)]
     [String]$Name,
     [Parameter(Mandatory = $true)]
-    [String[]]$ContainerName
+    [String[]]$ContainerName,
+    [Parameter(Mandatory = $false)]
+    [ValidateSet("Container", "Blob", "Off")]
+    [String]$ContainerPermission = "Off"
+
 )
 
 try {
@@ -62,7 +69,7 @@ try {
             if (!$ContainerExists) {
                 try {
                     Write-Log -LogLevel Information -Message "Creating container $Container"
-                    $null = New-AzureStorageContainer -Context $StorageAccountContext -Name $Container -Permission Off
+                    $null = New-AzureStorageContainer -Context $StorageAccountContext -Name $Container -Permission $ContainerPermission
                 }
                 catch {
                     throw "Could not create container $Container : $_"
