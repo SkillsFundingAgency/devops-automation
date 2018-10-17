@@ -15,11 +15,14 @@ The name of the Storage Account
 .PARAMETER ContainerName
 The names of one or more Containers to create in the Storage Account
 
-.EXAMPLE
-.\New-StorageAccountContainer.ps1 -Location "West Europe" -Name stracc -ContainerName public
+.PARAMETER ContainerPermission
+The permission on the Container(s).  The acceptable values are 'Container', 'Blob' or 'Off'
 
 .EXAMPLE
-.\New-StorageAccountContainer.ps1 -Location "West Europe" -Name stracc -ContainerName public,private,images
+.\New-StorageAccountContainer.ps1 -Location "West Europe" -Name stracc -ContainerName public -ContainerPermission "Blob"
+
+.EXAMPLE
+.\New-StorageAccountContainer.ps1 -Location "West Europe" -Name stracc -ContainerName public,private,images -ContainerPermission "Blob"
 
 #>
 
