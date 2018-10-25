@@ -20,6 +20,13 @@ Any message content that should be added to the queue. Can be blank.
 VSTS Variable with the Value '{"Release Definition":"$(Release.DefinitionName)","Release Name":"$(Release.ReleaseName)"}' produces a JSON formatted message
 with information about the release definition and name that the script was run from.
 
+.EXAMPLE
+
+.\Add-AzureStorageQueueMessage.ps1 -ResourceGroupName resourcegroupname `
+                                   -StorageAccountName storageaccountname `
+                                   -StorageQueueName storagequeuename `
+                                   -MessageContent "{"Release Definition":"$(Release.DefinitionName)","Release Name":"$(Release.ReleaseName)"}"
+
 #>
 [CmdletBinding()]
 Param(
