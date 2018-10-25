@@ -54,6 +54,7 @@ try {
             Write-Host "Setting empty MessageContent"
             $MessageContent = ""
         }
+        Write-Host "Adding message to queue"
         $Queue.CloudQueue.AddMessage($MessageContent)
     }
 }
