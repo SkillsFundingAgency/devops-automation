@@ -6,6 +6,7 @@
     "classicStorageContainerName": "public",
     "classicStorageTableName": "table1",
     "classicStorageQueueName": "queue1",
+    "classicStorageQueueMessage": "queuemessage",
     "cloudServiceName": "devops-at-cs",
     "appInsightsName": "devops-at-ai",
     "appServiceName": "devops-at-as",
