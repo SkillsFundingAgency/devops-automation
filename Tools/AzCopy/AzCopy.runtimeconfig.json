@@ -1,0 +1,7 @@
+{
+  "runtimeOptions": {
+    "configProperties": {
+      "System.Net.Http.UseSocketsHttpHandler": true
+    }
+  }
+}
