@@ -29,7 +29,7 @@ Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\BlobCopy.psm1).Path
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
 
-#Run BlobCopy @parameters
+
 
 
 $DeploymentParameters = @{
@@ -39,7 +39,9 @@ $DeploymentParameters = @{
 
 }
 
-. "$PSScriptRoot\..\BlobCopy.psm1" @DeploymentParameters
+. "$PSScriptRoot\..\Modules\BlobCopy.psm1" @DeploymentParameters
+
+
 
 
 
