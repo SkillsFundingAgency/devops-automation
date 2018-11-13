@@ -21,38 +21,28 @@ Param(
     [Parameter(Mandatory = $true)]
     [String]$Destination,
     [Parameter(Mandatory = $true)]
-    [String]$SaSToken
+    [String]$SaSToken,
+    [Parameter(Mandatory = $true)]
+    [String]$StorageAccountName
 )
 # --- Import Azure Helpers
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\BlobCopy.psm1).Path
+Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\CORS.psm1).Path
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
 $DeploymentParameters = @{
     Source      = $Source
     Destination = $Destination
     SaSToken    = $SaSToken
-
 }
-
 # ---- Run BlobCopy Function
 BlobCopy @DeployParameters
 
 # ---- Configure CORS Settings
-Param(
-    [Parameter(Mandatory = $true)]
-    [String]$StorageAccountName,
-    [Parameter(Mandatory = $true)]
-    [String]$SaSToken
-)
-# --- Import Azure Helpers
-Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\CORS.psm1).Path
-Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
-
 $DeploymentParameters = @{
     StorageAccountName = $StorageAccountName
     SaSToken           = $SaSToken
 }
-
 # ---- Run CORS Function
 CORS @DeploymentParameters
 

@@ -1,5 +1,5 @@
 function CORS {
-    <#
+<#
 .SYNOPSIS
 Set CORS settings on blob storage
 
