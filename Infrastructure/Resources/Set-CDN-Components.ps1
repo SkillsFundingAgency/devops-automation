@@ -21,10 +21,10 @@ The StorageAccountName to apply the CORS settings
 .PARAMETER CDNProfileResourceGroup
 The Resource Group of the CDN
 
-.PARAMETER ProfileName
+.PARAMETER CDNProfileName
 The CDN Profile Name
 
-.PARAMETER EndPointName
+.PARAMETER CDNEndPointName
 The CDN EndPoint Name
 
 .PARAMETER PurgeContent
@@ -36,9 +36,9 @@ $DeploymentParameters = @ {
     Destination = "https://name.blob.core.windows.net/cdn"
     SaSToken = "MySecureSaStokenString"
     StorageAccountName = "mystorageaccountname"
-    ResourceGroupName = "cdn"
-    ProfileName = "myprofile01"
-    EndPointName = "myendpoint01"
+    CDNProfileResourceGroupName = "cdn"
+    CDNProfileName = "myprofile01"
+    CDNEndPointName = "myendpoint01"
     PurgeContent = "/*"
 }
 .\Set-CDN-Components.ps1 @DeploymentParameters
@@ -57,9 +57,9 @@ Param(
     [Parameter(Mandatory = $true)]
     [String]$CDNProfileResourceGroup,
     [Parameter(Mandatory = $true)]
-    [String]$ProfileName,
+    [String]$CDNProfileName,
     [Parameter(Mandatory = $true)]
-    [String]$EndPointName,
+    [String]$CDNEndPointName,
     [Parameter(Mandatory = $true)]
     [String]$PurgeContent
 )
@@ -89,8 +89,8 @@ CORS @DeploymentParameters
 # ---- Set PurgeContent Deployment Parameters
 $DeploymentParameters = @{
     CDNProfileResourceGroup = $CDNProfileResourceGroup
-    ProfileName  = $ProfileName
-    EndPointName = $EndPointName
+    CDNProfileName  = $CDNProfileName
+    CDNEndPointName = $CDNEndPointName
     PurgeContent = $PurgeContent
 }
 # ---- Run PurgeContent Function
