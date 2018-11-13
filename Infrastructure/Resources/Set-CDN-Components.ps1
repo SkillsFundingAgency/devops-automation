@@ -18,6 +18,18 @@ The SaS Token to access the blob storage container
 .PARAMETER StorageAccountName
 The StorageAccountName to apply the CORS settings
 
+.PARAMETER CDNProfileResourceGroup
+The Resource Group of the CDN
+
+.PARAMETER ProfileName
+The CDN Profile Name
+
+.PARAMETER EndPointName
+The CDN EndPoint Name
+
+.PARAMETER PurgeContent
+The content to purge
+
 .EXAMPLE
 $DeploymentParameters = @ {
     Source = "c:\FilesToBeCopied\"
@@ -43,7 +55,7 @@ Param(
     [Parameter(Mandatory = $true)]
     [String]$StorageAccountName,
     [Parameter(Mandatory = $true)]
-    [String]$ResourceGroupName,
+    [String]$CDNProfileResourceGroup,
     [Parameter(Mandatory = $true)]
     [String]$ProfileName,
     [Parameter(Mandatory = $true)]
@@ -76,7 +88,7 @@ CORS @DeploymentParameters
 
 # ---- Set PurgeContent Deployment Parameters
 $DeploymentParameters = @{
-    ResourceGroupName = $ResourceGroupName
+    CDNProfileResourceGroup = $CDNProfileResourceGroup
     ProfileName  = $ProfileName
     EndPointName = $EndPointName
     PurgeContent = $PurgeContent

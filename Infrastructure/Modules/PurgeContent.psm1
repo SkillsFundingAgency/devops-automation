@@ -6,7 +6,7 @@ Purges the content from an Azure Content Delivery Network (CDN)
 .DESCRIPTION
 Purges the content from an Azure Content Delivery Network (CDN)
 
-.PARAMETER ResourceGroupName
+.PARAMETER CDNProfileResourceGroup
 The Resource Group of the CDN
 
 .PARAMETER ProfileName
@@ -21,7 +21,7 @@ The content to purge
 .EXAMPLE
 
 $DeploymentParameters = @ {
-    ResourceGroupName = "cdn"
+    CDNProfileResourceGroup = "cdn"
     ProfileName = "myprofile01"
     EndPointName = "myendpoint01"
     PurgeContent = "/*"
@@ -31,7 +31,7 @@ PurgeContent @DeploymentParameters
 #>
     Param(
         [Parameter(Mandatory = $true)]
-        [String]$ResourceGroupName,
+        [String]$CDNProfileResourceGroup,
         [Parameter(Mandatory = $true)]
         [String]$ProfileName,
         [Parameter(Mandatory = $true)]
@@ -43,7 +43,7 @@ PurgeContent @DeploymentParameters
     try {
         # --- Set CDN EndPoint
         Write-Log -LogLevel Information -Message "Setting CDN EndPoint..."
-        $CDNEndpoint = Get-AzureRmCdnEndpoint -ResourceGroupName $ResourceGroupName -ProfileName $ProfileName -EndpointName $EndpointName
+        $CDNEndpoint = Get-AzureRmCdnEndpoint -ResourceGroupName $CDNProfileResourceGroup -ProfileName $ProfileName -EndpointName $EndpointName
 
          # ---> Purging CDN EndPoint
         Write-Log -LogLevel Information -Message "Purging CDN EndPoint..."
