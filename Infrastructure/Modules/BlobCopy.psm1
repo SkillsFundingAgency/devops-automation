@@ -1,5 +1,5 @@
 function BlobCopy {
-<#
+    <#
 .SYNOPSIS
 Copy content to blob storage and update ContentType(MIME) settings
 
@@ -18,13 +18,13 @@ The SaS Token to access the blob storage container
 
 .EXAMPLE
 
-$BlobCopyParameters = @ {
+$DeploymentParameters = @ {
     Source = "c:\FilesToBeCopied\"
     Destination = "https://name.blob.core.windows.net/cdn"
     SaSToken = "MySecureSaStokenString"
 
 }
-BlobCopy @BlobCopyParameters
+BlobCopy @DeploymentParameters
 
 #>
     Param(
@@ -38,7 +38,7 @@ BlobCopy @BlobCopyParameters
 
     try {
         # --- Set location for AzCopy.exe
-        Write-Log -LogLevel Information -Message "setting location to AzCopy.exe..."
+        Write-Log -LogLevel Information -Message "Setting location to AzCopy.exe..."
         Set-location -path "$PSScriptRoot\..\..\Tools\AzCopy\"
 
         Write-Log -LogLevel Information -Message "Invoking AzCopy to upload content and change MIME settings..."

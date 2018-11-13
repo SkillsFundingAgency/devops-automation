@@ -1,5 +1,5 @@
 function CORS {
-<#
+    <#
 .SYNOPSIS
 Set CORS settings on blob storage
 
@@ -17,12 +17,12 @@ The SaS Token to access the blob storage container
 
 .EXAMPLE
 
-$CORSParameters = @ {
+$DeploymentParameters = @ {
     StorageAccountName = "mystorageaccountname"
     SaSToken = "MySecureSaStokenString"
 
 }
-CORS @CORSParameters
+CORS @DeploymentParameters
 
 #>
     Param(
