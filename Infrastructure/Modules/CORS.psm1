@@ -27,7 +27,7 @@ CORS @CORSParameters
 #>
     Param(
         [Parameter(Mandatory = $true)]
-        [String]$StorageAccountName,
+        [String]$storageAccountName,
         [Parameter(Mandatory = $true)]
         [String]$SaSToken
     )
@@ -41,7 +41,7 @@ CORS @CORSParameters
                 AllowedMethods  = @("Get")
             })
         Write-Log -LogLevel Information -Message "Setting Storage Context and applying CORS settings"
-        $StorageContext = New-AzureStorageContext -StorageAccountName $StorageAccountName -StorageAccountKey $SaSToken
+        $StorageContext = New-AzureStorageContext -StorageAccountName $storageAccountName -StorageAccountKey $SaSToken
         Set-AzureStorageCORSRule -ServiceType Blob -CorsRules $CorsRules -Context $StorageContext
     }
     catch {

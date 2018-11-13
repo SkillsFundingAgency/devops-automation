@@ -38,7 +38,7 @@ $DeploymentParameters = @{
 # ---- Configure CORS Settings
 Param(
     [Parameter(Mandatory = $true)]
-    [String]$StorageAccountName,
+    [String]$storageAccountName,
     [Parameter(Mandatory = $true)]
     [String]$SaSToken
 )
@@ -46,7 +46,7 @@ Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\CORS.psm1).Path
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
 $DeploymentParameters = @{
-    StorageAccountName = $StorageAccountName
+    StorageAccountName = $storageAccountName
     SaSToken           = $SaSToken
 }
 
