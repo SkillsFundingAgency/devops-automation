@@ -23,6 +23,7 @@ Param(
     [Parameter(Mandatory = $true)]
     [String]$SaSToken
 )
+# --- Import Azure Helpers
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\BlobCopy.psm1).Path
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
@@ -33,7 +34,8 @@ $DeploymentParameters = @{
 
 }
 
-. "$PSScriptRoot\..\Modules\BlobCopy.psm1" @DeploymentParameters
+# ---- Run BlobCopy Function
+BlobCopy @DeployParameters
 
 # ---- Configure CORS Settings
 Param(
@@ -42,6 +44,7 @@ Param(
     [Parameter(Mandatory = $true)]
     [String]$SaSToken
 )
+# --- Import Azure Helpers
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\CORS.psm1).Path
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
@@ -50,7 +53,9 @@ $DeploymentParameters = @{
     SaSToken           = $SaSToken
 }
 
-. "$PSScriptRoot\..\Modules\CORS.psm1" @DeploymentParameters
+# ---- Run CORS Function
+CORS @DeploymentParameters
+
 
 
 
