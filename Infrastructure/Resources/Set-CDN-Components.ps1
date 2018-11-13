@@ -34,9 +34,10 @@ $DeploymentParameters = @{
     Source      = $Source
     Destination = $Destination
     SaSToken    = $SaSToken
+
 }
 # ---- Run BlobCopy Function
-BlobCopy @DeployParameters
+BlobCopy @DeploymentParameters
 
 # ---- Configure CORS Settings
 $DeploymentParameters = @{
