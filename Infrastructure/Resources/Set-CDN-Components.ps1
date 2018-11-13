@@ -40,7 +40,7 @@ BlobCopy @DeployParameters
 # ---- Configure CORS Settings
 Param(
     [Parameter(Mandatory = $true)]
-    [String]$storageAccountName,
+    [String]$StorageAccountName,
     [Parameter(Mandatory = $true)]
     [String]$SaSToken
 )
@@ -49,7 +49,7 @@ Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\CORS.psm1).Path
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
 $DeploymentParameters = @{
-    StorageAccountName = $storageAccountName
+    StorageAccountName = $StorageAccountName
     SaSToken           = $SaSToken
 }
 
