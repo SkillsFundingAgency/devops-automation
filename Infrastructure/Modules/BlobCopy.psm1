@@ -1,5 +1,5 @@
 function BlobCopy {
-<#
+    <#
 .SYNOPSIS
 Copy content to blob storage and update ContentType(MIME) settings
 

@@ -4,7 +4,7 @@
 CDN
 
 .DESCRIPTION
-CDM
+CDN
 
 .PARAMETER Environment
 The deployment environment
@@ -14,7 +14,7 @@ The deployment environment
 
 
 #>
-
+# ---- Copy CDN content to blob storage and set MIME settings
 Param(
     [Parameter(Mandatory = $true)]
     [String]$Source,
@@ -23,25 +23,34 @@ Param(
     [Parameter(Mandatory = $true)]
     [String]$SaSToken
 )
-
-
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\BlobCopy.psm1).Path
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
-
-
-
-
 $DeploymentParameters = @{
-    Source    = $Source
-    Destination   = $Destination
-    SaSToken     = $SaSToken
+    Source      = $Source
+    Destination = $Destination
+    SaSToken    = $SaSToken
 
 }
 
 . "$PSScriptRoot\..\Modules\BlobCopy.psm1" @DeploymentParameters
 
+# ---- Configure CORS Settings
+Param(
+    [Parameter(Mandatory = $true)]
+    [String]$StorageAccountName,
+    [Parameter(Mandatory = $true)]
+    [String]$SaSToken
+)
+Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\CORS.psm1).Path
+Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
+$DeploymentParameters = @{
+    StorageAccountName = $StorageAccountName
+    SaSToken           = $SaSToken
+}
+
+. "$PSScriptRoot\..\Modules\CORS.psm1" @DeploymentParameters
 
 
 
