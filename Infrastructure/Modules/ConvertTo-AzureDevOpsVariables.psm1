@@ -1,3 +1,4 @@
+
 <#
 .SYNOPSIS
 Takes ARM template output and turns them into VSTS variables
@@ -52,3 +53,4 @@ foreach ($outputname in ($jsonvars | Get-Member -MemberType NoteProperty).name) 
         Write-Output "##vso[task.setvariable variable=$outputname]$outvalue"
     }
 }
+
