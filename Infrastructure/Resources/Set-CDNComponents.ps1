@@ -1,10 +1,10 @@
 <#
 
 .SYNOPSIS
-Set additonal CDN Components
+Set additonal CDN (Content Delivery Network) Components
 
 .DESCRIPTION
-Set additional CDN Components
+Set additional CDN (Content Delivery Network) Components
 
 .PARAMETER Source
 The source location of the files to be copied
@@ -41,7 +41,7 @@ $DeploymentParameters = @ {
     CDNEndPointName = "myendpoint01"
     PurgeContent = "/*"
 }
-.\Set-CDN-Components.ps1 @DeploymentParameters
+.\Set-CDNComponents.ps1 @DeploymentParameters
 
 #>
 # ---- Copy CDN content to blob storage and set MIME settings
