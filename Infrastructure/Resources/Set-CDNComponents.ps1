@@ -78,6 +78,7 @@ $DeploymentParameters = @{
 # ---- Run BlobCopy Function
 BlobCopy @DeploymentParameters
 
+
 # ---- Set CORS Deployment Parameters
 $DeploymentParameters = @{
     StorageAccountName = $StorageAccountName
