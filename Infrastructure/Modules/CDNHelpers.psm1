@@ -113,7 +113,7 @@ Enable-CORS @DeploymentParameters
         [Parameter(Mandatory = $true)]
         [String]$SaSToken,
         [Parameter(Mandatory = $false)]
-        [String]$CORSRules = @{}
+        [hashtable]$CORSRules = @{}
     )
     try {
         #    --- Set CORS Rules
@@ -172,7 +172,7 @@ PurgeContent @DeploymentParameters
         [String]$PurgeContent = ""
     )
     try {
-        if ( $PurgeContent -eq  "" ) { Write-Log -LogLevel Information -Message "Purge Content not required"
+        if ( $PurgeContent -eq "" ) { Write-Log -LogLevel Information -Message "Purge Content not required"
         }
         else {
             # --- Set CDN EndPoint

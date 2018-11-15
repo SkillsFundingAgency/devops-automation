@@ -66,7 +66,7 @@ Param(
     [ValidateSet("Storage", "Cloud Service", "Web App", "Custom Origin")]
     [String]$OriginType,
     [Parameter(Mandatory = $false)]
-    [String]$CORSRules = @{}
+    [hashtable]$CORSRules = @{}
 
 )
 # --- Import Azure Helpers
