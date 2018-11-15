@@ -64,9 +64,7 @@ Param(
     [String]$PurgeContent
 )
 # --- Import Azure Helpers
-Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\BlobCopy.psm1).Path
-Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\CORS.psm1).Path
-Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\PurgeContent.psm1).Path
+Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\CDNHelpers.psm1).Path
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
 # ---- Set BlobCopy Deployment Parameters
@@ -75,28 +73,39 @@ $DeploymentParameters = @{
     Destination = $Destination
     SaSToken    = $SaSToken
 }
-# ---- Run BlobCopy Function
-BlobCopy @DeploymentParameters
-
+try {
+    # ---- Run BlobCopy Function
+    Start-BlobCopy @DeploymentParameters
+}
+catch {
+    throw "Failed to copy content to blob and set MIME settings: $_"
+}
 
 # ---- Set CORS Deployment Parameters
 $DeploymentParameters = @{
     StorageAccountName = $StorageAccountName
     SaSToken           = $SaSToken
 }
-# ---- Run CORS Function
-CORS @DeploymentParameters
-
+try {
+    # ---- Run CORS Function
+    Enable-CORS @DeploymentParameters
+}
+catch {
+    throw "Failed to get Storage Context and set CORS settings: $_"
+}
 # ---- Set PurgeContent Deployment Parameters
 $DeploymentParameters = @{
     CDNProfileResourceGroup = $CDNProfileResourceGroup
-    CDNProfileName  = $CDNProfileName
-    CDNEndPointName = $CDNEndPointName
-    PurgeContent = $PurgeContent
+    CDNProfileName          = $CDNProfileName
+    CDNEndPointName         = $CDNEndPointName
+    PurgeContent            = $PurgeContent
 }
-# ---- Run PurgeContent Function
-PurgeContent @DeploymentParameters
 
-
-
+try {
+    # ---- Run PurgeContent Function
+    Start-ContentPurge @DeploymentParameters
+}
+catch {
+    throw "Failed to fetch CDN Endpoint and Purge Content: $_"
+}
 

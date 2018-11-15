@@ -22,35 +22,35 @@ where ARMOutputs is the name from Outputs > Deployment outputs from the Azure De
 
 param (
     [Parameter(Mandatory=$true)][string]$ARMOutput,
-    [hashtable] $rename
+    [hashtable] $Rename
 )
 
 # Output from ARM template is a JSON document
-$jsonvars = $ARMOutput | convertfrom-json
+$JsonVars = $ARMOutput | convertfrom-json
 
 # the outputs with be of type noteproperty, get a list of all of them
-foreach ($outputname in ($jsonvars | Get-Member -MemberType NoteProperty).name) {
+foreach ($OutputName in ($JsonVars | Get-Member -MemberType NoteProperty).name) {
     # get the type and value for each output
-    $outtypevalue = $jsonvars | Select-Object -ExpandProperty $outputname
-    $outtype = $outtypevalue.type
-    $outvalue = $outtypevalue.value
+    $OutTypeValue = $JsonVars | Select-Object -ExpandProperty $OutputName
+    $OutType = $OutTypeValue.type
+    $OutValue = $OutTypeValue.value
 
     # Check if variable name needs renaming
-    if ($outputname -in $rename.keys) {
-        $oldname = $outputname
-        $outputname = $rename[$outputname]
-        Write-Output "Creating VSTS variable $outputname from $oldname"
+    if ($OutputName -in $Rename.keys) {
+        $OldName = $OutputName
+        $OutPutName = $Rename[$OutPutName]
+        Write-Output "Creating VSTS variable $OutPutName from $OldName"
     }
     else {
-        Write-Output "Creating VSTS variable $outputname"
+        Write-Output "Creating VSTS variable $OutputName"
     }
 
     # Set VSTS variable
-    if ($outtype.toLower() -eq 'securestring') {
-        Write-Output "##vso[task.setvariable variable=$outputname;issecret=true]$outvalue"
+    if ($OutType.toLower() -eq 'securestring') {
+        Write-Output "##vso[task.setvariable variable=$OutputName;issecret=true]$OutValue"
     }
     else {
-        Write-Output "##vso[task.setvariable variable=$outputname]$outvalue"
+        Write-Output "##vso[task.setvariable variable=$OutputName]$OutValue"
     }
 }
 

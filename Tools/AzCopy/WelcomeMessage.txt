@@ -1,3 +1,0 @@
-Microsoft Azure Storage AzCopy
-Type azcopy /? for help on AzCopy.
-
