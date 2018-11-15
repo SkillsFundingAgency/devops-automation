@@ -61,7 +61,7 @@ Param(
     [Parameter(Mandatory = $true)]
     [String]$CDNEndPointName,
     [Parameter(Mandatory = $false)]
-    [String]$PurgeContent = ""
+    [String]$PurgeContent = "",
     [Parameter(Mandatory = $true)]
     [ValidateSet("Storage", "Cloud Service", "Web App", "Custom Origin")]
     [String]$OriginType,
