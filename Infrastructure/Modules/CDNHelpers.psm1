@@ -88,7 +88,7 @@ The StorageAccountName to apply the CORS settings
 .PARAMETER SaSToken
 The SaS Token to access the blob storage container
 
-.PARAMETER CORSRules
+.PARAMETER EnableCORS
 The CORS Rules to be applied
 
 .EXAMPLE
