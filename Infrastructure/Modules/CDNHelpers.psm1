@@ -96,12 +96,7 @@ The CORS Rules to be applied
 $DeploymentParameters = @ {
     StorageAccountName = "mystorageaccountname"
     SaSToken = "MySecureSaStokenString"
-    $CORSRules = (@{
-                AllowedHeaders  = @("*");
-                AllowedOrigins  = @("*");
-                MaxAgeInSeconds = 3600;
-                AllowedMethods  = @("Get")
-            })
+    $EnableCORS = "Yes"
 
 }
 Enable-CORS @DeploymentParameters
@@ -112,17 +107,25 @@ Enable-CORS @DeploymentParameters
         [String]$StorageAccountName,
         [Parameter(Mandatory = $true)]
         [String]$SaSToken,
-        [Parameter(Mandatory = $false)]
-        [hashtable]$CORSRules = @{}
+        [Parameter(Mandatory = $true)]
+        [ValidateSet("Yes", "No")]
+        [string]$EnableCORS
     )
     try {
+        # ---- Default CORS Settings
+        $CORSRules = (@{
+            AllowedHeaders  = @("*");
+            AllowedOrigins  = @("*");
+            MaxAgeInSeconds = 3600;
+            AllowedMethods  = @("Get")
+        })
         #    --- Set CORS Rules
-        if ( $CORSRules -eq @{} ) { Write-Log -LogLevel Information -Message "CORS settings not applied, only required for Development and Testing environments"
+        if ( $EnableCORS -eq "No" ) { Write-Log -LogLevel Information -Message "CORS settings not applied, only required for Development and Testing environments"
         }
         else {
             Write-Log -LogLevel Information -Message "Setting Storage Context and applying CORS settings"
             $StorageContext = New-AzureStorageContext -StorageAccountName $StorageAccountName -StorageAccountKey $SaSToken
-            Set-AzureStorageCORSRule -ServiceType Blob -CorsRules $CorsRules -Context $StorageContext
+            Set-AzureStorageCORSRule -ServiceType Blob -CorsRules $CORSRules -Context $StorageContext
         }
     }
     catch {

@@ -39,7 +39,8 @@ $DeploymentParameters = @ {
     CDNProfileResourceGroupName = "cdn"
     CDNProfileName = "myprofile01"
     CDNEndPointName = "myendpoint01"
-    PurgeContent = "/*"
+    PurgeContent = "/*",
+    EnableCORS = "Yes"
 }
 .\Set-CDNComponents.ps1 @DeploymentParameters
 
@@ -65,8 +66,9 @@ Param(
     [Parameter(Mandatory = $true)]
     [ValidateSet("Storage", "Cloud Service", "Web App", "Custom Origin")]
     [String]$OriginType,
-    [Parameter(Mandatory = $false)]
-    [hashtable]$CORSRules = @{}
+    [Parameter(Mandatory = $true)]
+    [ValidateSet("Yes", "No")]
+    [string]$EnableCORS
 
 )
 # --- Import Azure Helpers
@@ -92,7 +94,7 @@ catch {
 $DeploymentParameters = @{
     StorageAccountName = $StorageAccountName
     SaSToken           = $SaSToken
-    CORSRules          = $CORSRules
+    EnableCORS         = $EnableCORS
 }
 try {
     # ---- Run CORS Function
