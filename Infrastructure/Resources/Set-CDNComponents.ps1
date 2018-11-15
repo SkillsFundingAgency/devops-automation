@@ -61,7 +61,14 @@ Param(
     [Parameter(Mandatory = $true)]
     [String]$CDNEndPointName,
     [Parameter(Mandatory = $true)]
-    [String]$PurgeContent
+    [String]$PurgeContent,
+    [Parameter(Mandatory = $true)]
+    [ValidateSet("Storage", "Cloud Service", "Web App", "Custom Origin")]
+    [String]$OriginType,
+    [Parameter(Mandatory = $false)]
+    [String]$CORSRules = @{},
+    [Parameter(Mandatory = $false)]
+    [String]$PurgeContent = ""
 )
 # --- Import Azure Helpers
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\CDNHelpers.psm1).Path
@@ -72,6 +79,7 @@ $DeploymentParameters = @{
     Source      = $Source
     Destination = $Destination
     SaSToken    = $SaSToken
+    OriginType  = $OriginType
 }
 try {
     # ---- Run BlobCopy Function
@@ -85,6 +93,7 @@ catch {
 $DeploymentParameters = @{
     StorageAccountName = $StorageAccountName
     SaSToken           = $SaSToken
+    CORSRules          = $CORSRules
 }
 try {
     # ---- Run CORS Function
