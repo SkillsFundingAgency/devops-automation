@@ -60,15 +60,14 @@ Param(
     [String]$CDNProfileName,
     [Parameter(Mandatory = $true)]
     [String]$CDNEndPointName,
-    [Parameter(Mandatory = $true)]
-    [String]$PurgeContent,
+    [Parameter(Mandatory = $false)]
+    [String]$PurgeContent = ""
     [Parameter(Mandatory = $true)]
     [ValidateSet("Storage", "Cloud Service", "Web App", "Custom Origin")]
     [String]$OriginType,
     [Parameter(Mandatory = $false)]
-    [String]$CORSRules = @{},
-    [Parameter(Mandatory = $false)]
-    [String]$PurgeContent = ""
+    [String]$CORSRules = @{}
+
 )
 # --- Import Azure Helpers
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\CDNHelpers.psm1).Path
