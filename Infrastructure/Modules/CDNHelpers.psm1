@@ -53,8 +53,7 @@ BlobCopy @DeploymentParameters
             else {
                 Write-Log -LogLevel Information -Message "Could not locate Azure Storage AzCopy utility under $AzCopyPath"
             }
-
-            Write-Log -LogLevel Information -Message "Invoking Azure Storage AzCopy utility to upload content and change MIME settings..."
+            Write-Log -LogLevel Information -Message "Invoking Azure Storage AzCopy utility to upload content and change MIME settings"
             # ---> Invoke AzCopy.exe for
             .\AzCopy.exe /Source:$Source /Dest:$Destination /DestKey:$SaStoken /NC:10 /Z /V /S /Y /SetContentType
             # ---> Invoke AzCopy.exe for *.woff
@@ -97,7 +96,6 @@ $DeploymentParameters = @ {
     StorageAccountName = "mystorageaccountname"
     SaSToken = "MySecureSaStokenString"
     $EnableCORS = "Yes"
-
 }
 Enable-CORS @DeploymentParameters
 
@@ -114,12 +112,12 @@ Enable-CORS @DeploymentParameters
     try {
         # ---- Default CORS Settings
         $CORSRules = (@{
-            AllowedHeaders  = @("*");
-            AllowedOrigins  = @("*");
-            MaxAgeInSeconds = 3600;
-            AllowedMethods  = @("Get")
-        })
-        #    --- Set CORS Rules
+                AllowedHeaders  = @("*");
+                AllowedOrigins  = @("*");
+                MaxAgeInSeconds = 3600;
+                AllowedMethods  = @("Get")
+            })
+        # ---- Set CORS Rules
         if ( $EnableCORS -eq "No" ) { Write-Log -LogLevel Information -Message "CORS settings not applied, only required for Development and Testing environments"
         }
         else {
@@ -132,7 +130,6 @@ Enable-CORS @DeploymentParameters
         throw "Failed to get Storage Context and set CORS settings: $_"
     }
 }
-
 function Start-ContentPurge {
     <#
 .SYNOPSIS
@@ -179,11 +176,11 @@ PurgeContent @DeploymentParameters
         }
         else {
             # --- Set CDN EndPoint
-            Write-Log -LogLevel Information -Message "Setting CDN EndPoint..."
+            Write-Log -LogLevel Information -Message "Setting CDN EndPoint"
             $CDNEndpoint = Get-AzureRmCdnEndpoint -ResourceGroupName $CDNProfileResourceGroup -ProfileName $CDNProfileName -EndpointName $CDNEndpointName
 
             # ---> Purging CDN EndPoint
-            Write-Log -LogLevel Information -Message "Purging CDN EndPoint..."
+            Write-Log -LogLevel Information -Message "Purging CDN EndPoint"
             $CDNEndpoint | Unpublish-AzureRmCdnEndpointContent -PurgeContent $PurgeContent
         }
     }
