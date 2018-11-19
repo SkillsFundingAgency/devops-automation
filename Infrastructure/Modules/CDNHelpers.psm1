@@ -202,4 +202,3 @@ PurgeContent @DeploymentParameters
         throw "Failed to fetch CDN Endpoint and Purge Content: $_"
     }
 }
-
