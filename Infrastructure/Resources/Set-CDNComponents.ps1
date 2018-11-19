@@ -86,7 +86,7 @@ $DeploymentParameters = @{
 try {
     # ---- Run BlobCopy Function
     if ($OriginType -eq "Storage") {
-     Start-BlobCopy @DeploymentParameters
+        Start-BlobCopy @DeploymentParameters
     }
     else {
         Write-Log -LogLevel Information -Message "Blob copy not required as OriginType set to either 'Cloud Service', 'Web App' or 'Custom Origin'"
@@ -100,14 +100,14 @@ catch {
 $DeploymentParameters = @{
     StorageAccountName = $StorageAccountName
     SaSToken           = $SaSToken
-    }
+}
 try {
     # ---- Run CORS Function
     if ($EnableCORS.IsPresent) {
-        Enable-CORS @DeploymentParameters -EnableCORS
+        Enable-CORS @DeploymentParameters
     }
     else {
-        Enable-CORS
+        Write-Log -LogLevel Information -Message "CORS settings not applied, only required for Development and Testing environments when using Storage Account"
     }
 }
 catch {
