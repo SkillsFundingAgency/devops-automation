@@ -109,9 +109,9 @@ Enable-CORS @DeploymentParameters -EnableCORS
 #>
     [CmdletBinding(DefaultParameterSetName = "Default")]
     Param(
-        [Parameter(Mandatory = $true , ParameterSetName = 'Storage')]
+        [Parameter(Mandatory = $false , ParameterSetName = 'Storage')]
         [string]$StorageAccountName,
-        [Parameter(Mandatory = $true , ParameterSetName = 'Storage')]
+        [Parameter(Mandatory = $false , ParameterSetName = 'Storage')]
         [string]$SaSToken,
         [parameter(Mandatory = $false)]
         [switch]$EnableCORS
