@@ -95,7 +95,12 @@ $DeploymentParameters = @{
     }
 try {
     # ---- Run CORS Function
-    Enable-CORS @DeploymentParameters
+    if ($EnableCORS -eq $false) {
+        Enable-CORS
+    }
+    else {
+        Enable-CORS @DeploymentParameters -EnableCORS
+    }
 }
 catch {
     throw "Failed to get Storage Context and set CORS settings: $_"

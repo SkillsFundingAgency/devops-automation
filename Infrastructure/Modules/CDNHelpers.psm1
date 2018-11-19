@@ -58,6 +58,7 @@ BlobCopy @DeploymentParameters
             }
             else {
                 Write-Log -LogLevel Information -Message "Could not locate Azure Storage AzCopy utility under $AzCopyPath"
+                break
             }
             Write-Log -LogLevel Information -Message "Invoking Azure Storage AzCopy utility to upload content and change MIME settings"
             # ---> Invoke AzCopy.exe for
