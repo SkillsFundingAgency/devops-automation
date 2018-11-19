@@ -50,9 +50,9 @@ Param(
     [String]$Source,
     [Parameter(Mandatory = $true)]
     [String]$Destination,
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [String]$SaSToken,
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [String]$StorageAccountName,
     [Parameter(Mandatory = $true)]
     [String]$CDNProfileResourceGroup,
