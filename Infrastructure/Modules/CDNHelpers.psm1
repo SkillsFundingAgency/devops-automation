@@ -51,7 +51,7 @@ BlobCopy @DeploymentParameters
     try {
         if ($OriginType -eq "Storage") {
             # --- Set location for AzCopy.exe
-            $AzCopyPath = 'C:\Program Files (x86)\Microsoft SDKs\Azure\AzCopy\'
+            $AzCopyPath = "$env:ProgramFiles\Microsoft SDKs\Azure\AzCopy\"
             if (Test-Path $AzCopyPath ) {
                 Write-Log -LogLevel Information -Message "Setting location to Azure Storage AzCopy utility"
                 Set-Location -Path $AzCopyPath
@@ -94,49 +94,50 @@ The StorageAccountName to apply the CORS settings
 The SaS Token to access the blob storage container
 
 .PARAMETER EnableCORS
-The CORS Rules to be applied
+The EnableCORS switch parameter, if specified at run time then Enable-CORS function will run
 
 .EXAMPLE
 
 $DeploymentParameters = @ {
     StorageAccountName = "mystorageaccountname"
     SaSToken = "MySecureSaStokenString"
-    $EnableCORS = "Yes"
 }
 Enable-CORS @DeploymentParameters
+Enable-CORS @DeploymentParameters -EnableCORS
 
 #>
-
+    [CmdletBinding(DefaultParameterSetName = "Default")]
     Param(
-        [Parameter(Mandatory = $true)]
-        [String]$StorageAccountName,
-        [Parameter(Mandatory = $true)]
-        [String]$SaSToken,
-        [Parameter(Mandatory = $true)]
-        [ValidateSet("Yes", "No")]
-        [string]$EnableCORS
+        [Parameter(Mandatory = $true , ParameterSetName = 'Storage')]
+        [string]$StorageAccountName,
+        [Parameter(Mandatory = $true , ParameterSetName = 'Storage')]
+        [string]$SaSToken,
+        [parameter(Mandatory = $false)]
+        [switch]$EnableCORS
     )
+    # ---- Default CORS Settings
+    $CORSRules = (@{
+            AllowedHeaders  = @("*");
+            AllowedOrigins  = @("*");
+            MaxAgeInSeconds = 3600;
+            AllowedMethods  = @("Get")
+        })
     try {
-        # ---- Default CORS Settings
-        $CORSRules = (@{
-                AllowedHeaders  = @("*");
-                AllowedOrigins  = @("*");
-                MaxAgeInSeconds = 3600;
-                AllowedMethods  = @("Get")
-            })
         # ---- Set CORS Rules
-        if ( $EnableCORS -eq "No" ) { Write-Log -LogLevel Information -Message "CORS settings not applied, only required for Development and Testing environments"
-        }
-        else {
+        if ($EnableCORS -eq $true) {
             Write-Log -LogLevel Information -Message "Setting Storage Context and applying CORS settings"
             $StorageContext = New-AzureStorageContext -StorageAccountName $StorageAccountName -StorageAccountKey $SaSToken
             Set-AzureStorageCORSRule -ServiceType Blob -CorsRules $CORSRules -Context $StorageContext
+        }
+        else {
+            Write-Log -LogLevel Information -Message "CORS settings not applied, only required for Development and Testing environments when using Storage Account"
         }
     }
     catch {
         throw "Failed to get Storage Context and set CORS settings: $_"
     }
 }
+
 
 function Start-ContentPurge {
     <#
@@ -156,7 +157,10 @@ The CDN Profile Name
 The CDN EndPoint Name
 
 .PARAMETER PurgeContent
-The content to purge
+The assest you wish to purge from the edge nodes
+Single URL Purge: Purge individual asset by specifying the full URL, e.g., "/pictures/image1.png" or "/pictures/image1"
+Wildcard purge: Purge all folders, sub-folders, and files under an endpoint with "/*"  e.g. "/* " or "/pictures/*"
+Root domain purge: Purge the root of the endpoint with "/" in the path
 
 .EXAMPLE
 
