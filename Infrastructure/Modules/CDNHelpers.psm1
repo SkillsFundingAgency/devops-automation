@@ -30,7 +30,13 @@ $DeploymentParameters = @ {
 }
 BlobCopy @DeploymentParameters
 
+.NOTES
+
+    Suppressed Script Analyzer rules:
+         - PSUseShouldProcessForStateChangingFunctions - The function does not alter the state of an object
+
 #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
     Param(
         [Parameter(Mandatory = $true)]
         [String]$Source,
@@ -100,6 +106,7 @@ $DeploymentParameters = @ {
 Enable-CORS @DeploymentParameters
 
 #>
+
     Param(
         [Parameter(Mandatory = $true)]
         [String]$StorageAccountName,
@@ -130,6 +137,7 @@ Enable-CORS @DeploymentParameters
         throw "Failed to get Storage Context and set CORS settings: $_"
     }
 }
+
 function Start-ContentPurge {
     <#
 .SYNOPSIS
@@ -160,7 +168,13 @@ $DeploymentParameters = @ {
 }
 PurgeContent @DeploymentParameters
 
+.NOTES
+
+    Suppressed Script Analyzer rules:
+         - PSUseShouldProcessForStateChangingFunctions - The function does not alter the state of an object
+
 #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
     Param(
         [Parameter(Mandatory = $true)]
         [String]$CDNProfileResourceGroup,
@@ -188,3 +202,4 @@ PurgeContent @DeploymentParameters
         throw "Failed to fetch CDN Endpoint and Purge Content: $_"
     }
 }
+
