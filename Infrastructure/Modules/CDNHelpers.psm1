@@ -51,7 +51,7 @@ BlobCopy @DeploymentParameters
     try {
         if ($OriginType -eq "Storage") {
             # --- Set location for AzCopy.exe
-            $AzCopyPath = "$env:ProgramFiles\Microsoft SDKs\Azure\AzCopy\"
+            $AzCopyPath = "${env:ProgramFiles(x86)}\Microsoft SDKs\Azure\AzCopy\"
             if (Test-Path $AzCopyPath ) {
                 Write-Log -LogLevel Information -Message "Setting location to Azure Storage AzCopy utility"
                 Set-Location -Path $AzCopyPath
