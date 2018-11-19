@@ -94,9 +94,6 @@ The StorageAccountName to apply the CORS settings
 .PARAMETER SaSToken
 The SaS Token to access the blob storage container
 
-.PARAMETER EnableCORS
-The EnableCORS switch parameter, if specified at run time then Enable-CORS function will run
-
 .EXAMPLE
 
 $DeploymentParameters = @ {
@@ -104,17 +101,13 @@ $DeploymentParameters = @ {
     SaSToken = "MySecureSaStokenString"
 }
 Enable-CORS @DeploymentParameters
-Enable-CORS @DeploymentParameters -EnableCORS
 
 #>
-    [CmdletBinding(DefaultParameterSetName = "Default")]
-    Param(
+      Param(
         [Parameter(Mandatory = $false , ParameterSetName = 'Storage')]
         [string]$StorageAccountName,
         [Parameter(Mandatory = $false , ParameterSetName = 'Storage')]
-        [string]$SaSToken,
-        [parameter(Mandatory = $false)]
-        [switch]$EnableCORS
+        [string]$SaSToken
     )
     # ---- Default CORS Settings
     $CORSRules = (@{
@@ -125,7 +118,7 @@ Enable-CORS @DeploymentParameters -EnableCORS
         })
     try {
         # ---- Set CORS Rules
-        if ($EnableCORS -eq $true) {
+        if ($PSCmdlet.ParameterSetName -eq "Storage") {
             Write-Log -LogLevel Information -Message "Setting Storage Context and applying CORS settings"
             $StorageContext = New-AzureStorageContext -StorageAccountName $StorageAccountName -StorageAccountKey $SaSToken
             Set-AzureStorageCORSRule -ServiceType Blob -CorsRules $CORSRules -Context $StorageContext

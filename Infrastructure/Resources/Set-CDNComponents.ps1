@@ -30,6 +30,9 @@ The CDN EndPoint Name
 .PARAMETER PurgeContent
 The content to purge
 
+.PARAMETER EnableCORS
+The EnableCORS switch parameter, if specified at run time then Enable-CORS function will run
+
 .EXAMPLE
 $DeploymentParameters = @ {
     Source = "c:\FilesToBeCopied\"
@@ -82,7 +85,12 @@ $DeploymentParameters = @{
 }
 try {
     # ---- Run BlobCopy Function
-    Start-BlobCopy @DeploymentParameters
+    if ($OriginType -eq "Storage") {
+     Start-BlobCopy @DeploymentParameters
+    }
+    else {
+        Write-Log -LogLevel Information -Message "Blob copy not required as OriginType set to either 'Cloud Service', 'Web App' or 'Custom Origin'"
+    }
 }
 catch {
     throw "Failed to copy content to blob and set MIME settings: $_"
@@ -95,11 +103,11 @@ $DeploymentParameters = @{
     }
 try {
     # ---- Run CORS Function
-    if ($EnableCORS -eq $false) {
-        Enable-CORS
+    if ($EnableCORS.IsPresent) {
+        Enable-CORS @DeploymentParameters -EnableCORS
     }
     else {
-        Enable-CORS @DeploymentParameters -EnableCORS
+        Enable-CORS
     }
 }
 catch {
