@@ -15,6 +15,9 @@ The blob destinaton of where to copy the files
 .PARAMETER SaSToken
 The SaS Token to access the blob storage container
 
+.PARAMETER OriginType
+The Origin Type i.e. "Storage", "Cloud Service", "Web App" or "Custom Origin"
+
 .PARAMETER StorageAccountName
 The StorageAccountName to apply the CORS settings
 
