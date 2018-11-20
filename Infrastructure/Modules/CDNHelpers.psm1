@@ -103,7 +103,7 @@ $DeploymentParameters = @ {
 Enable-CORS @DeploymentParameters
 
 #>
-      Param(
+    Param(
         [Parameter(Mandatory = $false , ParameterSetName = 'Storage')]
         [string]$StorageAccountName,
         [Parameter(Mandatory = $false , ParameterSetName = 'Storage')]
@@ -198,5 +198,44 @@ PurgeContent @DeploymentParameters
     }
     catch {
         throw "Failed to fetch CDN Endpoint and Purge Content: $_"
+    }
+}
+
+
+function Test-AzCopyContentTypes {
+    <#
+.SYNOPSIS
+Tests all file extensions in a source directory for content types in the registry which AzCopy will use.
+
+.DESCRIPTION
+Tests all file extensions in a source directory for content types in the registry which AzCopy will use.
+
+.PARAMETER Source
+Source path to test recursively
+
+.EXAMPLE
+Test-AzCopyContentTypes -Source $SourcePath
+
+#>
+
+    param(
+        [string]$Source
+    )
+
+    if (Test-Path -Path $Source) {
+
+        $RegistryContentTypes = (Get-ChildItem -Path Registry::HKEY_CLASSES_ROOT | Where-Object { $_.Property -like "Content Type"}).Name.Replace("HKEY_CLASSES_ROOT\", [string]::Empty)
+
+
+        $SourceContentTypes = Get-ChildItem -Path $Source -Recurse | Select-Object -ExpandProperty Extension -Unique
+
+        $MissingTypes = $SourceContentTypes | Where-Object { ($RegistryContentTypes -notcontains $_) -and ($_ -ne [string]::Empty)}
+
+        if ($MissingTypes) {
+            Write-Error "Registry is missing Content Types for:`n$([string]::Join("`n", $MissingTypes))"
+        }
+    }
+    else {
+        throw "Invalid path supplied"
     }
 }
