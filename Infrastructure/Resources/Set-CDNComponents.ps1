@@ -109,7 +109,7 @@ $DeploymentParameters = @{
 try {
     # ---- Run CORS Function
     if ($EnableCORS.IsPresent) {
-        Enable-CORSRules @DeploymentParameters
+        Enable-CORS @DeploymentParameters
     }
     else {
         Write-Log -LogLevel Information -Message "CORS settings not applied, only required for Development and Testing environments when using Storage Account"
