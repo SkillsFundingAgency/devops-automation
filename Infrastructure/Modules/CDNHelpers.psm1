@@ -13,8 +13,8 @@ The source location of the files to be copied
 .PARAMETER Destination
 The blob destinaton of where to copy the files
 
-.PARAMETER SaSToken
-The SaS Token to access the blob storage container
+.PARAMETER AccessKey
+The Access Key to access the blob storage container
 
 .PARAMETER OriginType
 The Origin Type i.e. "Storage", "Cloud Service", "Web App" or "Custom Origin"
@@ -24,7 +24,7 @@ The Origin Type i.e. "Storage", "Cloud Service", "Web App" or "Custom Origin"
 $DeploymentParameters = @ {
     Source = "c:\FilesToBeCopied\"
     Destination = "https://name.blob.core.windows.net/cdn"
-    SaSToken = "MySecureSaStokenString"
+    Accesskey = "MySecureAccessKeyString"
     OriginType = "Storage"
 
 }
@@ -43,7 +43,7 @@ BlobCopy @DeploymentParameters
         [Parameter(Mandatory = $true)]
         [String]$Destination,
         [Parameter(Mandatory = $true)]
-        [String]$SaSToken,
+        [String]$AccessKey,
         [Parameter(Mandatory = $true)]
         [ValidateSet("Storage", "Cloud Service", "Web App", "Custom Origin")]
         [String]$OriginType
@@ -62,11 +62,7 @@ BlobCopy @DeploymentParameters
             }
             Write-Log -LogLevel Information -Message "Invoking Azure Storage AzCopy utility to upload content and change MIME settings"
             # ---> Invoke AzCopy.exe for
-            .\AzCopy.exe /Source:$Source /Dest:$Destination /DestKey:$SaStoken /NC:10 /Z /V /S /Y /SetContentType
-            # ---> Invoke AzCopy.exe for *.woff
-            .\AzCopy.exe /Source:$Source /Dest:$Destination /DestKey:$SaStoken /NC:10 /Z /V /Pattern:"*.woff" /SetContentType:"application/font-woff" /S /Y
-            # ---> Invoke AzCopy.exe for *.woff2
-            .\AzCopy.exe /Source:$Source /Dest:$Destination /DestKey:$SaStoken /NC:10 /Z /V /Pattern:"*.woff2" /SetContentType:"application/font-woff2" /S /Y
+            .\AzCopy.exe /Source:$Source /Dest:$Destination /DestKey:$AccessKey /NC:10 /Z /V /S /Y /SetContentType
         }
         else {
             Write-Log -LogLevel Information -Message "Blob copy not required as OriginType set to either 'Cloud Service', 'Web App' or 'Custom Origin'"
@@ -91,14 +87,14 @@ More Information: https://docs.microsoft.com/en-us/powershell/module/azure.stora
 .PARAMETER StorageAccountName
 The StorageAccountName to apply the CORS settings
 
-.PARAMETER SaSToken
-The SaS Token to access the blob storage container
+.PARAMETER AccessKey
+The Access Key to access the blob storage container
 
 .EXAMPLE
 
 $DeploymentParameters = @ {
     StorageAccountName = "mystorageaccountname"
-    SaSToken = "MySecureSaStokenString"
+    AccessKey = "MySecureAccessKeyString"
 }
 Enable-CORS @DeploymentParameters
 
@@ -107,7 +103,7 @@ Enable-CORS @DeploymentParameters
         [Parameter(Mandatory = $false , ParameterSetName = 'Storage')]
         [string]$StorageAccountName,
         [Parameter(Mandatory = $false , ParameterSetName = 'Storage')]
-        [string]$SaSToken
+        [string]$AccessKey
     )
     # ---- Default CORS Settings
     $CORSRules = (@{
@@ -120,7 +116,7 @@ Enable-CORS @DeploymentParameters
         # ---- Set CORS Rules
         if ($PSCmdlet.ParameterSetName -eq "Storage") {
             Write-Log -LogLevel Information -Message "Setting Storage Context and applying CORS settings"
-            $StorageContext = New-AzureStorageContext -StorageAccountName $StorageAccountName -StorageAccountKey $SaSToken
+            $StorageContext = New-AzureStorageContext -StorageAccountName $StorageAccountName -StorageAccountKey $AccessKey
             Set-AzureStorageCORSRule -ServiceType Blob -CorsRules $CORSRules -Context $StorageContext
         }
         else {
@@ -202,7 +198,7 @@ PurgeContent @DeploymentParameters
 }
 
 
-function Test-AzCopyContentTypes {
+function Test-AzCopyContentType {
     <#
 .SYNOPSIS
 Tests all file extensions in a source directory for content types in the registry which AzCopy will use.
@@ -214,10 +210,9 @@ Tests all file extensions in a source directory for content types in the registr
 Source path to test recursively
 
 .EXAMPLE
-Test-AzCopyContentTypes -Source $SourcePath
+Test-AzCopyContentType -Source $SourcePath
 
 #>
-
     param(
         [string]$Source
     )

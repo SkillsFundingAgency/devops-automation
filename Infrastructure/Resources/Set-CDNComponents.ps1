@@ -12,8 +12,8 @@ The source location of the files to be copied
 .PARAMETER Destination
 The blob destinaton of where to copy the files
 
-.PARAMETER SaSToken
-The SaS Token to access the blob storage container
+.PARAMETER AccessKey
+The Access Key to access the blob storage container
 
 .PARAMETER OriginType
 The Origin Type i.e. "Storage", "Cloud Service", "Web App" or "Custom Origin"
@@ -40,7 +40,7 @@ The EnableCORS switch parameter, if specified at run time then Enable-CORS funct
 $DeploymentParameters = @ {
     Source = "c:\FilesToBeCopied\"
     Destination = "https://name.blob.core.windows.net/cdn"
-    SaSToken = "MySecureSaStokenString"
+    AccessKey = "MySecureAccessKeyString"
     StorageAccountName = "mystorageaccountname"
     CDNProfileResourceGroupName = "cdn"
     CDNProfileName = "myprofile01"
@@ -57,7 +57,7 @@ Param(
     [Parameter(Mandatory = $true)]
     [String]$Destination,
     [Parameter(Mandatory = $false)]
-    [String]$SaSToken,
+    [String]$AccessKey,
     [Parameter(Mandatory = $false)]
     [String]$StorageAccountName,
     [Parameter(Mandatory = $true)]
@@ -79,16 +79,18 @@ Param(
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\CDNHelpers.psm1).Path
 Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 
+
 # ---- Set BlobCopy Deployment Parameters
 $DeploymentParameters = @{
     Source      = $Source
     Destination = $Destination
-    SaSToken    = $SaSToken
+    AccessKey   = $AccessKey
     OriginType  = $OriginType
 }
 try {
     # ---- Run BlobCopy Function
     if ($OriginType -eq "Storage") {
+        Test-AzCopyContentType $Source
         Start-BlobCopy @DeploymentParameters
     }
     else {
@@ -96,18 +98,18 @@ try {
     }
 }
 catch {
-    throw "Failed to copy content to blob and set MIME settings: $_"
+    throw "Registry is missing Content Types and failed to copy content to blob and set MIME settings: $_"
 }
 
 # ---- Set CORS Deployment Parameters
 $DeploymentParameters = @{
     StorageAccountName = $StorageAccountName
-    SaSToken           = $SaSToken
+    AccessKey          = $AccessKey
 }
 try {
     # ---- Run CORS Function
     if ($EnableCORS.IsPresent) {
-        Enable-CORS @DeploymentParameters
+        Enable-CORSRules @DeploymentParameters
     }
     else {
         Write-Log -LogLevel Information -Message "CORS settings not applied, only required for Development and Testing environments when using Storage Account"
