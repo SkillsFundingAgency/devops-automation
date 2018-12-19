@@ -30,7 +30,7 @@ $DeploymentParameters = @ {
     DatabaseName = "db01"
     ResourceGroupName = "RG01"
 }
-.\Service-Account-Automation.ps1 $DeploymentParameters
+.\New-SQLServiceAccount.ps1 $DeploymentParameters
 
 #>
 
