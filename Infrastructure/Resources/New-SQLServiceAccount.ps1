@@ -18,9 +18,6 @@ The name of the Azure SQL Server
 .PARAMETER DatabaseName
 The name of the Azure SQL database
 
-.PARAMETER ResourceGroupName
-The name of the Resource Group
-
 .EXAMPLE
 
 $DeploymentParameters = @ {
@@ -28,8 +25,7 @@ $DeploymentParameters = @ {
     ServiceAccountUsername = "sa-01"
     ServerName = "sql-srv-01"
     DatabaseName = "db01"
-    ResourceGroupName = "RG01"
-}
+    }
 .\New-SQLServiceAccount.ps1 $DeploymentParameters
 
 #>
@@ -43,9 +39,7 @@ Param(
     [Parameter(Mandatory = $true)]
     [String]$ServerName,
     [Parameter(Mandatory = $true)]
-    [String]$DatabaseName,
-    [Parameter(Mandatory = $true)]
-    [String]$ResourceGroupName
+    [String]$DatabaseName
 )
 
 # --- Import helper modules
@@ -54,7 +48,7 @@ Import-Module (Resolve-Path -Path $PSScriptRoot\..\Modules\Helpers.psm1).Path
 try {
     # --- Retrieve server resource and extract resource group
     Write-Host "Searching for SQL server resource $ServerName"
-    $ServerResource = Get-AzureRmResource -Name $ServerName -ResourceType "Microsoft.Sql/servers" -ResourceGroupName $ResourceGroupName
+    $ServerResource = Get-AzureRmResource -Name $ServerName -ResourceType "Microsoft.Sql/servers"
     if (!$ServerResource) {
         throw "Could not find SQL server resource $ServerName"
     }
